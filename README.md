@@ -1,2 +1,3 @@
-# ITensorSchool-2026
-Hands on coding for the 2026 ITensor School
+# ITensor School 2026 Hands-On Tutorials
+
+Welcome to the ITensor School hands-on tutorials. Go to the [Tutorials](./Tutorials/) directory to get started.
