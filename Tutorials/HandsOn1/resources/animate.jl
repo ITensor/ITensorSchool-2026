@@ -21,26 +21,3 @@ function animate(::Plots.AbstractBackend, f; nframes::Int, fps::Real)
     end
     return nothing
 end
-
-function animate(::Plots.UnicodePlotsBackend, f; nframes::Int, fps::Real)
-    io = IOBuffer()
-    # Hide cursor
-    print(stdout, "\x1b[?25l")
-    return try
-        # Clear screen
-        print(stdout, "\x1b[2J")
-        for i in 1:nframes
-            seekstart(io)
-            show(io, MIME("text/plain"), f(i))
-            frame_str = String(take!(io))
-            # Move home
-            print(stdout, "\x1b[H")
-            println(frame_str)
-            sleep(1 / fps)
-        end
-    finally
-        # Show cursor again
-        print(stdout, "\x1b[?25h")
-    end
-    return nothing
-end
