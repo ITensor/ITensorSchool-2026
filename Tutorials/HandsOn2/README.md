@@ -1,4 +1,4 @@
-# Day 2 Hands-On Tutorials
+# Hands-On Tutorial 2
 
 ## Table of Contents
 
