@@ -6,7 +6,7 @@ using StableRNGs: StableRNG
 # Load the Plots package for plotting
 using Plots: Plots, plot
 
-include("../src/animate.jl")
+include("resources/animate.jl")
 
 function plot_dmrg_sz(sz::Vector{Float64}, nsite::Int; title = "")
     return plot(

@@ -16,9 +16,9 @@
 
 To run the tutorials:
 
-1. Download and install the latest release (v1.12.1) of Julia following the official
+1. Download and install the latest release (v1.13.0) of Julia following the official
 instructions here: https://julialang.org/install/. If you already have Julia installed,
-please upgrade to Julia v1.12.1, which you can install by using the same installation
+please upgrade to Julia v1.13.0, which you can install by using the same installation
 instructions which will install `juliaup`, which you can use from the command line to
 upgrade to the latest version of Julia with:
 ```
@@ -36,7 +36,7 @@ $ julia
   (_)     | (_) (_)    |
    _ _   _| |_  __ _   |  Type "?" for help, "]?" for Pkg help.
   | | | | | | |/ _` |  |
-  | | |_| | | | (_| |  |  Version 1.12.0 (2025-10-07)
+  | | |_| | | | (_| |  |  Version 1.13.0 (2026-09-09)
  _/ |\__'_|_|_|\__'_|  |  Official https://julialang.org release
 |__/                   |
 
@@ -47,34 +47,34 @@ julia> 1 + 1
 ```
 Try typing a command (such as `1 + 1` shown above) to get a feel for how it works. A number of math operations are available out-of-the-box, such as `sin`, `cos`, etc., while other functionality (such as [linear algebra](https://docs.julialang.org/en/v1/stdlib/LinearAlgebra/)) requires loading packages. The surface level syntax is similar to other high level interactive languages like Python and MATLAB. The Julia documentation provides a helpful guide [comparing Julia to other comparable languages](https://docs.julialang.org/en/v1/manual/noteworthy-differences/).
 
-4. Create a local copy of the tutorial code in a new directory `ITensorCCQSchool` in your current directory by running:
+4. Create a local copy of the tutorial code in a new directory `ITensorSchool-2026` in your current directory by running:
 ```julia
 julia> using LibGit2: clone
 
-julia> clone("https://github.com/ITensor/ITensorCCQSchool", "ITensorCCQSchool")
+julia> clone("https://github.com/ITensor/ITensorSchool-2026", "ITensorSchool-2026")
 ```
-Here we use Julia's  [LibGit2 standard library](https://docs.julialang.org/en/v1/stdlib/LibGit2/) to clone the repository containing the tutorials. Alternatively you can execute `git clone https://github.com/ITensor/ITensorCCQSchool` directly from the command line (outside of the Julia REPL).
+Here we use Julia's  [LibGit2 standard library](https://docs.julialang.org/en/v1/stdlib/LibGit2/) to clone the repository containing the tutorials. Alternatively you can execute `git clone https://github.com/ITensor/ITensorSchool-2026` directly from the command line (outside of the Julia REPL).
 
-5. Now that you have Julia installed and the tutorial code available, we will give an introduction to running the first tutorial for day 1 ([1-julia-intro.jl](./1-julia-intro.jl)). Enter the `ITensorCCQSchool/Tutorials/Day1` directory using Julia's [`cd`](https://docs.julialang.org/en/v1/base/file/#Base.Filesystem.cd-Tuple{AbstractString}) function and install the dependencies from the Julia REPL:
+5. Now that you have Julia installed and the tutorial code available, we will give an introduction to running the first tutorial for day 1 ([1-julia-intro.jl](./1-julia-intro.jl)). Enter the `ITensorSchool-2026/Tutorials/HandsOn1` directory using Julia's [`cd`](https://docs.julialang.org/en/v1/base/file/#Base.Filesystem.cd-Tuple{AbstractString}) function and install the dependencies from the Julia REPL:
 ```julia
-julia> cd("ITensorCCQSchool/Tutorials/Day1")
+julia> cd("ITensorSchool-2026/Tutorials/HandsOn1")
 
 julia> ]
 
-(Day1) pkg> activate .
-  Activating project at `[...]/ITensorCCQSchool/Tutorials/Day1/`
+(HandsOn1) pkg> activate .
+  Activating project at `[...]/ITensorSchool-2026/Tutorials/HandsOn1/`
 
-(Day1) pkg> instantiate
+(HandsOn1) pkg> instantiate
     Updating registry at `~/.julia/registries/General.toml`
-    Updating `[...]/ITensorCCQSchool/Tutorials/Day1/Project.toml`
+    Updating `[...]/ITensorSchool-2026/Tutorials/HandsOn1/Project.toml`
   [0d1a4710] + ITensorMPS v0.3.22
   [9136182c] + ITensors v0.9.13
   [...]
 
 ```
-Executing `]` at the REPL enables the Pkg REPL, which is more convenient for entering Pkg commands. Press delete/backspace to exit the Pkg REPL and go back to the standard Julia REPL prompt. `activate .` enables the local environment/project in `Tutorials/Day1` (your current directory), where the package dependencies for the tutorials on the first day of the school are defined (in case you are curious, they are defined in the [Project.toml](./Project.toml)). `instantiate` installs those dependencies and performs some compilation. It may take some time but it will only need to be done once for each project (so in our case, once for each day of the school).
+Executing `]` at the REPL enables the Pkg REPL, which is more convenient for entering Pkg commands. Press delete/backspace to exit the Pkg REPL and go back to the standard Julia REPL prompt. `activate .` enables the local environment/project in `Tutorials/HandsOn1` (your current directory), where the package dependencies for the tutorials on the first day of the school are defined (in case you are curious, they are defined in the [Project.toml](./Project.toml)). `instantiate` installs those dependencies and performs some compilation. It may take some time but it will only need to be done once for each project (so in our case, once for each day of the school).
 
-6. Use `include` to load the [first tutorial](./Day1/1-julia-intro.jl) into the REPL. That will introduce the function `main` which you can execute to run the tutorial:
+6. Use `include` to load the [first tutorial](./HandsOn1/1-julia-intro.jl) into the REPL. That will introduce the function `main` which you can execute to run the tutorial:
 ```julia
 julia> include("1-julia-intro.jl")
 main
@@ -165,7 +165,7 @@ julia>
 8. Note that you can analyze which directory you are in and what tutorial files are available directly from the Julia REPL using functions such as [`pwd`](https://docs.julialang.org/en/v1/base/file/#Base.Filesystem.pwd) and [`readdir`](https://docs.julialang.org/en/v1/base/file/#Base.Filesystem.readdir):
 ```julia
 julia> pwd()
-"[...]/ITensorCCQSchool/Tutorials/Day1"
+"[...]/ITensorSchool-2026/Tutorials/HandsOn1"
 
 julia> readdir()
 7-element Vector{String}:
@@ -198,7 +198,7 @@ julia> res = main();
 ```
 Note that if you don't call `include` again, you won't see the changes you make to the file reflected when you call the `main` function. (For advanced users, note that you can use [`Revise.includet`](https://timholy.github.io/Revise.jl/stable/cookbook/#includet-usage) as an alternative to `include` which would automatically track changes to the file and update `main` without having to call `include` each time.)
 
-**Note:** We highly recommend keeping your Julia session open throughout each day of the tutorial, which will keep your package environment active and ensure you don't incur re-compilation of precompiled code. If at some point you close your Julia session, make sure to enter the directory corresponding to the tutorial day (i.e. `Tutorials/Day1`) and execute:
+**Note:** We highly recommend keeping your Julia session open throughout each day of the tutorial, which will keep your package environment active and ensure you don't incur re-compilation of precompiled code. If at some point you close your Julia session, make sure to enter the directory corresponding to the tutorial day (i.e. `Tutorials/HandsOn1`) and execute:
 ```julia
 julia> ]
 

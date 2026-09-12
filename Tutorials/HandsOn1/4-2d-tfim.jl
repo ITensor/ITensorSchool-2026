@@ -10,7 +10,7 @@ using Statistics: mean
 # Load the Plots package for plotting
 using Plots: Plots, @layout, plot, plot!, quiver
 
-include("../src/animate.jl")
+include("resources/animate.jl")
 
 function plot_spins(res, i::Int = length(res.szs))
     points = vec(reverse.(Tuple.(CartesianIndices((res.ny, res.nx)))))
