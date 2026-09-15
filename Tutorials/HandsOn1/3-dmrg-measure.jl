@@ -1,6 +1,8 @@
-using ITensorMPS: MPO, OpSum, dmrg, maxlinkdim, random_mps, siteind, siteinds
+using LinearAlgebra: norm
+using ITensors: ITensors, ITensor, apply, inds, pause
+using ITensorMPS: MPO, MPS, OpSum, apply, dag, dmrg, maxlinkdim, op, random_mps, sim_linkinds, siteind, siteinds
 # Functions for performing measurements of MPS
-using ITensorMPS: ITensorMPS, AbstractObserver, correlation_matrix, expect, inner
+using ITensorMPS: ITensorMPS, AbstractObserver, correlation_matrix, inner
 # Use to set the RNG seed for reproducibility
 using StableRNGs: StableRNG
 # Load the Plots package for plotting
@@ -8,40 +10,46 @@ using Plots: Plots, plot
 
 include("resources/animate.jl")
 
-function plot_dmrg_sz(sz::Vector{Float64}, nsite::Int; title = "")
-    return plot(
-        sz; xlim = (1, nsite), ylim = (-0.25, 0.25),
-        xlabel = "Site j", ylabel = "⟨Szⱼ⟩", legend = false, title
-    )
-end
-function plot_dmrg_sz(res; kwargs...)
-    return plot_dmrg_sz(res.sz, res.nsite; kwargs...)
-end
-function animate_dmrg_sz(res; fps = res.nsite)
-    return animate(; nframes = length(res.szs), fps) do i
-        return plot_dmrg_sz(res.szs[i], res.nsite; title = "Sweep = $(i ÷ (2 * res.nsite) + 1)")
-    end
+"""
+Tutorial 3:
+
+You are asked to complete the implementation of this
+`expect` (expectation value) function.
+For each numbered step (1),(2),(3) below, fill in
+the missing code.
+"""
+function expect(psi::MPS, opname::String, j::Int)
+
+    # psid is a copy of psi with internal link indices replaced
+    # with new ones of the same dimension (different ids) and
+    # with all tensor Hermitian-conjugated
+    psid = dag(sim_linkinds(psi))
+
+    L = ITensor(1.)
+    # (1) Add a loop building the left environment or 'message' L
+    # ...
+
+    R = ITensor(1.)
+    # (2) Add a loop building the right environment or 'message' R
+    # ...
+
+    O = op(opname,siteinds(psi)[j]) # operator ITensor sⱼ'--O--sⱼ
+
+    # (3) Use `apply` to apply O to the jth tensor of the MPS
+    #     psi and contract with the conjugated tensor
+    #     then contract with L and R and obtain the scalar value
+    value = 0.0
+
+    return value
 end
 
-function plot_dmrg_szsz(res)
-    return plot(
-        res.szsz[res.nsite ÷ 2, :]; xlim = (1, res.nsite), ylim = (-0.25, 0.25),
-        xlabel = "Site k", ylabel = "⟨SzⱼSzₖ⟩", legend = false
-    )
-end
+expect(psi::MPS, opname::String) = [expect(psi,opname,j) for j=1:length(psi)]
 
-@kwdef struct SzObserver <: AbstractObserver
-    szs::Vector{Vector{Float64}} = Vector{Float64}[]
-end
-function ITensorMPS.measure!(obs::SzObserver; psi, kwargs...)
-    push!(obs.szs, expect(psi, "Sz"))
-    return nothing
-end
 
 """
     main(; kwargs...)
 
-Perform DMRG on a Heisenberg spin-1/2 chain and measure ⟨Sz⟩ and ⟨SzⱼSz⟩.
+Perform DMRG on a Heisenberg spin-1 chain and measure ⟨Sz⟩.
 
 # Keywords
 - `nsite::Int = 30`: Number of sites in the spin chain.
@@ -56,8 +64,7 @@ A named tuple containing:
 - `H::MPO`: The Hamiltonian as an MPO.
 - `psi::MPS`: The optimized ground state wavefunction as an MPS.
 - `sz::Vector{Float64}`: Vector of ⟨Sz⟩ measurements.
-- `szsz::Vector{Float64}`: Correlation matrix of ⟨SzⱼSz⟩.
-- `szs::Vector{Vector{Float64}}`: Vector of ⟨Sz⟩ measurements at each DMRG step.
+- `sz_frames::Vector{Vector{Float64}}`: Vector of ⟨Sz⟩ measurements at each DMRG step.
 - `nsite::Int`: Same as above.
 - `nsweeps::Int`: Same as above.
 - `maxdim::Vector{Int}`: Same as above.
@@ -65,9 +72,9 @@ A named tuple containing:
 """
 function main(;
         # Number of sites
-        nsite = 30,
+        nsite = 40,
         # DMRG parameters
-        nsweeps = 5,
+        nsweeps = 6,
         maxdim = [10, 20, 100, 100, 200],
         cutoff = [1.0e-10],
         outputlevel = 1,
@@ -75,8 +82,8 @@ function main(;
     if outputlevel > 0
         println("Number of sites: ", nsite)
     end
-    # Build the physical indices for nsite spins (spin 1/2)
-    sites = siteinds("S=1/2", nsite)
+    # Build the physical indices for nsite spins
+    sites = siteinds("S=1", nsite)
 
     # Build the Heisenberg Hamiltonian as an MPO
     terms = OpSum()
@@ -101,11 +108,11 @@ function main(;
     end
 
     # Run DMRG
-    observer = SzObserver()
+    observer = SzObserver() # see later in this file for definition
     energy, psi = dmrg(
         H, psi0; nsweeps, maxdim, cutoff, observer, outputlevel = min(outputlevel, 1)
     )
-    szs = observer.szs
+    sz_frames = observer.szs
 
     if outputlevel > 0
         println("Optimized MPS bond dimension: ", maxlinkdim(psi))
@@ -114,16 +121,56 @@ function main(;
         println("⟨ψ|H|ψ⟩: ", inner(psi', H, psi))
     end
 
+    # Obtain expected ⟨Sᶻ⟩ from your own `expect` function (top of this file)
     sz = expect(psi, "Sz")
-    szsz = correlation_matrix(psi, "Sz", "Sz")
 
-    res = (; energy, H, psi, sz, szsz, szs, nsite, nsweeps, maxdim, cutoff)
+    # Use ITensorMPS.expect to check
+    sz_correct = ITensorMPS.expect(psi,"Sz")
+    error = norm(sz-sz_correct)
+    if error < 1E-6
+        println("Expected ⟨Sᶻ⟩ values agree with ITensorMPS.expect")
+    else
+        println("Expected ⟨Sᶻ⟩ values DO NOT agree with ITensorMPS.expect")
+    end
+
+    res = (; energy, H, psi, sz, sz_frames, nsite, nsweeps, maxdim, cutoff)
     if outputlevel > 0
         display(plot_dmrg_sz(res))
-        display(plot_dmrg_szsz(res))
     end
     if outputlevel > 1
         animate_dmrg_sz(res)
     end
     return res
 end
+
+#
+# SzObserver type for collecting measurements from DMRG
+#
+
+@kwdef struct SzObserver <: AbstractObserver
+    szs = Vector{Float64}[]
+end
+function ITensorMPS.measure!(obs::SzObserver; psi, kwargs...)
+    push!(obs.szs, ITensorMPS.expect(psi, "Sz"))
+end
+
+#
+# Plotting and animation functions
+#
+
+function plot_dmrg_sz(sz::Vector{Float64}, nsite::Int; title = "")
+    return plot(
+        sz; xlim = (1, nsite), ylim = (-0.25, 0.25),
+        xlabel = "Site j", ylabel = "⟨Szⱼ⟩", legend = false, title
+    )
+end
+plot_dmrg_sz(res; kwargs...) = plot_dmrg_sz(res.sz, res.nsite; kwargs...)
+
+
+function animate_dmrg_sz(res; fps = res.nsite)
+    return animate(; nframes = length(res.sz_frames), fps) do i
+        return plot_dmrg_sz(res.sz_frames[i], res.nsite; title = "Sweep = $(i ÷ (2 * res.nsite) + 1)")
+    end
+end
+
+

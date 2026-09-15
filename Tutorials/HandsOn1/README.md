@@ -434,87 +434,79 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
   <hr>
 
 In this tutorial you will explore measurements of MPS ground states, and use them to visualize a DMRG calculation.
+The expectation value or `expect` function is not fully implemented, and you are asked to finish implementing it.
 
-1. Run the `main` function provided in the file [3-dmrg-measure.jl](./3-dmrg-measure.jl). DMRG will run and you will see a plot of the expected value of Sz on each site and the ⟨SzⱼSz⟩ correlator between the central site "j" and all other sites. As expected, you can see that the expected value of Sz on each site for the ground state is approximately zero, while the ⟨SzSz⟩ decays as a function of distance and the sign is different for even and odd distances.
+1. First, run the `main` function provided in the file [3-dmrg-measure.jl](./3-dmrg-measure.jl). DMRG will run and give a correct energy. You will also see a plot of the expected value of Sz on each site. However, these values are all zero which is not correct, because the expectation value function `expect` which intends to compute $\langle \psi | S^z_j | \psi \rangle$ is not fully implemented.
 
 ```julia
 julia> include("3-dmrg-measure.jl")
 main
 
 julia> res = main();
-Number of sites: 30
+Number of sites: 40
 MPO bond dimension: 5
 Initial MPS bond dimension: 10
-After sweep 1 energy=-13.107422228239033  maxlinkdim=10 maxerr=2.26E-03 time=0.230
-After sweep 2 energy=-13.111347876235168  maxlinkdim=20 maxerr=1.40E-07 time=0.261
-After sweep 3 energy=-13.111355749980916  maxlinkdim=45 maxerr=9.92E-11 time=0.439
-After sweep 4 energy=-13.111355751929354  maxlinkdim=47 maxerr=9.99E-11 time=0.540
-After sweep 5 energy=-13.111355751940831  maxlinkdim=47 maxerr=9.99E-11 time=0.521
-Optimized MPS bond dimension: 47
-Energy: -13.111355751940831
-⟨ψ|ψ⟩: 1.0000000000000038
-⟨ψ|H|ψ⟩: -13.111355751940852
+After sweep 1 energy=-54.80716591700118  maxlinkdim=10 maxerr=9.86E-03 time=5.276
+After sweep 2 energy=-54.84985576797197  maxlinkdim=20 maxerr=4.70E-06 time=0.493
+After sweep 3 energy=-54.850803403840736  maxlinkdim=89 maxerr=9.94E-11 time=1.047
+After sweep 4 energy=-54.85080455035369  maxlinkdim=100 maxerr=1.25E-10 time=1.816
+After sweep 5 energy=-54.850804734927124  maxlinkdim=107 maxerr=1.00E-10 time=1.870
+After sweep 6 energy=-54.85080492005011  maxlinkdim=107 maxerr=1.00E-10 time=1.669
+Optimized MPS bond dimension: 107
+Energy: -54.85080492005011
+⟨ψ|ψ⟩: 1.0000000000000104
+⟨ψ|H|ψ⟩: -54.85080492005088
 ```
 
 <p align="center">
-  <img src="resources/images/Sz_plot_example.png" alt="Sz Plot" width="500">
+  <img src="resources/images/3-Sz_plot_initial.png" alt="Sz Plot" width="500">
 </p>
 
-2. Try changing the number of sites and sweeps. By saving the results `res` then passing them into the provided `animate_dmrg_sz` function, you can see a live animation or replay of the calculation! You can see that Sz starts out nonzero but quickly decays to zero as expected.
+2. The partially implemented `expect` function is at the top of the `3-dmrg-measure.jl` code file. The goal of this function will be to evaluate the following (scalar-valued) diagram:
+  <p align="center">
+    <img src="resources/images/3-expect_diagram.png" alt="Expectation value diagram" width="500">
+  </p>
+  We have already provided an MPS called `psid` which is a copy of the input MPS `psi` except that all bond or link indices are replaced with ones having similar properties (e.g. same dimension) but different, random id numbers so they don't automatically contract with those of `psi`. Also `psid` has each tensor conjugated for convenience.
+  
+3. You should compute the expected value in in three stages. First, write loops that use ITensor contraction to build up the tensors `L` and `R` depicted below.
+
+<p align="center">
+  <img src="resources/images/3-L_R_tensors.png" alt="Diagrams of L and R" width="400">
+</p>
+
+Try printing the `L` and `R` tensors using `@show inds(L)` to verify they have the correct structure.
+
+4. Apply the provided operator `O` to the jth MPS tensor `psi[j]` by using the `apply` function from the ITensors.jl package. The apply function applies operator-like ITensors to other ITensors as follows
+
+<p align="center">
+  <img src="resources/images/3-apply_diagram.png" alt="Diagrams of apply function" width="800">
+</p>
+
+5. To complete the function, contract the result of `apply` with the conjugated tensor at site `j` (from the already provided `psid` MPS).
+
+Call `scalar` or `[]` on the result to obtain a number instead of an order-0 ITensor.
+
+5. Test your implementation by rerunning DMRG by calling `res = main();` and passing `res` into the provided `animate_dmrg_sz(res)` function to visualize a movie of the measured Sz values across each sweep.
+Try changing the number of sites and sweeps to gain intuition about how the results change.
 
 ```julia
 julia> res = main(; nsweeps = 4, nsite = 50);
-MPO bond dimension: 5
-Initial MPS bond dimension: 10
-After sweep 1 energy=-21.945792072338246  maxlinkdim=10 maxerr=1.79E-03 time=0.571
-After sweep 2 energy=-21.97174042201767  maxlinkdim=20 maxerr=1.08E-06 time=0.712
-After sweep 3 energy=-21.97210988196606  maxlinkdim=63 maxerr=9.94E-11 time=1.356
-After sweep 4 energy=-21.972110267624643  maxlinkdim=70 maxerr=9.99E-11 time=2.080
-Optimized MPS bond dimension: 70
-Energy: -21.972110267624643
-⟨ψ|ψ⟩: 1.0000000000000064
-⟨ψ|H|ψ⟩: -21.972110267625013
-     ┌────────────────────────────────────────┐
- 0.25│⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-⟨Szⱼ⟩│⠦⠶⠴⠦⠴⠤⠶⠴⠦⠶⠤⠦⠴⠦⠶⠤⠦⠴⠤⠶⠴⠦⠴⠤⠦⠴⠦⠶⠤⠦⠴⠦⠶⠴⠦⠴⠤⠶⠤⠦│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
--0.25│⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-     └────────────────────────────────────────┘
-     ⠀1⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Site j⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀50⠀
-        ┌────────────────────────────────────────┐
-    0.25│⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠀⣿⠀⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡀⢀⠀⣆⢸⡇⡇⡇⣇⢰⡀⡀⠀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-⟨SzⱼSzₖ⟩│⠦⠶⠴⠦⠼⠦⠾⡤⢧⠼⢦⠷⡼⢧⡾⣴⢽⡼⡧⡧⣧⢿⡼⡧⡿⣴⢧⡼⣤⠷⡼⢧⠾⡤⠦⡴⢤⠴⠤⠦│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠀⠙⠈⡇⣷⠁⣿⢸⡇⠸⠀⠃⠈⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⠀⣿⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢸⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⠀⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        │⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-   -0.25│⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀│
-        └────────────────────────────────────────┘
-        ⠀1⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Site k⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀50⠀
+...
 
 julia> animate_dmrg_sz(res)
 [...]
 
 ```
+
+If all is working you should see something like this:
+
+<p align="center">
+  <img src="resources/images/3-Sz_animation_beginning.png" alt="Early frame of animation" width="500">
+</p>
+
+<p align="center">
+  <img src="resources/images/3-Sz_animation_mid.png" alt="Early frame of animation" width="500">
+</p>
 
 This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 
