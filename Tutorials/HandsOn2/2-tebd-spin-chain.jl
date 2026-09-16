@@ -9,7 +9,7 @@ using StableRNGs: StableRNG
 # Load the Plots package for plotting
 using Plots: Plots, plot
 
-include("../src/animate.jl")
+include("resources/animate.jl")
 
 function plot_tebd_sz(res; step::Int)
     return plot(
@@ -40,7 +40,7 @@ chain.
 
 # Keywords
 - `nsite::Int = 30`: Number of sites in the spin chain.
-- `time::Float64 = 5.0`: Total time for evolution.
+- `time::Float64 = 6.0`: Total time for evolution.
 - `timestep::Float64 = 0.1`: Time step for each TEBD application.
 - `cutoff::Float64 = 1.0e-10`: Cutoff for truncation during TEBD.
 - `outputlevel::Int = 1`: Controls how much information will be printed by the script.

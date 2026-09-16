@@ -12,7 +12,7 @@ using Plots: Plots, plot
 
 using Printf: @printf
 
-include("../src/animate.jl")
+include("resources/animate.jl")
 
 function plot_tebd_sz(res; step::Int)
     return plot(
