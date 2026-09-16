@@ -5,7 +5,7 @@
 - [Installation Instructions](#installation-instructions)
 - [Tutorial 1: Julia Intro](#tutorial-1)
 - [Tutorial 2: DMRG](#tutorial-2)
-- [Tutorial 3: DMRG Measurments](#tutorial-3)
+- [Tutorial 3: DMRG Measurements](#tutorial-3)
 - [Tutorial 4: 2D Ising Model](#tutorial-4)
 - [Stretch Goals](#stretch-goals)
 
@@ -55,7 +55,7 @@ julia> clone("https://github.com/ITensor/ITensorSchool-2026", "ITensorSchool-202
 ```
 Here we use Julia's  [LibGit2 standard library](https://docs.julialang.org/en/v1/stdlib/LibGit2/) to clone the repository containing the tutorials. Alternatively you can execute `git clone https://github.com/ITensor/ITensorSchool-2026` directly from the command line (outside of the Julia REPL).
 
-5. Now that you have Julia installed and the tutorial code available, we will give an introduction to running the first tutorial for day 1 ([1-julia-intro.jl](./1-julia-intro.jl)). Enter the `ITensorSchool-2026/Tutorials/HandsOn1` directory using Julia's [`cd`](https://docs.julialang.org/en/v1/base/file/#Base.Filesystem.cd-Tuple{AbstractString}) function and install the dependencies from the Julia REPL:
+5. Now that you have Julia installed and the tutorial code available, we will give an introduction to running the first tutorial of Hands-On 1 ([1-julia-intro.jl](./1-julia-intro.jl)). Enter the `ITensorSchool-2026/Tutorials/HandsOn1` directory using Julia's [`cd`](https://docs.julialang.org/en/v1/base/file/#Base.Filesystem.cd-Tuple{AbstractString}) function and install the dependencies from the Julia REPL:
 ```julia
 julia> cd("ITensorSchool-2026/Tutorials/HandsOn1")
 
@@ -67,14 +67,14 @@ julia> ]
 (HandsOn1) pkg> instantiate
     Updating registry at `~/.julia/registries/General.toml`
     Updating `[...]/ITensorSchool-2026/Tutorials/HandsOn1/Project.toml`
-  [0d1a4710] + ITensorMPS v0.3.22
-  [9136182c] + ITensors v0.9.13
+  [0d1a4710] + ITensorMPS v0.4.1
+  [9136182c] + ITensors v0.9.31
   [...]
 
 ```
-Executing `]` at the REPL enables the Pkg REPL, which is more convenient for entering Pkg commands. Press delete/backspace to exit the Pkg REPL and go back to the standard Julia REPL prompt. `activate .` enables the local environment/project in `Tutorials/HandsOn1` (your current directory), where the package dependencies for the tutorials on the first day of the school are defined (in case you are curious, they are defined in the [Project.toml](./Project.toml)). `instantiate` installs those dependencies and performs some compilation. It may take some time but it will only need to be done once for each project (so in our case, once for each day of the school).
+Executing `]` at the REPL enables the Pkg REPL, which is more convenient for entering Pkg commands. Press delete/backspace to exit the Pkg REPL and go back to the standard Julia REPL prompt. `activate .` enables the local environment/project in `Tutorials/HandsOn1` (your current directory), where the package dependencies for the tutorials of the first hands-on session are defined (in case you are curious, they are defined in the [Project.toml](./Project.toml)). `instantiate` installs those dependencies and performs some compilation. It may take some time but it will only need to be done once for each project (so in our case, once for each hands-on session, i.e. once per `HandsOnN` folder).
 
-6. Use `include` to load the [first tutorial](./HandsOn1/1-julia-intro.jl) into the REPL. That will introduce the function `main` which you can execute to run the tutorial:
+6. Use `include` to load the [first tutorial](./1-julia-intro.jl) into the REPL. That will introduce the function `main` which you can execute to run the tutorial:
 ```julia
 julia> include("1-julia-intro.jl")
 main
@@ -168,7 +168,7 @@ julia> pwd()
 "[...]/ITensorSchool-2026/Tutorials/HandsOn1"
 
 julia> readdir()
-7-element Vector{String}:
+8-element Vector{String}:
  "1-julia-intro.jl"
  "2-dmrg.jl"
  "3-dmrg-measure.jl"
@@ -198,13 +198,13 @@ julia> res = main();
 ```
 Note that if you don't call `include` again, you won't see the changes you make to the file reflected when you call the `main` function. (For advanced users, note that you can use [`Revise.includet`](https://timholy.github.io/Revise.jl/stable/cookbook/#includet-usage) as an alternative to `include` which would automatically track changes to the file and update `main` without having to call `include` each time.)
 
-**Note:** We highly recommend keeping your Julia session open throughout each day of the tutorial, which will keep your package environment active and ensure you don't incur re-compilation of precompiled code. If at some point you close your Julia session, make sure to enter the directory corresponding to the tutorial day (i.e. `Tutorials/HandsOn1`) and execute:
+**Note:** We highly recommend keeping your Julia session open throughout each hands-on session, which will keep your package environment active and ensure you don't incur re-compilation of precompiled code. If at some point you close your Julia session, make sure to enter the directory corresponding to the hands-on session (i.e. `Tutorials/HandsOn1`) and execute:
 ```julia
 julia> ]
 
 pkg> activate .
 ```
-to activate the environment, which will ensure you have the correct dependencies available to run the tutorial scripts for that day.
+to activate the environment, which will ensure you have the correct dependencies available to run the tutorial scripts for that session.
 
 Also note that if you want to cancel a calculation that is in-progress, you can execute Control-C on your keyboard, which will cancel the calculation and return you to the Julia REPL prompt.
 
@@ -217,7 +217,7 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
   <summary><h2>Tutorial 1: Julia Intro</h2></summary>
   <hr>
 
-Tutorial 1 of day 1 is based on the script [1-julia-intro.jl](./1-julia-intro.jl).
+Tutorial 1 of Hands-On 1 is based on the script [1-julia-intro.jl](./1-julia-intro.jl).
 
 1. Run the script like you did as part of the [installation instructions](#installation-instructions):
 ```julia
@@ -486,7 +486,7 @@ Try printing the `L` and `R` tensors using `@show inds(L)` to verify they have t
 
 Call `scalar` or `[]` on the result to obtain a number instead of an order-0 ITensor.
 
-5. Test your implementation by rerunning DMRG by calling `res = main();` and passing `res` into the provided `animate_dmrg_sz(res)` function to visualize a movie of the measured Sz values across each sweep.
+6. Test your implementation by rerunning DMRG by calling `res = main();` and passing `res` into the provided `animate_dmrg_sz(res)` function to visualize a movie of the measured Sz values across each sweep.
 Try changing the number of sites and sweeps to gain intuition about how the results change.
 
 ```julia
