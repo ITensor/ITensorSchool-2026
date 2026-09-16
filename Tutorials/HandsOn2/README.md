@@ -3,15 +3,10 @@
 ## Table of Contents
   
 - [Tutorial 1: Complete a TEBD Implementation](#tutorial-1)
-- [Tutorial 2: Evolve a Spin Chain with TEBD](#tutorial-2)
+- [Tutorial 2: Time Evolve a Spin Chain](#tutorial-2)
 - [Tutorial 3: Imaginary Time Evolution](#tutorial-3)
 - [Tutorial 4: Finite Temperature](#tutorial-4)
 - [Stretch Goals](#stretch-goals)
-
-<a id="tutorial-1"></a>
-<details>
-  <summary><h2>Tutorial 1: Complete a TEBD Implementation</h2></summary>
-  <hr>
 
 To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn2`). Once you are, activate the project for this hands-on session and instantiate the dependencies:
 ```julia
@@ -39,13 +34,47 @@ julia> ]
 [...]
 ```
 
-See the [ITensorMPS.jl tutorial on TEBD](https://docs.itensor.org/ITensorMPS/stable/tutorials/MPSTimeEvolution.html)
+<a id="tutorial-1"></a>
+<details>
+  <summary><h2>Tutorial 1: Complete a TEBD Implementation</h2></summary>
+
+In the first tutorial, you will complete a TEBD implementation that you will use in the remaining tutorials. Open the file [1-tebd-implementation.jl](./1-tebd-implementation.jl) to begin. 
+
+The [ITensorMPS.jl tutorial on TEBD](https://docs.itensor.org/ITensorMPS/stable/tutorials/MPSTimeEvolution.html) provides additional context for the algorithm we are implementing.
+
+At the top, there is an incomplete `tebd_step` function which performs one local step of the TEBD algorithm. 
+Your task is to complete `tebd_step`.
+
+First, read through the rest of the code to see how `tebd_step` is called from a `tebd` function which loops over it for each bond of an MPS, and the `main` function which sets up a system of `N` spin-1/2 spins. 
+The `main` function calls `make_heisenberg_gates` to obtain a quantum circuit of "Trotter split time evolution" gates which are applied to the MPS to advance by a time step `dt`.
+
+Below are diagrams depicting what `tebd_step` should do:
+
+<p align="center">
+  <img src="resources/images/1-tebd-step.png" alt="Local step of TEBD algorithm" width="800">
+</p>
+
+Take advantage of printing ITensors, adding lines such as
+```
+@show inds(gate_AB)
+```
+to understand the structure of the tensors.
+
+Here are tips for each step.
+
+1. In step 1, the `gate` ITensor will have two of each site index: one unprimed and one primed. This disambiguates these indices so the gate can map the sites back to themselves. Afterward the primes need to be removed from the site indices. To do so, either use the ITensor `apply` function (see docstring / documentation for `apply`) which handles this automatically, or manually use the `noprime` function which removes any primes from an ITensor's indices.
+
+2. Recall that the ITensor `svd` function takes a collection of indices which are the external indices which go onto the `U` factor (generalized "row" indices). To obtain these indices, functions like `uniqueinds` or `commoninds` are very helpful.
+
+3. The `svd` function returns three tensors but to restore the MPS form, we need to return two tensors replacing the original `A` and `B`. Since the outer code already handles technical issues like "MPS orthogonality" there are multiple choices for reconstructing `A` and `B` that will work here.
+
+
 
 </details>
 
 <a id="tutorial-2"></a>
 <details>
-  <summary><h2>Tutorial 2: Evolve a Spin Chain with TEBD</h2></summary>
+  <summary><h2>Tutorial 2: Time Evolve a Spin Chain</h2></summary>
   <hr>
 
 In this tutorial we will use the TEBD code you created to simulate the time evolution 
