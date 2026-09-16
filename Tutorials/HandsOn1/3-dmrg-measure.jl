@@ -6,7 +6,7 @@ using ITensorMPS: ITensorMPS, AbstractObserver, correlation_matrix, inner
 # Use to set the RNG seed for reproducibility
 using StableRNGs: StableRNG
 # Load the Plots package for plotting
-using Plots: Plots, plot
+using Plots: Plots, plot, plot!
 
 include("resources/animate.jl")
 
@@ -63,7 +63,8 @@ A named tuple containing:
 - `energy::Float64`: The optimized ground state energy.
 - `H::MPO`: The Hamiltonian as an MPO.
 - `psi::MPS`: The optimized ground state wavefunction as an MPS.
-- `sz::Vector{Float64}`: Vector of ⟨Sz⟩ measurements.
+- `sz::Vector{Float64}`: Vector of ⟨Sz⟩ measurements from your `expect` function.
+- `sz_reference::Vector{Float64}`: Vector of ⟨Sz⟩ measurements from `ITensorMPS.expect`, for checking.
 - `sz_frames::Vector{Vector{Float64}}`: Vector of ⟨Sz⟩ measurements at each DMRG step.
 - `nsite::Int`: Same as above.
 - `nsweeps::Int`: Same as above.
@@ -124,16 +125,18 @@ function main(;
     # Obtain expected ⟨Sᶻ⟩ from your own `expect` function (top of this file)
     sz = expect(psi, "Sz")
 
-    # Use ITensorMPS.expect to check
-    sz_correct = ITensorMPS.expect(psi,"Sz")
-    error = norm(sz-sz_correct)
-    if error < 1E-6
-        println("Expected ⟨Sᶻ⟩ values agree with ITensorMPS.expect")
+    # Use ITensorMPS.expect as a reference to check your `expect` against
+    sz_reference = ITensorMPS.expect(psi, "Sz")
+    difference = norm(sz - sz_reference)
+    if difference < 1.0e-6
+        if outputlevel > 0
+            @info "Expected ⟨Sᶻ⟩ values agree with ITensorMPS.expect"
+        end
     else
-        println("Expected ⟨Sᶻ⟩ values DO NOT agree with ITensorMPS.expect")
+        @warn "Expected ⟨Sᶻ⟩ values DO NOT agree with ITensorMPS.expect (difference = $difference)"
     end
 
-    res = (; energy, H, psi, sz, sz_frames, nsite, nsweeps, maxdim, cutoff)
+    res = (; energy, H, psi, sz, sz_reference, sz_frames, nsite, nsweeps, maxdim, cutoff)
     if outputlevel > 0
         display(plot_dmrg_sz(res))
     end
@@ -158,13 +161,40 @@ end
 # Plotting and animation functions
 #
 
+"""
+    plot_dmrg_sz(sz::Vector{Float64}, nsite::Int; title = "")
+    plot_dmrg_sz(sz::Vector{Float64}, sz_reference::Vector{Float64}, nsite::Int; title = "")
+    plot_dmrg_sz(res; title = "")
+
+Plot ⟨Szⱼ⟩ on each site j. Given a single vector `sz`, plots just those values (used for
+the animation frames). Given both `sz` and `sz_reference`, plots your `expect` results
+(solid blue line, filled markers) on top of the reference values from `ITensorMPS.expect`
+(dashed green line, open markers) so you can see whether they agree. Given the results `res`
+of `main`, plots the comparison of `res.sz` and `res.sz_reference`.
+"""
 function plot_dmrg_sz(sz::Vector{Float64}, nsite::Int; title = "")
     return plot(
-        sz; xlim = (1, nsite), ylim = (-0.25, 0.25),
+        sz; xlim = (1, nsite), ylim = (-0.5, 0.5),
         xlabel = "Site j", ylabel = "⟨Szⱼ⟩", legend = false, title
     )
 end
-plot_dmrg_sz(res; kwargs...) = plot_dmrg_sz(res.sz, res.nsite; kwargs...)
+
+function plot_dmrg_sz(sz::Vector{Float64}, sz_reference::Vector{Float64}, nsite::Int; title = "")
+    p = plot(
+        1:nsite, sz_reference;
+        label = "reference (ITensorMPS.expect)", color = :green, linestyle = :dash,
+        marker = :circle, markersize = 6, markercolor = :white, markerstrokecolor = :green,
+        xlim = (1, nsite), ylim = (-0.5, 0.5), xlabel = "Site j", ylabel = "⟨Szⱼ⟩", title,
+    )
+    plot!(
+        p, 1:nsite, sz;
+        label = "your expect", color = :blue, linestyle = :solid,
+        marker = :circle, markersize = 4, markercolor = :blue, markerstrokecolor = :blue,
+    )
+    return p
+end
+
+plot_dmrg_sz(res; kwargs...) = plot_dmrg_sz(res.sz, res.sz_reference, res.nsite; kwargs...)
 
 
 function animate_dmrg_sz(res; fps = res.nsite)

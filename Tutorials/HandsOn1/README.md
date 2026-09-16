@@ -436,7 +436,7 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 In this tutorial you will explore measurements of MPS ground states, and use them to visualize a DMRG calculation.
 The expectation value or `expect` function is not fully implemented, and you are asked to finish implementing it.
 
-1. First, run the `main` function provided in the file [3-dmrg-measure.jl](./3-dmrg-measure.jl). DMRG will run and give a correct energy. You will also see a plot of the expected value of Sz on each site. However, these values are all zero which is not correct, because the expectation value function `expect` which intends to compute $\langle \psi | S^z_j | \psi \rangle$ is not fully implemented.
+1. First, run the `main` function provided in the file [3-dmrg-measure.jl](./3-dmrg-measure.jl). DMRG will run and give a correct energy. You will also see a plot of the expected value of Sz on each site. The plot shows the reference values computed by `ITensorMPS.expect` (dashed green line, open circles) together with the values computed by the `expect` function in the script (solid blue line, filled circles). The values from the script are all zero, which is not correct, because the expectation value function `expect` which intends to compute $\langle \psi | S^z_j | \psi \rangle$ is not fully implemented. A warning is also printed to tell you the two sets of values do not agree.
 
 ```julia
 julia> include("3-dmrg-measure.jl")
@@ -456,6 +456,8 @@ Optimized MPS bond dimension: 107
 Energy: -54.85080492005011
 ⟨ψ|ψ⟩: 1.0000000000000104
 ⟨ψ|H|ψ⟩: -54.85080492005088
+┌ Warning: Expected ⟨Sᶻ⟩ values DO NOT agree with ITensorMPS.expect (difference = 0.62842935676511)
+└ @ Main [...]/ITensorSchool-2026/Tutorials/HandsOn1/3-dmrg-measure.jl:136
 ```
 
 <p align="center">
@@ -486,7 +488,7 @@ Try printing the `L` and `R` tensors using `@show inds(L)` to verify they have t
 
 Call `scalar` or `[]` on the result to obtain a number instead of an order-0 ITensor.
 
-6. Test your implementation by rerunning DMRG by calling `res = main();` and passing `res` into the provided `animate_dmrg_sz(res)` function to visualize a movie of the measured Sz values across each sweep.
+6. Test your implementation by rerunning DMRG by calling `res = main();`. If your `expect` is correct, the warning is replaced by a message saying the values agree, and in the plot your blue points sit on top of the green reference circles. Then pass `res` into the provided `animate_dmrg_sz(res)` function to visualize a movie of the measured Sz values across each sweep.
 Try changing the number of sites and sweeps to gain intuition about how the results change.
 
 ```julia
