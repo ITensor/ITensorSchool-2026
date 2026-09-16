@@ -14,13 +14,13 @@
 
 We are going to combine the `NamedGraphs.jl` and `ITensors.jl` packages to build tensor networks of varying topology. 
 
-To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/Day3`). Once you are, activate the project for the day and instantiate the dependencies:
+To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn4`). Once you are, activate the project for this hands-on session and instantiate the dependencies:
 ```julia
 julia> pwd()
-"[...]/ITensorCCQSchool/Tutorials/Day3"
+"[...]/ITensorSchool-2026/Tutorials/HandsOn4"
 
 julia> readdir()
-8-element Vector{String}:
+9-element Vector{String}:
  "1-tensornetworks.jl"
  "2-beliefpropagation.jl"
  "3-clusterexpansion.jl"
@@ -29,14 +29,14 @@ julia> readdir()
 julia> ]
 
 (@v1.13) pkg> activate .
-  Activating project at `[...]/ITensorCCQSchool/Tutorials/Day3`
+  Activating project at `[...]/ITensorSchool-2026/Tutorials/HandsOn4`
 
-(Day3) pkg> instantiate
+(HandsOn4) pkg> instantiate
     Updating registry at `~/.julia/registries/General.toml`
-    Updating `[...]/ITensorCCQSchool/Tutorials/Day3/Project.toml`
-  [86223c79] + Graphs v1.13.1
-  [9136182c] + ITensors v0.9.14
-  [678767b0] + NamedGraphs v0.7.3
+    Updating `[...]/ITensorSchool-2026/Tutorials/HandsOn4/Project.toml`
+  [86223c79] + Graphs v1.15.0
+  [9136182c] + ITensors v0.9.31
+  [678767b0] + NamedGraphs v0.14.0
 [...]
 ```
 
@@ -68,14 +68,15 @@ julia> res = main();
 
 julia> res.g
 NamedGraph{Int64} with 3 vertices:
-3-element NamedGraphs.OrderedDictionaries.OrderedIndices{Int64}:
+3-element Dictionaries.Indices{Int64}:
  1
  2
  3
 
 and 2 edge(s):
-1 => 2
-2 => 3
+2-element Vector{NamedEdge{Int64}}:
+ 1 => 2
+ 2 => 3
 ```
 
 1: Modify the graph construction in `main()` to create a path graph on `L` vertices, where `L` is an integer variable that can be specified as a keyword argument to main. Compare the output to the pre-written constructor `named_path_graph(L::Int)` in `NamedGraphs.jl`. Add in a `periodic` flag to your constructor to add a periodic boundary if the flag is true.
@@ -86,7 +87,7 @@ julia> res = main(; L = 5, periodic = true);
 
 julia> res.g
 NamedGraph{Int64} with 5 vertices:
-5-element NamedGraphs.OrderedDictionaries.OrderedIndices{Int64}:
+5-element Dictionaries.Indices{Int64}:
  1
  2
  3
@@ -94,11 +95,12 @@ NamedGraph{Int64} with 5 vertices:
  5
 
 and 5 edge(s):
-1 => 2
-1 => 5
-2 => 3
-3 => 4
-4 => 5
+5-element Vector{NamedEdge{Int64}}:
+ 1 => 2
+ 1 => 5
+ 2 => 3
+ 3 => 4
+ 4 => 5
 ```
 
 We can build a tensor network as a dictionary of tensors, one for each vertex of the `NamedGraph` `g`. The edges of the graph `g` (which are of the  type `NamedEdge`) dictate which tensors share indices to be contracted over. 
@@ -125,7 +127,7 @@ NDTensors.Dense{Float64, Vector{Float64}}
 This tensor network can be contracted by multiplying all the tensors together. This contraction is pre-computed for you in `main()`
 
 ```julia
-julia> res = main(; n = 3, periodic = false);
+julia> res = main(; L = 3, periodic = false);
 
 julia> res.z
 2.081072371838455
@@ -154,13 +156,13 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 
 In the previous tutorial, we contracted the tensor network exactly by multiplying the tensors together, vertex by vertex. This can only be done efficiently for tree-like networks (those composed of no loops, or a small number of loops) and only when taking careful care over the order of contraction.
 
-In this tutorial we are going to contract tensor networks in an efficient, but approximate manner via belief propagation. The core belief propagation functions are contained in the script [belief_propagation.jl](./beliefpropagationfunctions.jl).
+In this tutorial we are going to contract tensor networks in an efficient, but approximate manner via belief propagation. The core belief propagation functions are contained in the script [belief_propagation.jl](./belief_propagation.jl).
 
 The function `main` in [2-beliefpropagation.jl](./2-beliefpropagation.jl) now builds an $L_{x} \times L_{y}$ square grid tensornetwork representing the partition function of the Ising model in 2D. Inverse temperature is set via the `beta` kwarg and periodic boundaries (in both directions) can be added with the kwarg `periodic`. Returned is the number of iterations BP took to converge (`niters`), and the rescaled free energy density (`phi_bp_tn`)
 
 $$\phi(\beta) = -\beta f(\beta) = \frac{1}{L_{x}L_{y}}\ln(Z(\beta))$$
 
-We can do the following to get the BP computed value for $\phi$ on a 10x1 OBC square grid. This is just a path graph, like in the previous example.
+We can do the following to get the BP computed value for $\phi$ on a 3x1 OBC square grid. This is just a path graph, like in the previous example.
 ```julia
 julia> include("2-beliefpropagation.jl")
 main
@@ -297,7 +299,7 @@ $$Z \approx Z_{BP} \prod_{l}Z_{l}$$
 
 where $Z_{\rm BP}$ is the BP approximation of the partition function and the product is over the smallest loops $l$ in the lattice, with $Z_{l}$ defined as the contraction of the loop of tensors, with bp messages incident to it.
 
-This formula is implemented in `[3-clusterexpansion.jl](./3-clusterexpansion.jl)` at the level of the rescaled free energy $\phi(\beta) = -\beta f(\beta)$. We use the `NamedGraphs.simple_cycles_limited_length` function to enumerate these loops. 
+This formula is implemented in `[3-clusterexpansion.jl](./3-clusterexpansion.jl)` at the level of the rescaled free energy $\phi(\beta) = -\beta f(\beta)$. We use the `simplecycles_limited_length` function from `Graphs.jl` to enumerate these loops. 
 
 For the periodic square lattice, setting $L >= 5$ will give us a first order cluster expanded result for $\phi(\beta)$ directly in the thermodynamic limit. This is due to the homogenity of the tensor network and that there is exactly one loop of size $4$ per vertex when $L >= 5$. The parameters $L_{x} = 5, L_{y} = 5$ and `periodic = true` have all been set for you and `main` returns the bp value for `phi` (`phi_bp_tn`), the corrected value for `phi` (`phi_bp_corrected_tn`) and Onsager's exact result (`phi_exact`) - all in the thermodynamic limit for your choice of $\beta$.
 
@@ -325,7 +327,7 @@ Absolute Err│⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡜⠀⢸⠀⡿⡀⠀⠀⠀�
             ⠀-0.03⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀Beta⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀1.03⠀     
 ```
 
-Using cluster expanded results to improve tensor network contraction is an active research area. Just last week two papers appeared on the arXiv about this (https://arxiv.org/abs/2510.05647 and https://arxiv.org/abs/2510.02290) and we used the expansion written in Eq. (5) of the former - so you are now at the bleeding edge of research in this area.
+Using cluster expanded results to improve tensor network contraction is an active research area. In October 2025 two papers appeared on the arXiv about this (https://arxiv.org/abs/2510.05647 and https://arxiv.org/abs/2510.02290) and we used the expansion written in Eq. (5) of the former - so you are now at the bleeding edge of research in this area.
 
 
 This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
@@ -347,7 +349,7 @@ Study how the error from the BP contraction depends on the geometry of the tenso
 
 You might find it useful to know that you can import various pre-defined constructors for your favourite lattices such as
 ```julia
-julia> using NamedGraphs.NamedGraphGenerators
+julia> using NamedGraphs: named_hexagonal_lattice_graph, named_comb_tree, named_grid
 g1 = named_hexagonal_lattice_graph(4,4; periodic = true)
 g2 = named_comb_tree((4,3))
 g3 = named_grid((4,4,4))

@@ -1,6 +1,6 @@
 using Graphs: add_edge!
 using NamedGraphs: NamedGraph, NamedEdge
-using NamedGraphs.NamedGraphGenerators: named_path_graph
+using NamedGraphs: named_path_graph
 
 include("ising_tensornetwork.jl")
 include("contract_network.jl")
