@@ -1,4 +1,4 @@
-using NamedGraphs.NamedGraphGenerators: named_grid
+using NamedGraphs: named_grid
 using Statistics: mean
 
 # Load the Plots library for plotting results
