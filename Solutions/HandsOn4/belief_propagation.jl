@@ -12,9 +12,9 @@ Tutorial 2:
 
 You are asked to complete the implementation of the belief propagation (BP)
 algorithm in this file. For each numbered step (1), (2), (3) below, fill in the
-missing code. The remaining functions in this file are complete and are used by
-Tutorials 3 and 4, which will only give correct answers once you have finished
-this one.
+missing code.
+
+This is the completed solution.
 """
 
 """
@@ -28,9 +28,9 @@ function updated_message(tn::Dict, g::NamedGraph, messages::Dict, e::NamedEdge)
 
     # (1) Contract the tensor `tn[src(e)]` with the messages living on `incoming_es`
     #     and normalize the result. `contract_network` accepts a vector of tensors.
-    # ...
-
-    return messages[e]
+    local_tensor = tn[src(e)]
+    incoming_messages = [messages[e_in] for e_in in incoming_es]
+    return normalize(contract_network([[local_tensor]; incoming_messages]))
 end
 
 """
@@ -56,9 +56,7 @@ function message_distance(g::NamedGraph, messages::Dict, old_messages::Dict)
     # (2) For each directed edge `e` in `all_edges(g)`, compute 1 - dot(m_new, m_old)^2
     #     where `m_new = messages[e]` and `m_old = old_messages[e]` are both normalized.
     #     Return the mean of these numbers over all directed edges.
-    # ...
-
-    return 0.0
+    return mean([1 - dot(messages[e], old_messages[e])^2 for e in all_edges(g)])
 end
 
 """
@@ -114,9 +112,8 @@ The scalar obtained by contracting the tensor on vertex `v` with all of its inco
 function phi_factor(tn::Dict, g::NamedGraph, messages::Dict, v)
     # (3) Gather the messages on every directed edge pointing into `v`, contract them with
     #     `tn[v]` and return the resulting scalar (use `[]` to extract it from the ITensor).
-    # ...
-
-    return 1.0
+    incoming_messages = [messages[e] for e in boundary_edges(g, [v]; dir = :in)]
+    return contract_network([[tn[v]]; incoming_messages])[]
 end
 
 """
