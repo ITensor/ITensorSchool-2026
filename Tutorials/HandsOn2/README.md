@@ -18,10 +18,10 @@ Hamiltonian using the time evolving block decimation (TEBD) algorithm. See
 the [ITensorMPS.jl tutorial on TEBD](https://docs.itensor.org/ITensorMPS/stable/tutorials/MPSTimeEvolution.html)
 for more background on the algorithm. We will work off of the script [1-tebd.jl](./1-tebd.jl).
 
-To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/Day2`). Once you are, activate the project for the day and instantiate the dependencies:
+To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn2`). Once you are, activate the project for the day and instantiate the dependencies:
 ```julia
 julia> pwd()
-"[...]/ITensorCCQSchool/Tutorials/Day2"
+"[...]/ITensorCCQSchool/Tutorials/HandsOn2"
 
 julia> readdir()
 6-element Vector{String}:
@@ -32,12 +32,12 @@ julia> readdir()
 
 julia> ]
 
-(@v1.12) pkg> activate .
-  Activating project at `[...]/ITensorCCQSchool/Tutorials/Day2`
+(@v1.13) pkg> activate .
+  Activating project at `[...]/ITensorCCQSchool/Tutorials/HandsOn2`
 
-(Day2) pkg> instantiate
+(HandsOn2) pkg> instantiate
     Updating registry at `~/.julia/registries/General.toml`
-    Updating `[...]/ITensorCCQSchool/Tutorials/Day2/Project.toml`
+    Updating `[...]/ITensorCCQSchool/Tutorials/HandsOn2/Project.toml`
   [0d1a4710] + ITensorMPS v0.3.23
   [9136182c] + ITensors v0.9.14
 [...]
