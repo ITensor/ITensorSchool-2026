@@ -1,47 +1,57 @@
 # Hands-On Tutorial 2
 
 ## Table of Contents
-
-- [Tutorial 1: Real Time Evolution](#tutorial-1)
-- [Tutorial 2: Imaginary Time Evolution](#tutorial-2)
-- [Tutorial 3: Finite Temperature](#tutorial-3)
-- [Tutorial 4: Expect](#tutorial-4)
+  
+- [Tutorial 1: Complete a TEBD Implementation](#tutorial-1)
+- [Tutorial 2: Evolve a Spin Chain with TEBD](#tutorial-2)
+- [Tutorial 3: Imaginary Time Evolution](#tutorial-3)
+- [Tutorial 4: Finite Temperature](#tutorial-4)
 - [Stretch Goals](#stretch-goals)
 
 <a id="tutorial-1"></a>
 <details>
-  <summary><h2>Tutorial 1: Real Time Evolution</h2></summary>
+  <summary><h2>Tutorial 1: Complete a TEBD Implementation</h2></summary>
   <hr>
-
-In this tutorial we will simulate the time evolution of several initial states under the 1D spin-1/2 Heisenberg
-Hamiltonian using the time evolving block decimation (TEBD) algorithm. See
-the [ITensorMPS.jl tutorial on TEBD](https://docs.itensor.org/ITensorMPS/stable/tutorials/MPSTimeEvolution.html)
-for more background on the algorithm. We will work off of the script [1-tebd.jl](./1-tebd.jl).
 
 To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn2`). Once you are, activate the project for the day and instantiate the dependencies:
 ```julia
 julia> pwd()
-"[...]/ITensorCCQSchool/Tutorials/HandsOn2"
+"[...]/ITensorSchool-2026/Tutorials/HandsOn2"
 
 julia> readdir()
 6-element Vector{String}:
- "1-tebd.jl"
- "2-imaginary-time.jl"
- "3-metts.jl"
+ "1-tebd-implementation.jl"
+ "2-tebd-spin-chain.jl"
+ "3-imaginary-time.jl"
+ "4-metts.jl"
 [...]
 
 julia> ]
 
 (@v1.13) pkg> activate .
-  Activating project at `[...]/ITensorCCQSchool/Tutorials/HandsOn2`
+  Activating project at `[...]/ITensorSchool-2026/Tutorials/HandsOn2`
 
 (HandsOn2) pkg> instantiate
     Updating registry at `~/.julia/registries/General.toml`
-    Updating `[...]/ITensorCCQSchool/Tutorials/HandsOn2/Project.toml`
-  [0d1a4710] + ITensorMPS v0.3.23
-  [9136182c] + ITensors v0.9.14
+    Updating `[...]/ITensorSchool-2026/Tutorials/HandsOn2/Project.toml`
+  [0d1a4710] + ITensorMPS v0.4.1
+  [9136182c] + ITensors v0.9.31
 [...]
 ```
+
+See the [ITensorMPS.jl tutorial on TEBD](https://docs.itensor.org/ITensorMPS/stable/tutorials/MPSTimeEvolution.html)
+
+</details>
+
+<a id="tutorial-2"></a>
+<details>
+  <summary><h2>Tutorial 2: Evolve a Spin Chain with TEBD</h2></summary>
+  <hr>
+
+In this tutorial we will use the TEBD code you created to simulate the time evolution 
+of several initial states under the 1D spin-1/2 Heisenberg
+Hamiltonian. We will work off of the script [2-tebd-spin-chain.jl](./1-tebd-spin-chain.jl).
+
 
 The initial state constructed in `main` is the ground state of the Hamiltonian with the central spin excited. Running this with `main()` simulates the dynamics up until time `time = 5.0`:
 ```julia
