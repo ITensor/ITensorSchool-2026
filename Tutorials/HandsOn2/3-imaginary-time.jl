@@ -1,14 +1,16 @@
 using ITensorMPS: MPS, MPO, OpSum, dmrg, maxlinkdim, random_mps, siteinds
 # Functions for performing measurements of MPS
 using ITensorMPS: expect, inner
-# Functions for time evolution
-using ITensorMPS: apply, op
+# Functions for building time evolution gates
+using ITensorMPS: op
 using LinearAlgebra: normalize
 # Use to set the RNG seed for reproducibility
 using StableRNGs: StableRNG
 # Load the Plots package for plotting
 using Plots: Plots, plot
 
+# Load the `tebd` function from the TEBD implementation tutorial
+include("1-tebd-implementation.jl")
 include("resources/animate.jl")
 
 function plot_tebd_sz(res; step::Int)
@@ -103,7 +105,7 @@ function main(;
     betas = 0.0:betastep:beta
     print_every = 5
     for current_beta in betas[2:end]
-        psit = normalize(apply(gates, psit; cutoff))
+        psit = normalize(tebd(gates, psit; cutoff))
         energy_t = inner(psit', H, psit)
         sz_t = expect(psit, "Sz")
         push!(szs, sz_t)

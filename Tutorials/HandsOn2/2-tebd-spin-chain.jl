@@ -9,6 +9,8 @@ using StableRNGs: StableRNG
 # Load the Plots package for plotting
 using Plots: Plots, plot
 
+# Load the `tebd` function from the TEBD implementation tutorial
+include("1-tebd-implementation.jl")
 include("resources/animate.jl")
 
 function plot_tebd_sz(res; step::Int)
@@ -114,7 +116,7 @@ function main(;
     times = 0.0:timestep:time
     print_every = 1
     for current_time in times[2:end]
-        psit = normalize(apply(gates, psit; cutoff))
+        psit = normalize(tebd(gates, psit; cutoff))
         energy_t = inner(psit', H, psit)
         sz_t = expect(psit, "Sz")
         push!(szs, sz_t)

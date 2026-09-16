@@ -12,6 +12,8 @@ using Plots: Plots, plot
 
 using Printf: @printf
 
+# Load the `tebd` function from the TEBD implementation tutorial
+include("1-tebd-implementation.jl")
 include("resources/animate.jl")
 
 function plot_tebd_sz(res; step::Int)
@@ -135,7 +137,7 @@ function main(;
 
         # Do the time evolution by applying the gates
         for _ in betas
-            psi = normalize(apply(gates, psi; cutoff))
+            psi = normalize(tebd(gates, psi; cutoff))
         end
 
         # Measure properties after >= Nwarm
