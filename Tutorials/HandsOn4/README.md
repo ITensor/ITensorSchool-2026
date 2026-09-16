@@ -28,7 +28,7 @@ julia> readdir()
 
 julia> ]
 
-(@v1.12) pkg> activate .
+(@v1.13) pkg> activate .
   Activating project at `[...]/ITensorCCQSchool/Tutorials/Day3`
 
 (Day3) pkg> instantiate

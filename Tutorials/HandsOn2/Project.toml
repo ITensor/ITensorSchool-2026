@@ -6,7 +6,7 @@ Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 StableRNGs = "860ef19b-820b-49d6-a774-d7a799459cd3"
 
 [compat]
-ITensorMPS = "0.3.23"
-ITensors = "0.9.14"
+ITensorMPS = "0.4.1"
+ITensors = "0.9.31"
 Plots = "1.41.1"
 StableRNGs = "1.0.3"

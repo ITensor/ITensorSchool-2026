@@ -1,51 +1,61 @@
 # Hands-On Tutorial 2
 
 ## Table of Contents
-
-- [Tutorial 1: Real Time Evolution](#tutorial-1)
-- [Tutorial 2: Imaginary Time Evolution](#tutorial-2)
-- [Tutorial 3: Finite Temperature](#tutorial-3)
-- [Tutorial 4: Expect](#tutorial-4)
+  
+- [Tutorial 1: Complete a TEBD Implementation](#tutorial-1)
+- [Tutorial 2: Evolve a Spin Chain with TEBD](#tutorial-2)
+- [Tutorial 3: Imaginary Time Evolution](#tutorial-3)
+- [Tutorial 4: Finite Temperature](#tutorial-4)
 - [Stretch Goals](#stretch-goals)
 
 <a id="tutorial-1"></a>
 <details>
-  <summary><h2>Tutorial 1: Real Time Evolution</h2></summary>
+  <summary><h2>Tutorial 1: Complete a TEBD Implementation</h2></summary>
   <hr>
 
-In this tutorial we will simulate the time evolution of several initial states under the 1D spin-1/2 Heisenberg
-Hamiltonian using the time evolving block decimation (TEBD) algorithm. See
-the [ITensorMPS.jl tutorial on TEBD](https://docs.itensor.org/ITensorMPS/stable/tutorials/MPSTimeEvolution.html)
-for more background on the algorithm. We will work off of the script [1-tebd.jl](./1-tebd.jl).
-
-To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/Day2`). Once you are, activate the project for the day and instantiate the dependencies:
+To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn2`). Once you are, activate the project for this hands-on session and instantiate the dependencies:
 ```julia
 julia> pwd()
-"[...]/ITensorCCQSchool/Tutorials/Day2"
+"[...]/ITensorSchool-2026/Tutorials/HandsOn2"
 
 julia> readdir()
-6-element Vector{String}:
- "1-tebd.jl"
- "2-imaginary-time.jl"
- "3-metts.jl"
+8-element Vector{String}:
+ "1-tebd-implementation.jl"
+ "2-tebd-spin-chain.jl"
+ "3-imaginary-time.jl"
+ "4-metts.jl"
 [...]
 
 julia> ]
 
-(@v1.12) pkg> activate .
-  Activating project at `[...]/ITensorCCQSchool/Tutorials/Day2`
+(@v1.13) pkg> activate .
+  Activating project at `[...]/ITensorSchool-2026/Tutorials/HandsOn2`
 
-(Day2) pkg> instantiate
+(HandsOn2) pkg> instantiate
     Updating registry at `~/.julia/registries/General.toml`
-    Updating `[...]/ITensorCCQSchool/Tutorials/Day2/Project.toml`
-  [0d1a4710] + ITensorMPS v0.3.23
-  [9136182c] + ITensors v0.9.14
+    Updating `[...]/ITensorSchool-2026/Tutorials/HandsOn2/Project.toml`
+  [0d1a4710] + ITensorMPS v0.4.1
+  [9136182c] + ITensors v0.9.31
 [...]
 ```
 
-The initial state constructed in `main` is the ground state of the Hamiltonian with the central spin excited. Running this with `main()` simulates the dynamics up until time `time = 5.0`:
+See the [ITensorMPS.jl tutorial on TEBD](https://docs.itensor.org/ITensorMPS/stable/tutorials/MPSTimeEvolution.html)
+
+</details>
+
+<a id="tutorial-2"></a>
+<details>
+  <summary><h2>Tutorial 2: Evolve a Spin Chain with TEBD</h2></summary>
+  <hr>
+
+In this tutorial we will use the TEBD code you created to simulate the time evolution 
+of several initial states under the 1D spin-1/2 Heisenberg
+Hamiltonian. We will work off of the script [2-tebd-spin-chain.jl](./2-tebd-spin-chain.jl).
+
+
+The initial state constructed in `main` is the ground state of the Hamiltonian with the central spin excited. Running this with `main()` simulates the dynamics up until time `time = 6.0`:
 ```julia
-julia> include("1-tebd.jl")
+julia> include("2-tebd-spin-chain.jl")
 main
 
 julia> res = main();
@@ -194,7 +204,7 @@ Entanglement│⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡜⠀⠀⠀⠀⠀⠀�
 ```
 Is this what you would expect for a local quench? Why or why not? What happens around time `t ~ 5.0`? Try increasing the time of the simulation to `time = 8.0` to resolve the long-time behavior better. Notice that the simulation time per time step increases as a function of time, why is that the case?
 
-2. We can change the initial state to something different. Let's try a state where all the spins are polarised along the z-axis. This can be done by commenting out the part of the code where the initial state was created by DMRG and then excited (lines 83-91) and substitute them for:
+2. We can change the initial state to something different. Let's try a state where all the spins are polarised along the z-axis. This can be done by commenting out the part of the code where the initial state was created by DMRG and then excited (lines 86-94) and substitute them for:
 ```julia
     psit = MPS(sites, ["Z+" for i in 1:nsite])
 ```
@@ -235,14 +245,14 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 
 </details>
 
-<a id="tutorial-2"></a>
+<a id="tutorial-3"></a>
 <details>
-  <summary><h2>Tutorial 2: Imaginary Time Evolution</h2></summary>
+  <summary><h2>Tutorial 3: Imaginary Time Evolution</h2></summary>
   <hr>
 
 Now we are going to switch from real time to imaginary time evolution. This is incredibly easy with tensor networks, as we can just perform the substitution $dt \rightarrow - {\rm i} d \beta$.
 
-We will be working off the script [2-imaginary-time.jl](./2-imaginary-time.jl) which does this for you and implements the imaginary time dynamics of a random initial state under the Heisenberg Hamiltonian.
+We will be working off the script [3-imaginary-time.jl](./3-imaginary-time.jl) which does this for you and implements the imaginary time dynamics of a random initial state under the Heisenberg Hamiltonian.
 
 
 ```julia
@@ -311,7 +321,7 @@ julia> inner(res.H, res.psit, res.H, res.psit) - inner(res.psit', res.H, res.psi
 0.00020948820113630973
 
 ```
-Edit the `main` function in the file `2-imaginary-time.jl` to calculate the variance of the energy as a function of time in your simulation and have `main` return it as a new output `energy_vars`. As a reference, see how the `energies` are saved and computed, and note that as an optimization you could use the energy that was already computed at each step in the second term of the variance. Once you get that working, rerun the `main` function to compute the energy variance at each imaginary time step and plot them as follows:
+Edit the `main` function in the file `3-imaginary-time.jl` to calculate the variance of the energy as a function of time in your simulation and have `main` return it as a new output `energy_vars`. As a reference, see how the `energies` are saved and computed, and note that as an optimization you could use the energy that was already computed at each step in the second term of the variance. Once you get that working, rerun the `main` function to compute the energy variance at each imaginary time step and plot them as follows:
 ```julia
 julia> plot(res.betas, res.energy_vars; xlabel = "Imaginary Time", ylabel = "Energy Variance", legend = false)
                ┌────────────────────────────────────────┐  
@@ -347,16 +357,16 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 
 </details>
 
-<a id="tutorial-3"></a>
+<a id="tutorial-4"></a>
 <details>
-  <summary><h2>Tutorial 3: Finite Temperature</h2></summary>
+  <summary><h2>Tutorial 4: Finite Temperature</h2></summary>
   <hr>
 
-We are now going to run the METTS (minimally entangled thermal states) algorithm to extract finite temperature properties of the system while remaining in the pure state picture. This is done in the file [3-metts.jl](./3-metts.jl).
+We are now going to run the METTS (minimally entangled thermal states) algorithm to extract finite temperature properties of the system while remaining in the pure state picture. This is done in the file [4-metts.jl](./4-metts.jl).
 
-1. Run the `main` function from `3-metts.jl` to get an estimate of the energy of the 1D Heisenberg chain at finite temperature (by default, `nsite = 10` and `beta = 4.0`):
+1. Run the `main` function from `4-metts.jl` to get an estimate of the energy of the 1D Heisenberg chain at finite temperature (by default, `nsite = 10` and `beta = 4.0`):
 ```julia
-julia> include("3-metts.jl")
+julia> include("4-metts.jl")
 
 julia> res = main();
 Making warmup METTS number 10
@@ -427,7 +437,7 @@ inner(H, psi, H, psi)
 
 Include the updated file and run `main` again to get the mean square energies of each METTS:
 ```julia
-julia> include("3-metts.jl")
+julia> include("4-metts.jl")
 main
 
 julia> res = main(; outputlevel = 0);
@@ -528,34 +538,6 @@ Specific Heat│⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀�
              ⠀-0.0048⠀⠀⠀⠀⠀⠀Beta Squared⠀⠀⠀⠀⠀⠀⠀⠀⠀0.1648⠀
 
 ```
-
-This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
-
-</details>
-
-<a id="tutorial-4"></a>
-<details>
-  <summary><h2>Tutorial 4: Expect</h2></summary>
-  <hr>
-
-In this tutorial, the goal is to write your own `expect` function. See the hints in the file "4-expect.jl".
-
-Use the ["ITensors.jl Under the Hood" slides from today](https://itensor.org/school/04_ITensors.jl_Under_the_Hood.pdf)
-as a reference for how to apply the operator to a site of the MPS.
-
-For debugging your code, you can print the indices of the tensors
-you are contracting to make sure they match up as expected (pay attention to the Index
-ids!), and also print the tensors themselves to see their values. You can use
-`println(t)`, `@show t`, `@show inds(t)`, etc.
-
-Also it may be helpful to output intermediate objects from `main` as part of the
-NamedTuple so you can inspect them in the REPL.
-
-How does your implementation scale with system size? Try constructing other states using
-the MPS constructor (see previous tutorials and slides as a reference) and try computing other
-expectation values.
-
-As an extra challenge, try writing your own `correlation_matrix` function.
 
 This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 

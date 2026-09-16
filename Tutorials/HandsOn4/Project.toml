@@ -7,8 +7,8 @@ QuadGK = "1fd47b50-473d-5c70-9696-f719f8f3bcdc"
 Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
 
 [compat]
-Graphs = "1.13.1"
-ITensors = "0.9.14"
-NamedGraphs = "0.7.3"
+Graphs = "1.8"
+ITensors = "0.9.31"
+NamedGraphs = "0.14.0"
 Plots = "1.41.1"
 QuadGK = "2.11.2"
