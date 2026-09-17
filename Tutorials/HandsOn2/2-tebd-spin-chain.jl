@@ -62,12 +62,12 @@ chain.
 
 # Returns
 A named tuple containing:
-- `energy::Float64`: The final energy after time evolution.
 - `H::MPO`: The Hamiltonian as an MPO.
-- `psi::MPS`: The final wavefunction after time evolution as an MPS.
+- `psit::MPS`: The final wavefunction after time evolution as an MPS.
 - `times::Vector{Float64}`: Vector of time points at which measurements were taken.
 - `szs::Vector{Vector{Float64}}`: Vector of ⟨Sz⟩ measurements at each time point.
-- `energies::Vector{Float64}`: Vector of energy measurements at each time point.
+- `energies::Vector{ComplexF64}`: Vector of energy measurements at each time point.
+- `entanglements::Vector{Float64}`: Vector of half chain entanglement entropies at each time point.
 - `nsite::Int`: Same as above.
 - `time::Float64`: Same as above.
 - `timestep::Float64`: Same as above.
@@ -98,6 +98,10 @@ function main(;
     if outputlevel > 0
         println("Constructing the starting state for time evolution")
     end
+    # Site whose ⟨Szⱼ⟩ is reported while the simulation runs
+    j = nsite ÷ 2
+
+    # --- Initial state ---
     # Run DMRG to get a starting state for time evolution
     psi0 = random_mps(sites; linkdims = 10)
     _, psi = dmrg(
@@ -105,8 +109,8 @@ function main(;
         cutoff = [1.0e-10], outputlevel = min(outputlevel, 1)
     )
     # Make the starting state by applying `S+` to the center of the chain
-    j = nsite ÷ 2
     psit = normalize(apply(op("S+", sites[j]), psi))
+    # --- End initial state ---
 
     # Make gates (1, 2), (2, 3), (3, 4), ...
     gates = map(1:(nsite - 1)) do j
@@ -149,7 +153,7 @@ function main(;
     end
 
     res = (;
-        H, psi, times, szs, energies, entanglements, nsite, time, timestep, cutoff,
+        H, psit, times, szs, energies, entanglements, nsite, time, timestep, cutoff,
     )
     if outputlevel > 1
         animate_tebd_sz(res)
