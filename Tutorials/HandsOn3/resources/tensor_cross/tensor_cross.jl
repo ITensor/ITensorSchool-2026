@@ -71,7 +71,7 @@ function tensor_cross(
     f::Function;
     nsweep = 1,
     outputlevel = 0,
-    initial_pivot = [rand(1:dim(sj)) for sj in s],
+    initial_pivot = [rand(1:dim(sj)) for sj in sites],
     kwargs...,
 )
 

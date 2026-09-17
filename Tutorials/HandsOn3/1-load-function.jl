@@ -1,32 +1,63 @@
 using ITensorMPS: siteinds, maxlinkdim
+using Plots: plot
 
 include("resources/tensor_cross/tensor_cross.jl")
-include("resources/binary_fractions.jl")
 include("resources/integrate.jl")
+include("resources/qtt_utils.jl")
 
-function main()
-  n = 32
-  c = 1E-5 # Good values to take are between 1E-4 to 1E-9
+"""
+    extract_qtt_values(M::MPS, n::Integer)
 
-  # Unnormalized Cauchy distribution centered at 0.5
-  f(x) = c/((x-0.5)^2 + c^2)
+Extract N=2^n values of a function encoded as an
+MPS `M` in the QTT format.
+Returns a vector of N=2^n values.
+"""
+function extract_function_values(M::MPS, n::Integer)
+    Npoints = 2^n
+    sites = siteinds(M)
+    L = length(M)
+    if n > L-1
+        error("MPS has L=$L indices, maximum n is $(L-1)")
+    end
+    R = ITensor(1.)
+    for j=reverse(n+1:L)
+        R *= M[j]*ITensor([1,0],sites[j])
+    end
+    T = prod([M[i] for i=1:n])*R
+    A = Array(T,reverse(sites[1:n])...)
+    vals = reshape(A,2^n)
+    return vals
+end
 
-  @printf("\nc = %.3E\n\n",c)
+function main(;
+              n = 32,          # number of bits used to encode function
+              a = 100,         # frequency you can adjust
+              W = 1E-2         # width of peak
+              log_npoints = 10 # number of grid points for plotting
+             )
 
-  println("Performing cross interpolation:")
-  M,info = tensor_cross(siteinds("Qubit",n),(xs...)->f(b2c(xs...));
-                             nsweep=5, initial_pivot=c2b(1/2,n), cutoff=1E-10, outputlevel=1)
+  # Function to be loaded
+  f(x) = exp(-(x-0.5)^2/W)*cos(a*x)
+  println("Loading function: f(x) = exp(-(x-0.5)^2/$W)*cos($a*x)")
+  @printf("W = %.3E\n",W)
+  @printf("a = %.3E\n",a)
+
+  println("Performing tensor cross interpolation:")
+  M,info = tensor_cross(siteinds("Qubit",n),
+                        (bits...)->f(b2c(bits...));
+                         nsweep=5, 
+                         cutoff=1E-10, 
+                         outputlevel=1)
   χ = maxlinkdim(M)
   println("Max rank χ=$χ")
 
-  I = @timed integrate(M)
-  println("\nIntegration took $(I.time) seconds")
-
-  println()
-  @printf("π = %.12f\n",π)
-  @printf("I = %.12f\n",I.value)
-  @printf("err = %.4E\n",abs(π-I.value))
+  vals = extract_function_values(M,log_npoints)
+  display(plot_grid_function(vals))
 
   res = (;)
   return res
+end
+
+function plot_grid_function(vals)
+  return plot(vals; marker=:circle, markersize=2, markercolor=:blue, markerstrokecolor=:blue)
 end
