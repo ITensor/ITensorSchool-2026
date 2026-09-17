@@ -14,18 +14,6 @@ using Printf: @printf
 
 # Load the `tebd` function from the TEBD implementation tutorial
 include("1-tebd-implementation.jl")
-include("resources/animate.jl")
-
-function plot_tebd_sz(res; step::Int)
-    return plot(
-        res.szs[step]; xlim = (1, res.nsite), ylim = (-0.5, 0.5), xlabel = "Site j",
-        ylabel = "⟨Szⱼ(t=$(res.times[step]))⟩", legend = false
-    )
-end
-
-function animate_tebd_sz(res; fps = res.nsite)
-    return animate(i -> plot_tebd_sz(res; step = i); nframes = length(res.szs), fps)
-end
 
 """
     mean_and_sem(v::Vector)

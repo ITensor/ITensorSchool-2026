@@ -13,14 +13,27 @@ using Plots: Plots, plot
 include("1-tebd-implementation.jl")
 include("resources/animate.jl")
 
-function plot_tebd_sz(res; step::Int)
+"""
+    plot_tebd_sz(res::NamedTuple; step::Int)
+
+Plot ⟨Szⱼ⟩ on each site j at time step `step`. `res` is expected to be a `NamedTuple` with
+fields `szs`, `times`, and `nsite`, such as the results of `main`.
+"""
+function plot_tebd_sz(res::NamedTuple; step::Int)
+    (; szs, times, nsite) = res
     return plot(
-        res.szs[step]; xlim = (1, res.nsite), ylim = (-0.5, 0.5), xlabel = "Site j",
-        ylabel = "⟨Szⱼ(t=$(res.times[step]))⟩", legend = false
+        szs[step]; xlim = (1, nsite), ylim = (-0.5, 0.5), xlabel = "Site j",
+        ylabel = "⟨Szⱼ(t=$(times[step]))⟩", legend = false
     )
 end
 
-function animate_tebd_sz(res; fps = res.nsite)
+"""
+    animate_tebd_sz(res::NamedTuple; fps = res.nsite)
+
+Animate `plot_tebd_sz` over all time steps. `res` is expected to be a `NamedTuple` with the
+fields `plot_tebd_sz` uses, such as the results of `main`.
+"""
+function animate_tebd_sz(res::NamedTuple; fps = res.nsite)
     return animate(i -> plot_tebd_sz(res; step = i); nframes = length(res.szs), fps)
 end
 

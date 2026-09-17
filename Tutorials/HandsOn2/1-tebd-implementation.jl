@@ -135,30 +135,26 @@ end
 # Plotting functions
 
 """
-    plot_szs(sz::Vector{Float64}, sz_reference::Vector{Float64}; title = "")
-    plot_szs(res; step = length(res.times))
+    plot_szs(res::NamedTuple; step::Int = length(res.times))
 
-Plot ⟨Szⱼ⟩ on each site j from your `tebd` implementation (solid blue line,
-filled markers) on top of the reference calculation (dashed green line,
-open markers). Given the results `res` of `main`, plots the values at time
-step `step` (by default the final time).
+Plot ⟨Szⱼ⟩ on each site j at time step `step` (by default the final time) from your `tebd`
+implementation (solid blue line, filled markers) on top of the reference calculation (dashed
+green line, open markers). `res` is expected to be a `NamedTuple` with fields `times`, `szs`,
+`szs_reference`, and `N`, such as the results of `main`.
 """
-function plot_szs(sz::Vector{Float64}, sz_reference::Vector{Float64}; title = "")
-    nsite = length(sz)
+function plot_szs(res::NamedTuple; step::Int = length(res.times))
+    (; times, szs, szs_reference, N) = res
     p = plot(
-        1:nsite, sz_reference;
+        1:N, szs_reference[step];
         label = "correct reference", color = :green, linestyle = :dash,
         marker = :circle, markersize = 6, markercolor = :white, markerstrokecolor = :green,
-        xlim = (1, nsite), ylim = (-0.5, 0.5), xlabel = "Site j", ylabel = "⟨Szⱼ⟩", title,
+        xlim = (1, N), ylim = (-0.5, 0.5), xlabel = "Site j", ylabel = "⟨Szⱼ⟩",
+        title = "t = $(times[step])",
     )
     plot!(
-        p, 1:nsite, sz;
+        p, 1:N, szs[step];
         label = "your tebd", color = :blue, linestyle = :solid,
         marker = :circle, markersize = 4, markercolor = :blue, markerstrokecolor = :blue,
     )
     return p
-end
-
-function plot_szs(res; step::Int = length(res.times))
-    return plot_szs(res.szs[step], res.szs_reference[step]; title = "t = $(res.times[step])")
 end
