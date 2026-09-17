@@ -233,7 +233,7 @@ Entanglement│⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡜⠀⠀⠀⠀⠀⠀�
 ```
 Is this what you would expect for a local quench? Why or why not? What happens around time `t ~ 5.0`? Try increasing the time of the simulation to `time = 8.0` to resolve the long-time behavior better. Notice that the simulation time per time step increases as a function of time, why is that the case?
 
-2. We can change the initial state to something different. Let's try a state where all the spins are polarised along the z-axis. This can be done by commenting out the part of the code where the initial state was created by DMRG and then excited (lines 86-94) and substitute them for:
+2. We can change the initial state to something different. Let's try a state where all the spins are polarised along the z-axis. This can be done by commenting out the code between the `# --- Initial state ---` and `# --- End initial state ---` comments in `main`, where the initial state is created by DMRG and then excited, and substituting it for:
 ```julia
     psit = MPS(sites, ["Z+" for i in 1:nsite])
 ```
