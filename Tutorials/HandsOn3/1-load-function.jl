@@ -32,7 +32,7 @@ end
 function main(;
               n = 32,          # number of bits used to encode function
               a = 100,         # frequency you can adjust
-              W = 1E-2         # width of peak
+              W = 1E-2,        # width of peak
               log_npoints = 10 # number of grid points for plotting
              )
 
@@ -43,11 +43,16 @@ function main(;
   @printf("a = %.3E\n",a)
 
   println("Performing tensor cross interpolation:")
-  M,info = tensor_cross(siteinds("Qubit",n),
+  M, info = tensor_cross(siteinds("Qubit",n),
                         (bits...)->f(b2c(bits...));
                          nsweep=5, 
                          cutoff=1E-10, 
                          outputlevel=1)
+
+  println()
+  println("Interpolated function onto 2^$n = $(2^n) virtual grid points")
+  println("Tensor cross performed $(info.function_calls) calls to the function")
+
   χ = maxlinkdim(M)
   println("Max rank χ=$χ")
 
