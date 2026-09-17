@@ -12,23 +12,35 @@ using Plots: Plots, @layout, plot, plot!, quiver
 
 include("resources/animate.jl")
 
-function plot_spins(res, i::Int = length(res.szs))
-    points = vec(reverse.(Tuple.(CartesianIndices((res.ny, res.nx)))))
+"""
+    plot_spins(res::NamedTuple, i::Int = length(res.szs))
+
+Plot the magnetization (⟨Sx⟩, ⟨Sz⟩) on each site as arrows, above the transverse field
+profile h(x), after DMRG step `i` (by default the final step). `res` is expected to be a
+`NamedTuple` with fields `nx`, `ny`, `sxs`, `szs`, and `fields`, such as the results of `main`.
+"""
+function plot_spins(res::NamedTuple, i::Int = length(res.szs))
+    (; nx, ny, sxs, szs, fields) = res
+    points = vec(reverse.(Tuple.(CartesianIndices((ny, nx)))))
     xs = first.(points)
     ys = last.(points)
-    sxs = vec(res.sxs[i])
-    szs = vec(res.szs[i])
-    quiver_data = (sxs, szs)
-    xlims = (0.2, res.nx + 0.4)
-    ylims = (0.2, res.ny + 0.4)
+    quiver_data = (vec(sxs[i]), vec(szs[i]))
+    xlims = (0.2, nx + 0.4)
+    ylims = (0.2, ny + 0.4)
     q_plt = quiver(xs, ys, quiver = quiver_data; title = "Magnetization", color = :blue, arrow = :closed, xlims, ylims)
-    h_plt = plot(1:res.nx, res.fields; color = :red, label = "h(x)")
+    h_plt = plot(1:nx, fields; color = :red, label = "h(x)")
     layout = @layout [a{0.8h}; b{0.2h}]
     plt = plot(q_plt, h_plt; layout)
     return plt
 end
 
-function animate_spins(res; fps = res.nsite)
+"""
+    animate_spins(res::NamedTuple; fps = res.nsite)
+
+Animate `plot_spins` after each step of DMRG. `res` is expected to be a `NamedTuple` with
+the fields `plot_spins` uses plus `nsite`, such as the results of `main`.
+"""
+function animate_spins(res::NamedTuple; fps = res.nsite)
     return animate(i -> plot_spins(res, i); nframes = length(res.szs), fps)
 end
 
