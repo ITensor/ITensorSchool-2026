@@ -14,6 +14,8 @@ include("resources/reference_tebd.jl")
 
 function tebd_step(gate::ITensor, A::ITensor, B::ITensor; truncation_keyword_args...)
 
+    @warn "`tebd_step` is not implemented yet, so the state will not evolve. Fill in the steps below." maxlog = 1
+
     # (1)
     # Add code to apply the gate to the portion of the MPS
     # consisting of tensors A and B
@@ -123,9 +125,15 @@ function main(; N=20,
 
     res = (; times=collect(time_range), szs, szs_reference, N, dt, ttotal, cutoff, maxdim)
 
+    max_diff = maximum(maximum(abs, sz - sz_ref) for (sz, sz_ref) in zip(szs, szs_reference))
+    if max_diff < 1.0e-6
+        if outputlevel > 0
+            @info "Your ⟨Szⱼ⟩ values agree with the reference (maximum difference = $max_diff)"
+        end
+    else
+        @warn "Your ⟨Szⱼ⟩ values DO NOT agree with the reference (maximum difference = $max_diff)"
+    end
     if outputlevel > 0
-        max_diff = maximum(maximum(abs, sz - sz_ref) for (sz, sz_ref) in zip(szs, szs_reference))
-        println("\nMaximum difference between your ⟨Szⱼ⟩ and the reference: $max_diff")
         # Plot results at the final time
         display(plot_szs(res))
     end
