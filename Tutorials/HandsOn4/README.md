@@ -263,8 +263,6 @@ They don't agree. Why? Pick a finite value of $\beta$ between $0$ and $1$ and co
 Plot the absolute error between the BP approximated $\phi$ and the exact $\phi$ as a function of $L_{x}$ on a log scale. What's the scaling? Why? The `Plots.jl` package is loaded by the script, so you can do something like
 
 ```julia
-julia> Plots.gr(); # Enable the GR backend to plot in a window
-
 julia> plot(Lxs, bp_abs_errs; yscale = :log10, xlabel = "System size Lx", ylabel = "abs error")
 ```
 and you should see something like the following (here $\beta = 0.2$).
