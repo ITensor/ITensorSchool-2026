@@ -56,15 +56,55 @@ end
 
 
 """
-Perform the tensor cross interpolation (TCI) / TT-cross algorithm
-on the function `f`, returning an MPS.
+    tensor_cross(sites::Vector{<:Index}, f::Function; kwargs...)
 
-Optional keyword arguments:
-* `nsweep` - number of sweeps to perform
-* `initial_pivot` - initial pivot to use, ideally near an extremum of f
-* `cutoff` - truncate the rank of the MPS so that the estimated max difference
-             from the true function remains below this value
-* `maxdim` - keep the rank below this value
+Perform the tensor cross interpolation (TCI) / TT-cross algorithm on the function `f`,
+returning an MPS approximating `f` together with information about the interpolation.
+
+The function is sampled only at the points needed to build the interpolation, so the
+number of evaluations of `f` is typically far smaller than the total number of grid points
+`prod(dim.(sites))`. Each distinct set of arguments is evaluated at most once (values are
+cached).
+
+# Arguments
+- `sites::Vector{<:Index}`: Array or container of `Index` objects for each bit encoding `f`. 
+  These become the site indices of the returned MPS.
+- `f::Function`: The function to interpolate. It is called as `f(i₁, i₂, ..., iₙ)` with
+  `n = length(sites)` integer arguments, where `iⱼ` ranges over `1:dim(sites[j])`, and
+  must return a number (real or complex).
+
+# Keywords
+- `nsweep::Int = 1`: Number of back-and-forth sweeps over the bonds of the MPS.
+- `outputlevel::Int = 0`: Controls how much information is printed. `1` prints the
+  maximum interpolation error after each sweep and `2` additionally prints the rank
+  and truncation error at each bond.
+- `initial_pivot::Vector{Int}`: Index values `[i₁, ..., iₙ]`, one per site, of the point
+  used to start the interpolation. Ideally this is near an extremum of `f`, and `f` must be
+  nonzero there. Defaults to a random point.
+- `cutoff::Real = 0.0`: Truncate the rank of each bond so that the estimated maximum
+  (infinity norm) difference from the true function values remains below this value.
+- `maxdim::Int = typemax(Int)`: Maximum rank (bond dimension) to keep at each bond.
+- `mindim::Int = 1`: Minimum rank to keep at each bond.
+
+# Returns
+A tuple `(M, info)` where:
+- `M::MPS`: An MPS with site indices `sites` such that contracting `M` with the index
+  values `(i₁, ..., iₙ)` (for example by setting each site index to a `onehot` vector)
+  approximates `f(i₁, ..., iₙ)`.
+- `info::NamedTuple`: Information about the interpolation with the fields
+  - `pivots::Vector{Vector{Vector{Int}}}`: For each bond `b` between sites `b` and `b+1`,
+    a vector with one entry per value of that bond index, each entry giving the settings
+    of the site indices on one side of the bond (the sites `b+1, ..., n` after a completed
+    sweep) at the pivot point selected for that value.
+  - `function_calls::Int`: The number of distinct points at which `f` was evaluated.
+
+  If `f` returns real values the following fields are also included, giving the extreme
+  values of `f` found among the points sampled during the interpolation (so they are
+  estimates of the true extrema of `f`):
+  - `max_value`, `max_inds::Vector{Int}`: The largest value found and the index values
+    `[i₁, ..., iₙ]` at which it occurred.
+  - `min_value`, `min_inds::Vector{Int}`: The smallest value found and the index values
+    at which it occurred.
 """
 function tensor_cross(
     sites::Vector{<:Index},
