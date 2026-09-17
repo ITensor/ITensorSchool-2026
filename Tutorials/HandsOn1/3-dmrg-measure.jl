@@ -162,24 +162,15 @@ end
 #
 
 """
-    plot_dmrg_sz(sz::Vector{Float64}, nsite::Int; title = "")
-    plot_dmrg_sz(sz::Vector{Float64}, sz_reference::Vector{Float64}, nsite::Int; title = "")
-    plot_dmrg_sz(res; title = "")
+    plot_dmrg_sz(res::NamedTuple; title = "")
 
-Plot ⟨Szⱼ⟩ on each site j. Given a single vector `sz`, plots just those values (used for
-the animation frames). Given both `sz` and `sz_reference`, plots your `expect` results
-(solid blue line, filled markers) on top of the reference values from `ITensorMPS.expect`
-(dashed green line, open markers) so you can see whether they agree. Given the results `res`
-of `main`, plots the comparison of `res.sz` and `res.sz_reference`.
+Plot ⟨Szⱼ⟩ on each site j from your `expect` function (solid blue line, filled markers) on
+top of the reference values from `ITensorMPS.expect` (dashed green line, open markers) so you
+can see whether they agree. `res` is expected to be a `NamedTuple` with fields `sz`,
+`sz_reference`, and `nsite`, such as the results of `main`.
 """
-function plot_dmrg_sz(sz::Vector{Float64}, nsite::Int; title = "")
-    return plot(
-        sz; xlim = (1, nsite), ylim = (-0.5, 0.5),
-        xlabel = "Site j", ylabel = "⟨Szⱼ⟩", legend = false, title
-    )
-end
-
-function plot_dmrg_sz(sz::Vector{Float64}, sz_reference::Vector{Float64}, nsite::Int; title = "")
+function plot_dmrg_sz(res::NamedTuple; title = "")
+    (; sz, sz_reference, nsite) = res
     p = plot(
         1:nsite, sz_reference;
         label = "reference (ITensorMPS.expect)", color = :green, linestyle = :dash,
@@ -194,12 +185,20 @@ function plot_dmrg_sz(sz::Vector{Float64}, sz_reference::Vector{Float64}, nsite:
     return p
 end
 
-plot_dmrg_sz(res; kwargs...) = plot_dmrg_sz(res.sz, res.sz_reference, res.nsite; kwargs...)
+"""
+    animate_dmrg_sz(res::NamedTuple; fps = res.nsite)
 
-
-function animate_dmrg_sz(res; fps = res.nsite)
-    return animate(; nframes = length(res.sz_frames), fps) do i
-        return plot_dmrg_sz(res.sz_frames[i], res.nsite; title = "Sweep = $(i ÷ (2 * res.nsite) + 1)")
+Animate ⟨Szⱼ⟩ on each site j after each step of DMRG. `res` is expected to be a `NamedTuple`
+with fields `sz_frames` and `nsite`, such as the results of `main`.
+"""
+function animate_dmrg_sz(res::NamedTuple; fps = res.nsite)
+    (; sz_frames, nsite) = res
+    return animate(; nframes = length(sz_frames), fps) do i
+        return plot(
+            sz_frames[i]; xlim = (1, nsite), ylim = (-0.5, 0.5),
+            xlabel = "Site j", ylabel = "⟨Szⱼ⟩", legend = false,
+            title = "Sweep = $(i ÷ (2 * nsite) + 1)",
+        )
     end
 end
 
