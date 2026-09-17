@@ -162,44 +162,39 @@ end
 #
 
 """
-    plot_dmrg_sz(sz::Vector{Float64}, nsite::Int; title = "")
-    plot_dmrg_sz(sz::Vector{Float64}, sz_reference::Vector{Float64}, nsite::Int; title = "")
     plot_dmrg_sz(res; title = "")
 
-Plot ⟨Szⱼ⟩ on each site j. Given a single vector `sz`, plots just those values (used for
-the animation frames). Given both `sz` and `sz_reference`, plots your `expect` results
+Given the results `res` of `main`, plot ⟨Szⱼ⟩ on each site j from your `expect` function
 (solid blue line, filled markers) on top of the reference values from `ITensorMPS.expect`
-(dashed green line, open markers) so you can see whether they agree. Given the results `res`
-of `main`, plots the comparison of `res.sz` and `res.sz_reference`.
+(dashed green line, open markers) so you can see whether they agree.
 """
-function plot_dmrg_sz(sz::Vector{Float64}, nsite::Int; title = "")
-    return plot(
-        sz; xlim = (1, nsite), ylim = (-0.5, 0.5),
-        xlabel = "Site j", ylabel = "⟨Szⱼ⟩", legend = false, title
-    )
-end
-
-function plot_dmrg_sz(sz::Vector{Float64}, sz_reference::Vector{Float64}, nsite::Int; title = "")
+function plot_dmrg_sz(res; title = "")
     p = plot(
-        1:nsite, sz_reference;
+        1:res.nsite, res.sz_reference;
         label = "reference (ITensorMPS.expect)", color = :green, linestyle = :dash,
         marker = :circle, markersize = 6, markercolor = :white, markerstrokecolor = :green,
-        xlim = (1, nsite), ylim = (-0.5, 0.5), xlabel = "Site j", ylabel = "⟨Szⱼ⟩", title,
+        xlim = (1, res.nsite), ylim = (-0.5, 0.5), xlabel = "Site j", ylabel = "⟨Szⱼ⟩", title,
     )
     plot!(
-        p, 1:nsite, sz;
+        p, 1:res.nsite, res.sz;
         label = "your expect", color = :blue, linestyle = :solid,
         marker = :circle, markersize = 4, markercolor = :blue, markerstrokecolor = :blue,
     )
     return p
 end
 
-plot_dmrg_sz(res; kwargs...) = plot_dmrg_sz(res.sz, res.sz_reference, res.nsite; kwargs...)
+"""
+    animate_dmrg_sz(res; fps = res.nsite)
 
-
+Given the results `res` of `main`, animate ⟨Szⱼ⟩ on each site j after each step of DMRG.
+"""
 function animate_dmrg_sz(res; fps = res.nsite)
     return animate(; nframes = length(res.sz_frames), fps) do i
-        return plot_dmrg_sz(res.sz_frames[i], res.nsite; title = "Sweep = $(i ÷ (2 * res.nsite) + 1)")
+        return plot(
+            res.sz_frames[i]; xlim = (1, res.nsite), ylim = (-0.5, 0.5),
+            xlabel = "Site j", ylabel = "⟨Szⱼ⟩", legend = false,
+            title = "Sweep = $(i ÷ (2 * res.nsite) + 1)",
+        )
     end
 end
 
