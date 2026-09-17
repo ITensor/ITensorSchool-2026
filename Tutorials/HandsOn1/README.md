@@ -548,9 +548,6 @@ julia> res.szs[end]
 
 3. Plot the results by calling `plot_spins(res)` or see an animation of the entire calculation by calling `animate_spins(res)`.
 ```julia
-
-julia> Plots.gr(); # Enable the GR backend to plot in a window
-
 julia> plot_spins(res)
 [...]
 
@@ -598,7 +595,6 @@ In the plot of ⟨Sz⟩ shown after the calculation runs, what do you notice abo
 ```julia
 julia> plot_dmrg_sz(res)
 ```
-and you can enable plotting to the REPL with `Plots.unicodeplots()` or to a window with `Plots.gr()`.
 
 3. Now we will attempt to 'quench' one of the emergent S=1/2 edge states by placing an actual S=1/2 spin at the left edge. The idea is that the Heisenberg coupling between this spin and the edge state will form a singlet and quench any non-zero magnetization at that edge.
 
