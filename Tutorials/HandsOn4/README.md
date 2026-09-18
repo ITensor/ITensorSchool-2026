@@ -411,6 +411,16 @@ where the numerator is the same network with the operator inserted at vertex $v$
 
 The state we will use is the AKLT (valence bond solid) state, provided in [aklt_tensornetwork.jl](./aklt_tensornetwork.jl). Every edge of the graph carries a singlet of two spin-1/2s, and at a vertex of degree $z$ those $z$ spin-1/2s are projected onto their maximal total spin $S = z/2$. On a ring every vertex has $z = 2$, so this is the spin-1 AKLT chain. On a square lattice $z = 4$ and it is the spin-2 AKLT state.
 
+The AKLT state is not just a convenient tensor network, it is the exact ground state of a physical Hamiltonian. Because each bond of the state carries a single shared singlet, the two spins on any bond can never combine into their maximum total spin, so the state is annihilated by the projector onto that maximum. The parent Hamiltonian is the sum of those projectors,
+
+$$H = \sum_{\langle ij \rangle} P^{(ij)}_{2S},$$
+
+which is a sum of positive terms, so any state it annihilates is a ground state with energy exactly zero. For the spin-1 chain the projector onto total spin 2 can be written as a polynomial in $\mathbf{S}_{i} \cdot \mathbf{S}_{j}$,
+
+$$P_{2} = \frac{1}{3} + \frac{1}{2}\mathbf{S}_{i} \cdot \mathbf{S}_{j} + \frac{1}{6}\left(\mathbf{S}_{i} \cdot \mathbf{S}_{j}\right)^{2},$$
+
+which is the historical reason the AKLT model is written as a Heisenberg chain with a biquadratic term. Affleck, Kennedy, Lieb and Tasaki introduced it in 1987 to give a rigorous example of the Haldane gap, and its spin-1/2 edge states are the standard first example of a symmetry protected topological phase.
+
 ```julia
 julia> include("aklt_tensornetwork.jl")
 operator_tensor
@@ -439,7 +449,9 @@ For the spin-1 AKLT chain this is known exactly in the thermodynamic limit, $\la
 
 Compare your belief propagation answer on the ring to that exact value, and also to exact contraction of the finite ring using `contract_network`. You should find that belief propagation gives $-4/3$ for *every* ring size, while exact contraction of the finite ring only approaches it as the ring grows. This is the same effect you saw for the periodic Ising chain in Tutorial 3: belief propagation on a ring is working directly in the thermodynamic limit.
 
-Finally, move to a periodic square lattice, where the state becomes the spin-2 AKLT state and belief propagation is genuinely approximate. How large is the discrepancy against exact contraction now, and how does it compare to the Ising errors you measured in Tutorial 3?
+A sharper check is to evaluate the parent Hamiltonian itself, which must give exactly zero. You already have $\langle \mathbf{S}_{v} \cdot \mathbf{S}_{w} \rangle$; squaring the sum of three terms above gives nine terms for $\langle (\mathbf{S}_{v} \cdot \mathbf{S}_{w})^{2} \rangle$, each still a product of one operator on $v$ and one on $w$, since $(A \otimes B)(A' \otimes B') = AA' \otimes BB'$. Combine them into $P_{2}$ and confirm that the bond energy vanishes to machine precision. Unlike the correlations, this is a statement about the state alone, so it holds at any ring size.
+
+Finally, move to a periodic square lattice, where the state becomes the spin-2 AKLT state and belief propagation is genuinely approximate. How large is the discrepancy against exact contraction now, and how does it compare to the Ising errors you measured in Tutorial 3? Note that the $P_{2}$ formula above is the spin-1 projector, so it no longer applies there; the parent Hamiltonian on the square lattice projects onto total spin 4 instead.
 
 This is the end of the tutorials, click [here](#table-of-contents) to return to the table of contents.
 
