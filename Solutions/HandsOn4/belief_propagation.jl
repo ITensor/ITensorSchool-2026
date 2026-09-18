@@ -5,7 +5,7 @@ using LinearAlgebra: dot, normalize
 using Statistics: mean
 using ITensors: ITensor, Index, inds, onehot
 
-include("contract_network.jl")
+include("../../Tutorials/HandsOn4/contract_network.jl")
 
 """
 Tutorial 2:

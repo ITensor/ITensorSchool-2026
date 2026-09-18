@@ -2,8 +2,8 @@ using Graphs: add_edge!
 using NamedGraphs: NamedGraph, NamedEdge
 using NamedGraphs: named_path_graph
 
-include("ising_tensornetwork.jl")
-include("contract_network.jl")
+include("../../Tutorials/HandsOn4/ising_tensornetwork.jl")
+include("../../Tutorials/HandsOn4/contract_network.jl")
 
 """
     main(; kwargs...)
