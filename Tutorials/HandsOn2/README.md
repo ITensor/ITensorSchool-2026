@@ -82,6 +82,8 @@ Hamiltonian. We will work off of the script [2-tebd-spin-chain.jl](./2-tebd-spin
 
 
 The initial state constructed in `main` is the ground state of the Hamiltonian with the central spin excited. Running this with `main()` simulates the dynamics up until time `time = 6.0`:
+
+Output quoted in this README that depends on random numbers, such as the sweep energies below or the sampled states in the later tutorials, comes from one particular run. Yours will differ. Pass a seeded generator, for example `main(; rng = StableRNG(1234))`, when you want the same numbers twice.
 ```julia
 julia> include("2-tebd-spin-chain.jl")
 main
@@ -245,8 +247,8 @@ The sweep then runs left to right, keeping a left environment `L` which holds th
 
 The following functionality may be useful:
 
-- `@show inds(L)` prints the indices of an ITensor, which is the quickest way to see what you are holding at any point.
-- `onehot(s => n)` picks out state `n` of the site index `s`.
+- `@show inds(L)` prints the indices of an ITensor, which can be helpful for debugging contraction issues.
+- `onehot(s => n)` is a tensor with Index `s` of all zeros except for the element `n`, which is `1`. Contract it with an ITensor that has Index `s` to project onto that state.
 - `scalar` turns a tensor with no indices into a number.
 
 The [ITensor code examples](https://docs.itensor.org/ITensors/stable/examples/ITensor.html) page has more on working with ITensors.
@@ -262,7 +264,7 @@ julia> res = main();
 [ Info: Your sampled ⟨Szⱼ⟩ values agree with `expect` (maximum difference = 0.021785826559782666)
 ```
 
-Your number will not be this one. `main` draws with a fresh random number generator every run, so run it a few times and watch the difference move around. Pass a seeded generator, `main(; rng = StableRNG(1234))`, when you want the same draws twice.
+Run it a few times and watch that difference move around.
 
 <p align="center">
   <img src="resources/images/3-sampled_sz.png" alt="Sampled ⟨Szⱼ⟩ against the exact values" width="500">

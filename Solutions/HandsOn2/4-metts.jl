@@ -4,6 +4,7 @@ using ITensorMPS: expect, inner
 # Functions for time evolution
 using ITensorMPS: apply, op
 using LinearAlgebra: norm, normalize
+using Random: default_rng
 # Use to set the RNG seed for reproducibility
 using StableRNGs: StableRNG
 using Statistics: mean
@@ -43,8 +44,8 @@ Heisenberg spin-1/2 chain to compute thermal expectation values at finite temper
 - `cutoff::Float64 = 1.0e-8`: Cutoff for truncation during imaginary time evolution.
 - `NMETTS::Int = 100`: Number of METTS samples to generate for averaging.
 - `Nwarm::Int = 10`: Number of warmup METTS to generate before collecting measurements.
-- `rng::AbstractRNG = StableRNG(123)`: Random number generator, seeded by default so that
-  repeated runs give the same result.
+- `rng::AbstractRNG = default_rng()`: Random number generator. Pass a seeded one, such as
+  `StableRNG(123)`, to get the same results every run.
 - `outputlevel::Int = 1`: Controls how much information will be printed by the script.
 
 # Returns
@@ -72,7 +73,7 @@ function main(;
         # METTS parameters
         NMETTS = 100,
         Nwarm = 10,
-        rng = StableRNG(123),
+        rng = default_rng(),
         outputlevel = 1,
     )
     # Build the physical indices for nsite spins (spin 1/2)

@@ -84,7 +84,11 @@ end
 function plot_specific_heat(;
         betas = 0.2:0.2:8.0, high_temperature_betas = 0.1:0.1:0.5, nsite = 15, NMETTS = 40
     )
-    results = [METTS.main(; beta, betastep = 0.1, NMETTS, nsite, outputlevel = 0) for beta in betas]
+    # A fresh seeded generator for each run, so every point is reproducible on its own
+    results = [
+        METTS.main(; beta, betastep = 0.1, NMETTS, nsite, rng = StableRNG(123), outputlevel = 0)
+            for beta in betas
+    ]
     p = plot(
         betas, METTS.specific_heat.(results);
         xlabel = "Beta", ylabel = "Specific Heat", legend = false
@@ -92,7 +96,7 @@ function plot_specific_heat(;
     savefig(p, joinpath(IMAGE_DIR, "4-specific_heat.png"))
 
     high_temperature_results = [
-        METTS.main(; beta, betastep = 0.01, NMETTS, nsite, outputlevel = 0)
+        METTS.main(; beta, betastep = 0.01, NMETTS, nsite, rng = StableRNG(123), outputlevel = 0)
             for beta in high_temperature_betas
     ]
     p_high_temperature = plot(
