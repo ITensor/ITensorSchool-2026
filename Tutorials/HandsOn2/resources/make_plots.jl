@@ -10,6 +10,7 @@
 
 using ITensorMPS: MPS, siteinds
 using LinearAlgebra: normalize
+using StableRNGs: StableRNG
 using Plots: Plots, plot, savefig
 
 const HANDSON_DIR = joinpath(@__DIR__, "..")
@@ -72,8 +73,8 @@ function plot_neel_entanglement(; nsite = 30, time = 6.0, timestep = 0.1, cutoff
 end
 
 # Tutorial 3: sampled magnetization of a random MPS against `expect`
-function plot_sampled_sz(; nsite = 20, nsample = 2000, linkdim = 4)
-    res = Sampling.main(; nsite, nsample, linkdim, outputlevel = 0)
+function plot_sampled_sz(; nsite = 20, nsample = 2000, linkdim = 4, rng = StableRNG(1234))
+    res = Sampling.main(; nsite, nsample, linkdim, rng, outputlevel = 0)
     p = Sampling.plot_sampled_sz(res)
     savefig(p, joinpath(IMAGE_DIR, "3-sampled_sz.png"))
     return p

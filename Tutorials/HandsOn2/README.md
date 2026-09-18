@@ -239,7 +239,7 @@ The code that is already written sets this up for you. It builds the norm networ
 
 <!-- TODO: diagram of the norm network being contracted from the right into the environments Rs -->
 
-The sweep then runs left to right, keeping a left environment `L` which holds the part of the network to the left of site `j` with every site already drawn projected onto the state that was drawn for it. Closing `L` and `Rs[j+1]` around site `j` projected onto one of its states gives the probability of drawing that state:
+The sweep then runs left to right, keeping a left environment `L` which holds the part of the network to the left of site `j`, projected onto the samples drawn from that part of the state. Closing `L` and `Rs[j+1]` around site `j` projected onto one of its states gives the probability of drawing that state:
 
 <!-- TODO: diagram of L, site j projected onto state n, and Rs[j+1] closing into a number -->
 
@@ -265,6 +265,8 @@ main
 julia> res = main();
 [ Info: Your sampled ⟨Szⱼ⟩ values agree with `expect` (maximum difference = 0.021785826559782666)
 ```
+
+Your number will not be this one. `main` draws with a fresh random number generator every run, so run it a few times and watch the difference move around. Pass a seeded generator, `main(; rng = StableRNG(1234))`, when you want the same draws twice.
 
 <p align="center">
   <img src="resources/images/3-sampled_sz.png" alt="Sampled ⟨Szⱼ⟩ against the exact values" width="500">

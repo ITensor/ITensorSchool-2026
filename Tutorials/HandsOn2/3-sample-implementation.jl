@@ -114,6 +114,8 @@ magnetization they give against `expect`.
 - `nsite::Int = 20`: Number of sites in the spin chain.
 - `nsample::Int = 2000`: Number of product states to draw.
 - `linkdim::Int = 4`: Bond dimension of the random MPS that is sampled.
+- `rng::AbstractRNG = default_rng()`: Random number generator. Pass a seeded one, such as
+  `StableRNG(1234)`, to get the same draws every run.
 - `outputlevel::Int = 1`: Controls how much information will be printed by the script.
 
 # Returns
@@ -126,8 +128,7 @@ A named tuple containing:
 - `nsample::Int`: Same as above.
 - `linkdim::Int`: Same as above.
 """
-function main(; nsite = 20, nsample = 2000, linkdim = 4, outputlevel = 1)
-    rng = StableRNG(1234)
+function main(; nsite = 20, nsample = 2000, linkdim = 4, rng = default_rng(), outputlevel = 1)
     sites = siteinds("S=1/2", nsite)
     psi = normalize(random_mps(rng, sites; linkdims = linkdim))
 
@@ -137,7 +138,9 @@ function main(; nsite = 20, nsample = 2000, linkdim = 4, outputlevel = 1)
     # the statistical error of the mean of nsample draws
     sz_reference = expect(psi, "Sz")
     max_diff = maximum(abs, sz - sz_reference)
-    tolerance = 5 * 1 / 2 / sqrt(nsample)
+    # Each ⟨Szⱼ⟩ averages nsample draws of ±1/2, so its standard error is at most this
+    standard_error = (1 / 2) / sqrt(nsample)
+    tolerance = 5 * standard_error
     if max_diff < tolerance
         if outputlevel > 0
             @info "Your sampled ⟨Szⱼ⟩ values agree with `expect` (maximum difference = $max_diff)"
