@@ -15,11 +15,11 @@ using Plots: Plots, plot, plot!
     sample_state(rng::AbstractRNG, psi::MPS)
     sample_state(psi::MPS)
 
-Draw one product state from the probability distribution |⟨state|ψ⟩|² defined by the MPS
-`psi`, returned as a vector holding the state that was drawn on each site.
+Sample one product state from the probability distribution |⟨state|ψ⟩|² defined by the MPS
+`psi`, returned as a vector holding the sampled state on each site.
 
-The sites are drawn in a sweep from left to right, each one conditioned on the states
-already drawn to its left, so the result is a sample of |⟨state|ψ⟩|².
+The sites are sampled in a sweep from left to right, each one conditioned on the states
+already sampled to its left, so the result is a sample of |⟨state|ψ⟩|².
 """
 function sample_state(rng::AbstractRNG, psi::MPS)
     nsite = length(psi)
@@ -38,7 +38,7 @@ function sample_state(rng::AbstractRNG, psi::MPS)
     end
 
     # L is the part of the norm network to the left of site j, projected onto the states
-    # that have been drawn so far. It starts out trivial and grows one site at a time.
+    # that have been sampled so far. It starts out trivial and grows one site at a time.
     L = ITensor(1.0)
     result = zeros(Int, nsite)
     for j in 1:nsite
@@ -66,8 +66,8 @@ sample_state(psi::MPS) = sample_state(default_rng(), psi)
 """
     sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor})
 
-Draw one product state from |⟨state|ψ⟩|² using right environments `Rs` that were contracted
-from `psi` and `psid` beforehand.
+Sample one product state from |⟨state|ψ⟩|² using right environments `Rs` that were
+contracted from `psi` and `psid` beforehand.
 
 `psid` is passed along with `Rs` so that the link indices match up properly.
 """
@@ -80,7 +80,7 @@ function sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor}
         s = sites[j]
         # Closing L with Rs[j] gives the weight of all states of site j added together,
         # which is what the probabilities below would be normalized by, so the state can be
-        # drawn against a running sum and the states after it never have to be computed
+        # sampled against a running sum and the states after it never have to be computed
         r = rand(rng) * real(scalar(L * Rs[j]))
         cumulative = 0.0
         n = dim(s)
@@ -88,7 +88,7 @@ function sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor}
         for m in 1:dim(s)
             n = m
             Ln = L * (psi[j] * onehot(s => m)) * (psid[j] * onehot(s => m))
-            # Whatever weight is left over belongs to the last state, so it is drawn
+            # Whatever weight is left over belongs to the last state, so it is sampled
             # without closing its environment at all
             m == dim(s) && break
             cumulative += real(scalar(Ln * Rs[j + 1]))
@@ -103,9 +103,9 @@ end
 """
     sample_states(rng::AbstractRNG, psi::MPS, nsample::Int)
 
-Draw `nsample` product states from |⟨state|ψ⟩|².
+Sample `nsample` product states from |⟨state|ψ⟩|².
 
-The right environments do not depend on the states that are drawn, so they are contracted
+The right environments do not depend on the states that are sampled, so they are contracted
 once and reused for every sample.
 """
 function sample_states(rng::AbstractRNG, psi::MPS, nsample::Int)
@@ -133,21 +133,21 @@ end
 """
     main(; kwargs...)
 
-Draw many product states from a random MPS with your `sample_state` function and compare the
-magnetization they give against `expect`.
+Sample many product states from a random MPS with your `sample_state` function and compare
+the magnetization they give against `expect`.
 
 # Keywords
 - `nsite::Int = 20`: Number of sites in the spin chain.
-- `nsample::Int = 2000`: Number of product states to draw.
+- `nsample::Int = 2000`: Number of product states to sample.
 - `linkdim::Int = 4`: Bond dimension of the random MPS that is sampled.
 - `rng::AbstractRNG = default_rng()`: Random number generator. Pass a seeded one, such as
-  `StableRNG(1234)`, to get the same draws every run.
+  `StableRNG(1234)`, to get the same samples every run.
 - `outputlevel::Int = 1`: Controls how much information will be printed by the script.
 
 # Returns
 A named tuple containing:
 - `psi::MPS`: The MPS that was sampled.
-- `states::Vector{Vector{Int}}`: The product states that were drawn.
+- `states::Vector{Vector{Int}}`: The product states that were sampled.
 - `sz::Vector{Float64}`: Vector of ⟨Szⱼ⟩ from your samples.
 - `sz_reference::Vector{Float64}`: Vector of ⟨Szⱼ⟩ from `expect`, for checking.
 - `nsite::Int`: Same as above.
@@ -161,10 +161,10 @@ function main(; nsite = 20, nsample = 2000, linkdim = 4, rng = default_rng(), ou
     states = sample_states(rng, psi, nsample)
     sz = sampled_sz(states)
     # Sampling ⟨Szⱼ⟩ is a Monte Carlo estimate, so it only agrees with `expect` to within
-    # the statistical error of the mean of nsample draws
+    # the statistical error of the mean of nsample samples
     sz_reference = expect(psi, "Sz")
     max_diff = maximum(abs, sz - sz_reference)
-    # Each ⟨Szⱼ⟩ averages nsample draws of ±1/2, so its standard error is at most this
+    # Each ⟨Szⱼ⟩ averages nsample samples of ±1/2, so its standard error is at most this
     standard_error = (1 / 2) / sqrt(nsample)
     tolerance = 5 * standard_error
     if max_diff < tolerance
@@ -187,7 +187,7 @@ end
 """
     plot_sampled_sz(res::NamedTuple)
 
-Plot ⟨Szⱼ⟩ on each site j averaged over the states drawn by your `sample_state` function
+Plot ⟨Szⱼ⟩ on each site j averaged over the states sampled by your `sample_state` function
 (solid blue line, filled markers) on top of the values from `expect` (dashed green line, open
 markers). `res` is expected to be a `NamedTuple` with fields `sz`, `sz_reference`, and
 `nsite`, such as the results of `main`.

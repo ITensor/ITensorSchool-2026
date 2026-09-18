@@ -229,19 +229,19 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
   <summary><h2>Tutorial 3: Sample an MPS</h2></summary>
   <hr>
 
-An MPS $|\psi\rangle$ defines a probability distribution over product states, where the state $|n_1 n_2 \ldots n_N\rangle$ occurs with probability $|\langle n_1 n_2 \ldots n_N|\psi\rangle|^2$. Drawing product states from that distribution is how the METTS algorithm in the next tutorial turns one state into the next, and it is also how tensor networks are compared against the measurement outcomes of a quantum computer.
+An MPS $|\psi\rangle$ defines a probability distribution over product states, where the state $|n_1 n_2 \ldots n_N\rangle$ occurs with probability $|\langle n_1 n_2 \ldots n_N|\psi\rangle|^2$. Sampling product states from that distribution is how the METTS algorithm in the next tutorial turns one state into the next, and it is also how tensor networks are compared against the measurement outcomes of a quantum computer.
 
 In this tutorial you will write that sampling function. Open the file [3-sample-implementation.jl](./3-sample-implementation.jl) to begin.
 
-At the top there is an incomplete `sample_state` function which draws one product state from an MPS. Your task is to complete `sample_state`.
+At the top there is an incomplete `sample_state` function which samples one product state from an MPS. Your task is to complete `sample_state`.
 
-Sites cannot be drawn independently of each other, since the spins of an MPS are correlated. They are drawn in a sweep from left to right, each one conditioned on the states already drawn to its left, so the result is a sample of $|\langle n_1 n_2 \ldots n_N|\psi\rangle|^2$.
+Sites cannot be sampled independently of each other, since the spins of an MPS are correlated. They are sampled in a sweep from left to right, each one conditioned on the states already sampled to its left, so the result is a sample of $|\langle n_1 n_2 \ldots n_N|\psi\rangle|^2$.
 
 The code at the top of `sample_state` builds the norm network $\langle \psi|\psi\rangle$ out of `psi` and a conjugated copy `psid`, then contracts that network from the right, storing the partial contractions in `Rs` so that `Rs[j]` holds everything from site `j` to the end of the chain:
 
 <!-- TODO: diagram of the norm network being contracted from the right into the environments Rs -->
 
-The sweep then runs left to right, keeping a left environment `L` which holds the part of the network to the left of site `j`, projected onto the samples drawn from that part of the state. Closing `L` and `Rs[j+1]` around site `j` projected onto one of its states gives the probability of drawing that state:
+The sweep then runs left to right, keeping a left environment `L` which holds the part of the network to the left of site `j`, projected onto the states sampled from that part of the chain. Closing `L` and `Rs[j+1]` around site `j` projected onto one of its states gives the probability of sampling that state:
 
 <!-- TODO: diagram of L, site j projected onto state n, and Rs[j+1] closing into a number -->
 
@@ -255,7 +255,7 @@ The [ITensor code examples](https://docs.itensor.org/ITensors/stable/examples/IT
 
 <!-- TODO: with the diagrams in place, say which functions each step needs -->
 
-Once `sample_state` works, running `main()` draws 2000 product states from a random MPS and compares the magnetization they give against `expect`:
+Once `sample_state` works, running `main()` samples 2000 product states from a random MPS and compares the magnetization they give against `expect`:
 ```julia
 julia> include("3-sample-implementation.jl")
 main
@@ -276,9 +276,9 @@ ITensorMPS has its own version of this, [`ITensorMPS.sample!`](https://docs.iten
 
 Here are some followup questions regarding the performance of the implementation.
 
-1. How would you sample the state of a site without computing the probability of every state of the site? This saves more the larger the physical dimension of the site is. Hint: you only need to compute probabilities up to the random number drawn, if you know the normalization.
+1. How would you sample the state of a site without computing the probability of every state of the site? This saves more the larger the physical dimension of the site is. Hint: if you know the normalization, you only need to compute probabilities up to the random number you generate.
 
-2. How would you draw many states from the same MPS without repeating the work that does not change between them? Hint: `Rs` does not depend on the states that get drawn.
+2. How would you sample many states from the same MPS without repeating the work that does not change between them? Hint: `Rs` does not depend on the states that get sampled.
 
 This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 
