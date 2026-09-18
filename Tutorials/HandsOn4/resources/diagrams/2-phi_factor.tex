@@ -1,0 +1,18 @@
+\documentclass[tikz,border=8pt]{standalone}
+\input{common}
+\begin{document}
+\begin{tikzpicture}
+  \node[lab] at (-2.0,0) {$Z_v \;=$};
+  \node[tensor] (T) at (2.6,0) {};
+  \node[lab] at (2.6,-0.85) {$T_v$};
+  \draw[leg] (T) -- ++(-1.6,0);
+  \draw[leg] (T) -- ++(0,1.6);
+  \draw[leg] (T) -- ++(1.6,0);
+  \node[msg] at (1.0,0) {};
+  \node[msgh] at (2.6,1.6) {};
+  \node[msg] at (4.2,0) {};
+  \node[lab,anchor=east] at (0.65,0) {$m_{u_1 \to v}$};
+  \node[lab,anchor=south] at (2.6,1.95) {$m_{u_2 \to v}$};
+  \node[lab,anchor=west] at (4.55,0) {$m_{u_3 \to v}$};
+\end{tikzpicture}
+\end{document}

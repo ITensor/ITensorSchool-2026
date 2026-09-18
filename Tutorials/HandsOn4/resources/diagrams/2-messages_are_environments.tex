@@ -1,0 +1,23 @@
+\documentclass[tikz,border=8pt]{standalone}
+\input{common}
+\begin{document}
+\begin{tikzpicture}
+  % the network on a path graph
+  \foreach \i in {1,...,4} { \node[tensor] (t\i) at (1.6*\i,0) {}; \node[lab] at (1.6*\i,-0.85) {$T_\i$}; }
+  \foreach \i/\j in {1/2,2/3,3/4} { \draw[leg] (t\i) -- (t\j); }
+  \node[lab,anchor=south] at (1.6*2.5,0.45) {\small$m_{2\to3}$};
+  \draw[decorate,decoration={brace,amplitude=6pt,raise=2pt},line width=1pt] (1.1,1.0) -- (3.7,1.0);
+  \node[anchor=south] at (2.4,1.35) {\small everything to the left of the edge $2 \to 3$};
+  % the message
+  \begin{scope}[yshift=-3.2cm]
+    \node[lab] at (0.9,0) {$m_{2 \to 3} \;\propto$};
+    \node[tensor] (a) at (2.9,0) {}; \node[lab] at (2.9,-0.85) {$T_1$};
+    \node[tensor] (b) at (4.5,0) {}; \node[lab] at (4.5,-0.85) {$T_2$};
+    \draw[leg] (a) -- (b);
+    \draw[leg] (b) -- ++(1.6,0);
+    \node[lab] at (7.0,0) {$\propto$};
+    \node[msg] (M) at (8.2,0) {};
+    \draw[leg] (M) -- ++(1.6,0);
+  \end{scope}
+\end{tikzpicture}
+\end{document}

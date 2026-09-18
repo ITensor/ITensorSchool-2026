@@ -1,0 +1,38 @@
+\documentclass[tikz,border=8pt]{standalone}
+\input{common}
+\begin{document}
+\begin{tikzpicture}
+  % (a) ket with the incoming message absorbed
+  \begin{scope}
+    \node[msgtall] (M) at (0,1.2) {};
+    \node[tensor] (k) at (1.7,0) {};
+    \draw[leg] (M.east |- k) -- (k);
+    \draw[leg] (k) -- ++(0,1.5);
+    \draw[leg] (k) -- ++(1.6,0);
+    \draw[leg] (M.east |- 0,2.4) -- ++(1.2,0);
+    \node[anchor=north,align=center] at (1.5,-0.7) {\small(1) ket $\times$ incoming messages};
+  \end{scope}
+  \draw[arrow] (4.2,1.2) -- (5.2,1.2);
+  % (b) close with the bra
+  \begin{scope}[xshift=6.4cm]
+    \node[msgtall] (M) at (0,1.2) {};
+    \node[tensor] (k) at (1.7,0) {};
+    \node[tensor] (b) at (1.7,2.4) {};
+    \draw[leg] (M.east |- k) -- (k);
+    \draw[leg] (M.east |- b) -- (b);
+    \draw[leg] (k) -- (b);
+    \draw[leg] (k) -- ++(1.6,0);
+    \draw[leg] (b) -- ++(1.6,0);
+    \node[anchor=north,align=center] at (1.5,-0.7) {\small(2) $\times$ bra};
+  \end{scope}
+  \draw[arrow] (10.4,1.2) -- (11.4,1.2);
+  % (c) the new message
+  \begin{scope}[xshift=12.4cm]
+    \node[lab] at (-0.2,1.2) {$\propto$};
+    \node[msgtall] (N) at (1.0,1.2) {};
+    \draw[leg] (N.east |- 0,0)   -- ++(1.6,0);
+    \draw[leg] (N.east |- 0,2.4) -- ++(1.6,0);
+    \node[lab,anchor=north] at (1.0,-0.4) {$m_{v \to w}$};
+  \end{scope}
+\end{tikzpicture}
+\end{document}

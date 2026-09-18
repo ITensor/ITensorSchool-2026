@@ -59,7 +59,7 @@ julia> for e in es
        end
 ```
 
-First, lets run the script [1-tensornetworks.jl](./1-tensornetworks.jl)
+First, let's run the script [1-tensornetworks.jl](./1-tensornetworks.jl)
 
 ```julia
 julia> include("1-tensornetworks.jl")
@@ -108,13 +108,23 @@ and 5 edge(s):
  4 => 5
 ```
 
-We can build a tensor network as a dictionary of tensors, one for each vertex of the `NamedGraph` `g`. The edges of the graph `g` (which are of the type `NamedEdge`) dictate which tensors share indices to be contracted over.
+We can build a tensor network as a dictionary of tensors, one for each vertex of the `NamedGraph` `g`. The edges of the graph `g` (which are of the type `NamedEdge`) dictate which tensors share indices to be contracted over. Below is the periodic path on 5 vertices from exercise 1, and the tensor network that lives on it: one tensor $T_{v}$ per vertex, and one shared index per edge.
+
+<p align="center">
+  <img src="resources/images/1-graph_to_network.png" alt="A graph and the tensor network built on it" width="700">
+</p>
 
 Provided in [ising_tensornetwork.jl](./ising_tensornetwork.jl) is a pre-built constructor for the tensor network representing the partition function of the ferromagnetic Ising model on a given `NamedGraph` `g` at a given inverse temperature `β`. The partition function reads
 
 $$Z(\beta) = \sum_{s_{1} \in \lbrace -1, 1\rbrace}\sum_{s_{2} \in \lbrace -1, 1\rbrace} \cdots \sum_{s_{L}\in \lbrace -1, 1\rbrace}\prod_{\langle ij \rangle}\frac{\exp(\beta s_{i}s_{j})}{2},$$
 
 where the product runs over the edges $\langle ij \rangle$ of the graph. For convenience, the Boltzmann weight on each edge has been scaled by a factor of $1/2$. This simplifies the analytic formulas below and removes an additive constant from the free energy density.
+
+The tensor on each vertex is a copy tensor $\delta$, which forces the spin to take the same value on every edge leaving that vertex, with the symmetric square root of the Boltzmann matrix $W_{ss'} = \tfrac{1}{2} e^{\beta s s'}$ absorbed into each of its legs. Two neighbouring tensors then share exactly one full $W$ across their common edge, so contracting the whole network sums every spin configuration with the right weight.
+
+<p align="center">
+  <img src="resources/images/1-ising_tensor.png" alt="The Ising vertex tensor as a copy tensor with square-root Boltzmann weights on its legs" width="800">
+</p>
 
 This object is returned by `main()`. You can inspect the individual tensors on each vertex of the constructed tensor network via `res.tn[v]` where `v` is the name of the vertex.
 ```julia
@@ -159,7 +169,7 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
   <summary><h2>Tutorial 2: Complete a Belief Propagation Implementation</h2></summary>
   <hr>
 
-In the previous tutorial, we contracted the tensor network exactly by multiplying the tensors together, vertex by vertex. This can only be done efficiently for tree-like networks (those composed of no loops, or a small number of loops) and only when taking careful care over the order of contraction.
+In the previous tutorial, we contracted the tensor network exactly by multiplying the tensors together, vertex by vertex. This can only be done efficiently for tree-like networks (those with no loops, or only a few) and only if care is taken over the order of contraction.
 
 In this tutorial we are going to contract tensor networks in an efficient, but approximate manner via belief propagation (BP). The BP code lives in the file [belief_propagation.jl](./belief_propagation.jl). It is not fully implemented, and you are asked to finish implementing it. Tutorials 3 and 4 both use this file, so they will only give correct answers once you have completed it.
 
@@ -167,11 +177,27 @@ In this tutorial we are going to contract tensor networks in an efficient, but a
 
 $$m_{v \to w} \propto T_{v} \prod_{u \in \partial v,\, u \neq w} m_{u \to v},$$
 
-i.e. the new message out of $v$ towards $w$ is the tensor $T_{v}$ contracted with all the messages coming *into* $v$ except the one coming from $w$. Starting from some initial guess, all the messages are updated repeatedly until they stop changing. Once converged, the contraction of $T_{v}$ with *all* of its incoming messages gives a scalar $Z_{v}$, and the BP approximation to the free energy density is
+i.e. the new message out of $v$ towards $w$ is the tensor $T_{v}$ contracted with all the messages coming *into* $v$ except the one coming from $w$.
+
+<p align="center">
+  <img src="resources/images/2-message_update.png" alt="The belief propagation message update rule" width="750">
+</p>
+
+Starting from some initial guess, all the messages are updated repeatedly until they stop changing. Once converged, the contraction of $T_{v}$ with *all* of its incoming messages gives a scalar $Z_{v}$,
+
+<p align="center">
+  <img src="resources/images/2-phi_factor.png" alt="The scalar Z_v from contracting a tensor with all of its incoming messages" width="450">
+</p>
+
+and the BP approximation to the free energy density is
 
 $$\phi_{BP} = \frac{1}{N}\sum_{v} \ln Z_{v},$$
 
-after the messages have been suitably normalized (that part is done for you). On a tree the messages are exactly the environments and BP is exact. On a graph with loops BP is an approximation.
+after the messages have been suitably normalized (that part is done for you). On a tree the messages are exactly the environments and BP is exact. On a path graph, for example, the message $m_{2 \to 3}$ is everything to the left of that edge contracted together, playing the same role as the `L` environment you built in Hands-On 1. On a graph with loops BP is an approximation.
+
+<p align="center">
+  <img src="resources/images/2-messages_are_environments.png" alt="On a path graph a message is the contraction of everything on one side of the edge" width="700">
+</p>
 
 1. First, run the `main` function provided in [2-bp-implementation.jl](./2-bp-implementation.jl). It builds the Ising tensor network on a path graph of `L` sites, runs BP on it and compares the result to exact contraction. Since a path graph is a tree the two should agree, but they do not yet because the implementation is incomplete.
 
@@ -226,7 +252,7 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
   <summary><h2>Tutorial 3: Belief Propagation on the 2D Ising Model</h2></summary>
   <hr>
 
-Now that you have a working BP implementation, lets use it on graphs with loops. The function `main` in [3-beliefpropagation.jl](./3-beliefpropagation.jl) builds an $L_{x} \times L_{y}$ square grid tensor network representing the partition function of the Ising model in 2D. Inverse temperature is set via the `beta` kwarg and periodic boundaries (in both directions) can be added with the kwarg `periodic`. Returned is the number of iterations BP took to converge (`niters`), and the rescaled free energy density (`phi_bp_tn`)
+Now that you have a working BP implementation, let's use it on graphs with loops. The function `main` in [3-beliefpropagation.jl](./3-beliefpropagation.jl) builds an $L_{x} \times L_{y}$ square grid tensor network representing the partition function of the Ising model in 2D. Inverse temperature is set via the `beta` kwarg and periodic boundaries (in both directions) can be added with the kwarg `periodic`. Returned is the number of iterations BP took to converge (`niters`), and the rescaled free energy density (`phi_bp_tn`)
 
 $$\phi(\beta) = -\beta f(\beta) = \frac{1}{L_{x}L_{y}}\ln(Z(\beta)).$$
 
@@ -296,7 +322,7 @@ Included in [ising_tensornetwork.jl](./ising_tensornetwork.jl) is a function `is
 
 $$\phi(\beta) = -\beta f(\beta) = -\ln 2 + \frac{1}{8\pi^{2}}\int_{0}^{2\pi}\int_{0}^{2\pi}\ln\left[\cosh^{2}\left(2\beta \right)-\sinh\left(2\beta \right)\cos\left(\theta_{1}\right)-\sinh\left(2\beta \right)\cos\left(\theta_{2}\right)\right]d\theta_{1} d\theta_{2}.$$
 
-Lets compare our results to that.
+Let's compare our results to that.
 
 4. Pick a small value for $\beta$ (say $\beta = 0.1$) and plot the absolute error between the BP result and the exact result as a function of graph size $L$ for $L_{x} = L$ and $L_{y} = L$ with open boundaries. How does it scale? Is this error coming from BP, or from somewhere else?
 
@@ -304,7 +330,7 @@ Lets compare our results to that.
   <img src="resources/images/3-bp_error_2d_obc.png" alt="BP error on an open square grid versus system size" width="500">
 </p>
 
-Now lets move to periodic boundary conditions.
+Now let's move to periodic boundary conditions.
 ```julia
 julia> res = main(; Lx = 5, Ly = 5, periodic = true, beta = 0.2);
 BP Algorithm Converged after 21 iterations
@@ -341,7 +367,11 @@ To first order, the correction to the partition function via a cluster expansion
 
 $$Z \approx Z_{BP} \prod_{l}Z_{l}$$
 
-where $Z_{\rm BP}$ is the BP approximation of the partition function and the product is over the smallest loops $l$ in the lattice, with $Z_{l}$ defined as the contraction of the loop of tensors, with BP messages incident to it.
+where $Z_{\rm BP}$ is the BP approximation of the partition function and the product is over the smallest loops $l$ in the lattice, with $Z_{l}$ defined as the contraction of the loop of tensors, closed off by the BP messages arriving from outside the loop.
+
+<p align="center">
+  <img src="resources/images/4-loop_correction.png" alt="A loop of four tensors closed by the messages arriving from outside it" width="750">
+</p>
 
 This formula is implemented in the function `phi_cluster_correction` in [belief_propagation.jl](./belief_propagation.jl) at the level of the rescaled free energy $\phi(\beta) = -\beta f(\beta)$, and is called by `main` in [4-clusterexpansion.jl](./4-clusterexpansion.jl). We use the `simplecycles_limited_length` function from `Graphs.jl` to enumerate the loops. Take a look at `phi_cluster_correction` and notice that it uses the `phi_factor` function you wrote in Tutorial 2.
 
@@ -404,9 +434,19 @@ julia> g3 = named_grid((4, 4, 4));
 
 4. Everything so far has been a classical partition function. Belief propagation works just as well on a quantum state, and this stretch goal is a larger, more open one: you will write your own quantum belief propagation from a template and use it to study the AKLT state.
 
-A tensor network state puts a tensor on every vertex carrying one extra *physical* index. Its norm $\langle \psi | \psi \rangle$ is a tensor network containing **two** tensors per vertex, the ket $\psi_{v}$ and the bra $\overline{\psi_{v}}$, joined over the physical index. Every edge therefore carries two indices, the ket leg and the bra leg, so a message here is a matrix rather than a vector.
+A tensor network state puts a tensor on every vertex carrying one extra *physical* index. Its norm $\langle \psi | \psi \rangle$ is a tensor network containing **two** tensors per vertex, the ket $\psi_{v}$ and the bra $\overline{\psi_{v}}$, joined over the physical index $s_{v}$. Every edge therefore carries two indices, the ket leg $\ell$ and the bra leg $\ell'$, so a message here is a matrix rather than a vector.
 
-It is tempting to multiply the ket and the bra at each vertex together first, producing a single "double layer" tensor, so that the network looks exactly like the classical ones and your Tutorial 2 code runs on it untouched. Do not do this. At a vertex of degree $z$ and bond dimension $\chi$ that tensor has $2z$ virtual legs and costs $\chi^{2z}$ to store, which is by far the largest object in the calculation. Absorbing the messages into the ket one at a time and only then closing with the bra costs around $\chi^{z+1}$ instead. On a degree four vertex the difference is already stark:
+<p align="center">
+  <img src="resources/images/5-norm_network.png" alt="The two-layer norm network of a tensor network state, with a matrix-valued message" width="800">
+</p>
+
+It is tempting to multiply the ket and the bra at each vertex together first, producing a single "double layer" tensor, so that the network looks exactly like the classical ones and your Tutorial 2 code runs on it untouched. Do not do this. At a vertex of degree $z$ and bond dimension $\chi$ that tensor has $2z$ virtual legs and costs $\chi^{2z}$ to store, which is by far the largest object in the calculation. Absorbing the messages into the ket one at a time and only then closing with the bra costs around $\chi^{z+1}$ instead. That order is the whole content of the message update here:
+
+<p align="center">
+  <img src="resources/images/5-lazy_contraction.png" alt="Absorb the messages into the ket first, then close with the bra" width="900">
+</p>
+
+On a degree four vertex the difference is already stark:
 
 | Bond dimension | Double layer tensor | Absorbing messages first |
 | --- | --- | --- |

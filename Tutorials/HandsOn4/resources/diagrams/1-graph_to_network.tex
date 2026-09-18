@@ -1,0 +1,26 @@
+\documentclass[tikz,border=8pt]{standalone}
+\input{common}
+\begin{document}
+\begin{tikzpicture}
+  % the graph g: a periodic path on 5 vertices
+  \begin{scope}
+    \foreach \i in {1,...,5} {
+      \node[vertex] (g\i) at ({90+72*(\i-1)}:1.6) {$\i$};
+    }
+    \foreach \i/\j in {1/2,2/3,3/4,4/5,5/1} { \draw[thinedge] (g\i) -- (g\j); }
+    \node[code] at (0,-2.5) {res.g};
+  \end{scope}
+  \draw[arrow] (2.5,0) -- (4.0,0);
+  % the tensor network: one tensor per vertex, one shared index per edge
+  \begin{scope}[xshift=6.6cm]
+    \foreach \i in {1,...,5} {
+      \node[tensor] (t\i) at ({90+72*(\i-1)}:1.6) {};
+    }
+    \foreach \i/\j in {1/2,2/3,3/4,4/5,5/1} { \draw[leg] (t\i) -- (t\j); }
+    \node[lab] at ({90+36}:2.15) {\small$e_{1,2}$};
+    \node[lab] at ({90+72+36}:2.2) {\small$e_{2,3}$};
+    \node[lab,anchor=west] at ($(t1)+(0.45,0.1)$) {$T_1$};
+    \node[code] at (0,-2.5) {res.tn};
+  \end{scope}
+\end{tikzpicture}
+\end{document}

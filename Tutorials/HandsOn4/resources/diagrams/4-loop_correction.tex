@@ -1,0 +1,20 @@
+\documentclass[tikz,border=8pt]{standalone}
+\input{common}
+\begin{document}
+\begin{tikzpicture}
+  \node[lab] at (-3.6,0) {$Z_\ell \;=$};
+  % a loop of four tensors of a square lattice: two legs each leave the loop
+  \node[tensor] (a) at (-1,1) {};
+  \node[tensor] (b) at (1,1) {};
+  \node[tensor] (c) at (1,-1) {};
+  \node[tensor] (d) at (-1,-1) {};
+  \draw[leg] (a) -- (b) -- (c) -- (d) -- (a);
+  \foreach \n/\dx/\dy in {a/-1/0,a/0/1,b/1/0,b/0/1,c/1/0,c/0/-1,d/-1/0,d/0/-1} {
+    \draw[leg] (\n) -- ++(1.5*\dx,1.5*\dy);
+  }
+  \foreach \n/\dx/\dy in {a/-1/0,b/1/0,c/1/0,d/-1/0} { \node[msg] at ($(\n)+(1.5*\dx,0)$) {}; }
+  \foreach \n/\dx/\dy in {a/0/1,b/0/1,c/0/-1,d/0/-1} { \node[msgh] at ($(\n)+(0,1.5*\dy)$) {}; }
+  \node[anchor=west] at (3.2,0.3) {\small the four tensors of the loop $\ell$,};
+  \node[anchor=west] at (3.2,-0.3) {\small closed by the messages arriving from outside it};
+\end{tikzpicture}
+\end{document}
