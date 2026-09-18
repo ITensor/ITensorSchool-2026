@@ -64,26 +64,10 @@ sample_state(psi::MPS) = sample_state(default_rng(), psi)
 # Answers to the follow-up questions in the Hands-On 2 README
 
 """
-    right_environments(psi::MPS, psid::MPS)
-
-Contract the norm network formed by `psi` and `psid` from the right, returning the vector of
-environments whose jth entry holds sites j through the end of the chain.
-"""
-function right_environments(psi::MPS, psid::MPS)
-    nsite = length(psi)
-    Rs = Vector{ITensor}(undef, nsite + 1)
-    Rs[nsite + 1] = ITensor(1.0)
-    for j in reverse(1:nsite)
-        Rs[j] = Rs[j + 1] * psid[j] * psi[j]
-    end
-    return Rs
-end
-
-"""
     sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor})
 
-Draw one product state from |⟨state|ψ⟩|² using right environments `Rs` that were built
-beforehand from `psi` and `psid` by `right_environments`.
+Draw one product state from |⟨state|ψ⟩|² using right environments `Rs` that were contracted
+from `psi` and `psid` beforehand.
 
 `psid` has to be passed along with `Rs`, since the link indices it was built with are new
 ones that nothing else can reproduce.
@@ -126,8 +110,13 @@ The right environments do not depend on the states that are drawn, so they are c
 once and reused for every sample.
 """
 function sample_states(rng::AbstractRNG, psi::MPS, nsample::Int)
+    nsite = length(psi)
     psid = dag(sim_linkinds(psi))
-    Rs = right_environments(psi, psid)
+    Rs = Vector{ITensor}(undef, nsite + 1)
+    Rs[nsite + 1] = ITensor(1.0)
+    for j in reverse(1:nsite)
+        Rs[j] = Rs[j + 1] * psid[j] * psi[j]
+    end
     return [sample_state(rng, psi, psid, Rs) for _ in 1:nsample]
 end
 
