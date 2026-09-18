@@ -4,7 +4,7 @@
   
 - [Tutorial 1: Complete a TEBD Implementation](#tutorial-1)
 - [Tutorial 2: Time Evolve a Spin Chain](#tutorial-2)
-- [Tutorial 3: Imaginary Time Evolution](#tutorial-3)
+- [Tutorial 3: Sample an MPS](#tutorial-3)
 - [Tutorial 4: Finite Temperature](#tutorial-4)
 - [Stretch Goals](#stretch-goals)
 
@@ -17,7 +17,7 @@ julia> readdir()
 8-element Vector{String}:
  "1-tebd-implementation.jl"
  "2-tebd-spin-chain.jl"
- "3-imaginary-time.jl"
+ "3-sample-implementation.jl"
  "4-metts.jl"
 [...]
 
@@ -82,6 +82,8 @@ Hamiltonian. We will work off of the script [2-tebd-spin-chain.jl](./2-tebd-spin
 
 
 The initial state constructed in `main` is the ground state of the Hamiltonian with the central spin excited. Running this with `main()` simulates the dynamics up until time `time = 6.0`:
+
+Output quoted in this README that depends on random numbers, such as the sweep energies below or the sampled states in the later tutorials, comes from one particular run. Yours will differ. Pass a seeded generator, for example `main(; rng = StableRNG(1234))`, when you want the same numbers twice.
 ```julia
 julia> include("2-tebd-spin-chain.jl")
 main
@@ -224,96 +226,59 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 
 <a id="tutorial-3"></a>
 <details>
-  <summary><h2>Tutorial 3: Imaginary Time Evolution</h2></summary>
+  <summary><h2>Tutorial 3: Sample an MPS</h2></summary>
   <hr>
 
-Now we are going to switch from real time to imaginary time evolution. This is incredibly easy with tensor networks, as we can just perform the substitution $dt \rightarrow - {\rm i} d \beta$.
+An MPS $|\psi\rangle$ defines a probability distribution over product states, where the state $|n_1 n_2 \ldots n_N\rangle$ occurs with probability $|\langle n_1 n_2 \ldots n_N|\psi\rangle|^2$. Sampling product states from that distribution is how the METTS algorithm in the next tutorial turns one state into the next, and it is also how tensor networks are compared against the measurement outcomes of a quantum computer.
 
-We will be working off the script [3-imaginary-time.jl](./3-imaginary-time.jl) which does this for you and implements the imaginary time dynamics of a random initial state under the Heisenberg Hamiltonian.
+In this tutorial you will write that sampling function. Open the file [3-sample-implementation.jl](./3-sample-implementation.jl) to begin.
 
+At the top there is an incomplete `sample_state` function which samples one product state from an MPS. Your task is to complete `sample_state`.
 
+Sites cannot be sampled independently of each other, since the spins of an MPS are correlated. They are sampled in a sweep from left to right, each one conditioned on the states already sampled to its left, so the result is a sample of $|\langle n_1 n_2 \ldots n_N|\psi\rangle|^2$.
+
+The code at the top of `sample_state` builds the norm network $\langle \psi|\psi\rangle$ out of `psi` and a conjugated copy `psid`, then contracts that network from the right, storing the partial contractions in `Rs` so that `Rs[j]` holds everything from site `j` to the end of the chain:
+
+<!-- TODO: diagram of the norm network being contracted from the right into the environments Rs -->
+
+The sweep then runs left to right, keeping a left environment `L` which holds the part of the network to the left of site `j`, projected onto the states sampled from that part of the chain. Closing `L` and `Rs[j+1]` around site `j` projected onto one of its states gives the probability of sampling that state:
+
+<!-- TODO: diagram of L, site j projected onto state n, and Rs[j+1] closing into a number -->
+
+The following functionality may be useful:
+
+- `@show inds(L)` prints the indices of an ITensor, which can be helpful for debugging contraction issues.
+- `onehot(s => n)` is a tensor with Index `s` of all zeros except for the element `n`, which is `1`. Contract it with an ITensor that has Index `s` to project onto that state.
+- `scalar` turns a tensor with no indices into a number.
+
+The [ITensor code examples](https://docs.itensor.org/ITensors/stable/examples/ITensor.html) page has more on working with ITensors.
+
+<!-- TODO: with the diagrams in place, say which functions each step needs -->
+
+Once `sample_state` works, running `main()` samples 2000 product states from a random MPS and compares the magnetization they give against `expect`:
 ```julia
+julia> include("3-sample-implementation.jl")
+main
+
 julia> res = main();
-Run DMRG to get a reference energy for imaginary time evolution
-After sweep 1 energy=-13.10580711255933  maxlinkdim=10 maxerr=2.04E-03 time=0.029
-After sweep 2 energy=-13.111348929097458  maxlinkdim=20 maxerr=1.41E-07 time=0.040
-After sweep 3 energy=-13.11135575001343  maxlinkdim=45 maxerr=9.81E-11 time=0.085
-After sweep 4 energy=-13.111355751942149  maxlinkdim=47 maxerr=1.00E-10 time=0.118
-After sweep 5 energy=-13.111355751949796  maxlinkdim=47 maxerr=1.00E-10 time=0.112
-
-Starting imaginary time evolution
-beta: 5.0
-Bond dimension: 24
-⟨ψₜ|Szⱼ|ψₜ⟩: -0.07015198148930198
-∑ⱼ⟨ψₜ|Szⱼ|ψₜ⟩: -0.3554642454935465
-⟨ψₜ|H|ψₜ⟩: -12.918726195417213
-
-beta: 10.0
-Bond dimension: 38
-⟨ψₜ|Szⱼ|ψₜ⟩: -0.0007049850288560583
-∑ⱼ⟨ψₜ|Szⱼ|ψₜ⟩: -0.12498385296119857
-⟨ψₜ|H|ψₜ⟩: -13.082551163963094
-
-beta: 15.0
-Bond dimension: 40
-⟨ψₜ|Szⱼ|ψₜ⟩: 0.007906094151056576
-∑ⱼ⟨ψₜ|Szⱼ|ψₜ⟩: -0.035190911135993715
-⟨ψₜ|H|ψₜ⟩: -13.105243727446057
-
-beta: 20.0
-Bond dimension: 40
-⟨ψₜ|Szⱼ|ψₜ⟩: 0.005455558345839978
-∑ⱼ⟨ψₜ|Szⱼ|ψₜ⟩: -0.010092112111528002
-⟨ψₜ|H|ψₜ⟩: -13.109727125683662
-
-
-julia> res.energies .- res.energy_ground_state
-101-element Vector{Float64}:
- 13.344740259203546
- 11.607416095173846
-  9.788767514056136
-  8.027055433275628
-  6.478091389576792
-  5.219661141730995
-  ⋮
-  0.00210452773845482
-  0.0019989336674051117
-  0.001898845407890093
-  0.0018039541390795222
-  0.0017139718695293737
-  0.0016286262661342477
+[ Info: Your sampled ⟨Szⱼ⟩ values agree with `expect` (maximum difference = 0.021785826559782666)
 ```
 
-1. Notice how the energy is converging to that of the DMRG calculation. You can show an animation of the local $Sz$ of each spin in the chain by calling:
-```julia
-julia> animate_tebd_sz(res)
-[...]
-```
-Observe how the system relaxes to a state with no local magnetization, not unlike what we saw in similar animations of DMRG optimization (though note the convergence to the ground state is slower than DMRG in computation time.)
-
-2. We can calculate the variance of `psit` to observe how close it is to an eigenstate of `H`. The variance for an operator $H$ is defined as $\langle H^2 \rangle - \langle H \rangle^2$. In ITensor, we can compute it as follows:
-```julia
-julia> inner(res.H, res.psit, res.H, res.psit) - inner(res.psit', res.H, res.psit)^2
-0.00020948820113630973
-```
-Edit the `main` function in the file `3-imaginary-time.jl` to calculate the variance of the energy as a function of time in your simulation and have `main` return it as a new output `energy_vars`. As a reference, see how the `energies` are saved and computed, and note that as an optimization you could use the energy that was already computed at each step in the second term of the variance. Once you get that working, rerun the `main` function to compute the energy variance at each imaginary time step and plot them as follows:
-```julia
-julia> plot(res.betas, res.energy_vars; xlabel = "Imaginary Time", ylabel = "Energy Variance", legend = false)
-```
+Run it a few times and watch that difference move around.
 
 <p align="center">
-  <img src="resources/images/3-energy_variance.png" alt="Energy variance along the imaginary time evolution" width="500">
+  <img src="resources/images/3-sampled_sz.png" alt="Sampled ⟨Szⱼ⟩ against the exact values" width="500">
 </p>
 
+The two curves will not lie on top of each other. Sampling gives a Monte Carlo estimate of $\langle Sz_j \rangle$, so the difference shrinks like $1/\sqrt{\rm nsample}$. Try raising and lowering `nsample` to see that.
 
-3. The initial state we used is a random `MPS`constructed via the lines
-```julia
-    rng = StableRNG(123)
-    psit = random_mps(rng, sites)
-```
+ITensorMPS has its own version of this, [`ITensorMPS.sample!`](https://docs.itensor.org/ITensorMPS/stable/MPSandMPO.html#ITensorMPS.sample!-Tuple{MPS}), which gets at the same conditional probabilities by orthogonalizing the MPS rather than by building environments. (The exclamation mark is there to indicate that the state is orthogonalized in-place.) Compare yours against it if you like.
 
-Try changing the seed of the random number generator (the number `123` above) to generate a different random initial state. Does the result still converge to the ground state? Can you think of what initial states might prevent this happening? Hint: think about the symmetries of the model. Try to construct some. Does the variance still go to zero?
+Here are some followup questions regarding the performance of the implementation.
 
+1. How would you sample the state of a site without computing the probability of every state of the site? This saves more the larger the physical dimension of the site is. Hint: if you know the normalization, you only need to compute probabilities up to the random number you generate.
+
+2. How would you sample many states from the same MPS without repeating the work that does not change between them? Hint: `Rs` does not depend on the states that get sampled.
 
 This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 
@@ -324,7 +289,15 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
   <summary><h2>Tutorial 4: Finite Temperature</h2></summary>
   <hr>
 
-We are now going to run the METTS (minimally entangled thermal states) algorithm to extract finite temperature properties of the system while remaining in the pure state picture. This is done in the file [4-metts.jl](./4-metts.jl).
+We are now going to run the METTS (minimally entangled thermal states) algorithm to extract finite temperature properties of the system while remaining in the pure state picture. This is done in the file [4-metts.jl](./4-metts.jl). For more on the algorithm, including the alternating basis collapses used here, see [Minimally Entangled Typical Thermal State Algorithms](https://arxiv.org/abs/1002.1305) (New J. Phys. 12, 055026).
+
+METTS reaches finite temperature by evolving in imaginary time rather than real time, which with tensor networks is just the substitution $dt \rightarrow - {\rm i} d \beta$. The script makes gates for a step of size `betastep` that way, so the loop is your `tebd` from Tutorial 1 and your `sample_state` from Tutorial 3 used together: evolve a product state to inverse temperature $\beta/2$, measure it, collapse it back to a product state by sampling it, and repeat.
+
+If your `sample_state` from Tutorial 3 is not working yet, replace both `sample_state(rng, psi)` calls in the METTS loop with ITensorMPS's own version:
+```julia
+            samp = ITensorMPS.sample!(rng, psi)
+```
+and come back to your own later. If your `tebd_step` from Tutorial 1 is also unfinished, the same trick works for the evolution: replace `tebd(gates, psi; cutoff)` in the loop with `apply(gates, psi; cutoff)`, which is ITensorMPS's own gate application.
 
 1. Run the `main` function from `4-metts.jl` to get an estimate of the energy of the 1D Heisenberg chain at finite temperature (by default, `nsite = 10` and `beta = 4.0`):
 ```julia
@@ -439,7 +412,7 @@ julia> specific_heat(res)
 For the default parameters ($\beta = 4.0$, NMETTS $=100, nsite = 10$) provided you should find $C_{v}(\beta = 4.0) \approx 0.26$ (the random number generator (RNG) for the initial state and sampling is seeded so that the results are numerically reproducable).
 Next we are going to measure the specific heat as a function of inverse temperature.
 
-2. Construct an array of $\beta$ values:
+3. Construct an array of $\beta$ values:
 ```julia
 julia> betas = 0.4:0.4:8.0;
 ```
@@ -463,7 +436,7 @@ and give the same broad peak with a rougher curve.
 
 The specific heat of the spin 1/2 antiferromagnetic Heisenberg model is known to display a broad peak at $T = 0.48J$ (here we have $J = 1$) with a maximum value of $~0.35J$. Do your results agree with this?
 
-3. The high temperature regime should display an inverse square dependence of the specific heat with temperature, i.e $C_{v} \propto \frac{1}{T^{2}}$. Use a range $0 \leq \beta \leq 0.4$ to try to confirm this. When using a finer range of betas, make sure to adjust the `betastep` input of `main` to be commensurate with the chosen `betas` or you won't be able to reach the desired `betas` given the step size and the script will error. For example, you may want to use `betas = 0.1:0.1:0.5` and `betastep = 0.01`. You should be able to reproduce a plot like:
+4. The high temperature regime should display an inverse square dependence of the specific heat with temperature, i.e $C_{v} \propto \frac{1}{T^{2}}$. Use a range $0 \leq \beta \leq 0.4$ to try to confirm this. When using a finer range of betas, make sure to adjust the `betastep` input of `main` to be commensurate with the chosen `betas` or you won't be able to reach the desired `betas` given the step size and the script will error. For example, you may want to use `betas = 0.1:0.1:0.5` and `betastep = 0.01`. You should be able to reproduce a plot like:
 ```julia
 julia> plot(betas .^ 2, specific_heat.(results); xlabel = "Beta Squared", ylabel = "Specific Heat", legend = false)
 ```

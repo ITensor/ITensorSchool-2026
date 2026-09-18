@@ -4,11 +4,11 @@
 #
 #     julia --project=. resources/make_plots.jl
 #
-# Some figures show the result of an exercise, so this script loads the completed METTS file
-# from the `Solutions` folder rather than the one in this directory. Each tutorial is loaded
-# into its own module because they all define a function called `main`.
+# Some figures show the result of an exercise, so this script loads the completed files from
+# the `Solutions` folder rather than the ones in this directory. Each tutorial is loaded into
+# its own module because they all define a function called `main`.
 
-using ITensorMPS: MPO, MPS, OpSum, inner, random_mps, siteinds
+using ITensorMPS: MPS, siteinds
 using LinearAlgebra: normalize
 using StableRNGs: StableRNG
 using Plots: Plots, plot, savefig
@@ -21,22 +21,15 @@ module SpinChain
 include(joinpath(@__DIR__, "..", "2-tebd-spin-chain.jl"))
 end
 
+module Sampling
+include(joinpath(@__DIR__, "..", "..", "..", "Solutions", "HandsOn2", "3-sample-implementation.jl"))
+end
+
 module METTS
 include(joinpath(@__DIR__, "..", "..", "..", "Solutions", "HandsOn2", "4-metts.jl"))
 end
 
 Plots.default(; linewidth = 2, markersize = 5, markerstrokewidth = 0, size = (600, 400), dpi = 150)
-
-heisenberg_mpo(sites) = MPO(
-    let terms = OpSum()
-        for j in 1:(length(sites) - 1)
-            terms += 1 / 2, "S+", j, "S-", j + 1
-            terms += 1 / 2, "S-", j, "S+", j + 1
-            terms += "Sz", j, "Sz", j + 1
-        end
-        terms
-    end, sites
-)
 
 # Tutorial 2: the local quench of the Heisenberg ground state, at the README defaults
 function plot_quench(; nsite = 30, time = 6.0)
@@ -79,25 +72,11 @@ function plot_neel_entanglement(; nsite = 30, time = 6.0, timestep = 0.1, cutoff
     return p
 end
 
-# Tutorial 3, exercise 2: the energy variance along the imaginary time evolution
-function plot_energy_variance(; nsite = 30, beta = 20.0, betastep = 0.2, cutoff = 1.0e-10)
-    sites = siteinds("S=1/2", nsite)
-    H = heisenberg_mpo(sites)
-    # Imaginary time evolution is real time evolution with dt -> -i dβ
-    gates = SpinChain.make_heisenberg_gates(sites, -im * betastep)
-    psit = random_mps(StableRNG(123), sites)
-    betas = 0.0:betastep:beta
-    variance(psi) = real(inner(H, psi, H, psi) - inner(psi', H, psi)^2)
-    energy_vars = [variance(psit)]
-    for _ in betas[2:end]
-        psit = normalize(SpinChain.tebd(gates, psit; cutoff))
-        push!(energy_vars, variance(psit))
-    end
-    p = plot(
-        betas, energy_vars;
-        xlabel = "Imaginary Time", ylabel = "Energy Variance", legend = false
-    )
-    savefig(p, joinpath(IMAGE_DIR, "3-energy_variance.png"))
+# Tutorial 3: sampled magnetization of a random MPS against `expect`
+function plot_sampled_sz(; nsite = 20, nsample = 2000, linkdim = 4, rng = StableRNG(1234))
+    res = Sampling.main(; nsite, nsample, linkdim, rng, outputlevel = 0)
+    p = Sampling.plot_sampled_sz(res)
+    savefig(p, joinpath(IMAGE_DIR, "3-sampled_sz.png"))
     return p
 end
 
@@ -105,7 +84,11 @@ end
 function plot_specific_heat(;
         betas = 0.2:0.2:8.0, high_temperature_betas = 0.1:0.1:0.5, nsite = 15, NMETTS = 40
     )
-    results = [METTS.main(; beta, betastep = 0.1, NMETTS, nsite, outputlevel = 0) for beta in betas]
+    # A fresh seeded generator for each run, so every point is reproducible on its own
+    results = [
+        METTS.main(; beta, betastep = 0.1, NMETTS, nsite, rng = StableRNG(123), outputlevel = 0)
+            for beta in betas
+    ]
     p = plot(
         betas, METTS.specific_heat.(results);
         xlabel = "Beta", ylabel = "Specific Heat", legend = false
@@ -113,7 +96,7 @@ function plot_specific_heat(;
     savefig(p, joinpath(IMAGE_DIR, "4-specific_heat.png"))
 
     high_temperature_results = [
-        METTS.main(; beta, betastep = 0.01, NMETTS, nsite, outputlevel = 0)
+        METTS.main(; beta, betastep = 0.01, NMETTS, nsite, rng = StableRNG(123), outputlevel = 0)
             for beta in high_temperature_betas
     ]
     p_high_temperature = plot(
@@ -128,7 +111,7 @@ function make_all_plots()
     mkpath(IMAGE_DIR)
     plot_quench()
     plot_neel_entanglement()
-    plot_energy_variance()
+    plot_sampled_sz()
     plot_specific_heat()
     return nothing
 end

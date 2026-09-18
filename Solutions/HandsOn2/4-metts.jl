@@ -1,9 +1,10 @@
-using ITensorMPS: MPS, MPO, OpSum, dmrg, maxlinkdim, random_mps, sample!, siteinds
+using ITensorMPS: MPS, MPO, OpSum, dmrg, maxlinkdim, random_mps, siteinds
 # Functions for performing measurements of MPS
 using ITensorMPS: expect, inner
 # Functions for time evolution
 using ITensorMPS: apply, op
 using LinearAlgebra: norm, normalize
+using Random: default_rng
 # Use to set the RNG seed for reproducibility
 using StableRNGs: StableRNG
 using Statistics: mean
@@ -13,7 +14,9 @@ using Plots: Plots, plot
 using Printf: @printf
 
 # Load the `tebd` function from the TEBD implementation tutorial
-include(joinpath(@__DIR__, "1-tebd-implementation.jl"))
+include("1-tebd-implementation.jl")
+# Load the `sample_state` function from the sampling tutorial
+include("3-sample-implementation.jl")
 
 """
     mean_and_sem(v::Vector)
@@ -25,7 +28,7 @@ of the mean (= the width of distribution of the numbers).
 function mean_and_sem(v::Vector)
     mn = mean(v)
     mn2 = sum(v .^ 2) / length(v)
-    return mn, √((mn2 - mn^2) / length(v))
+    return mn, sqrt(abs(mn2 - mn^2) / length(v))
 end
 
 """
@@ -41,6 +44,8 @@ Heisenberg spin-1/2 chain to compute thermal expectation values at finite temper
 - `cutoff::Float64 = 1.0e-8`: Cutoff for truncation during imaginary time evolution.
 - `NMETTS::Int = 100`: Number of METTS samples to generate for averaging.
 - `Nwarm::Int = 10`: Number of warmup METTS to generate before collecting measurements.
+- `rng::AbstractRNG = default_rng()`: Random number generator. Pass a seeded one, such as
+  `StableRNG(123)`, to get the same results every run.
 - `outputlevel::Int = 1`: Controls how much information will be printed by the script.
 
 # Returns
@@ -68,6 +73,7 @@ function main(;
         # METTS parameters
         NMETTS = 100,
         Nwarm = 10,
+        rng = default_rng(),
         outputlevel = 1,
     )
     # Build the physical indices for nsite spins (spin 1/2)
@@ -102,7 +108,6 @@ function main(;
     )
 
     # Make starting state
-    rng = StableRNG(123)
     psi = random_mps(rng, sites)
 
     # Make y-rotation gates to use in METTS collapses
@@ -153,10 +158,10 @@ function main(;
         # Measure in X or Z basis on alternating steps
         if step % 2 == 1
             psi = apply(Ry_gates, psi)
-            samp = sample!(rng, psi)
+            samp = sample_state(rng, psi)
             state = [samp[j] == 1 ? "X+" : "X-" for j in 1:nsite]
         else
-            samp = sample!(rng, psi)
+            samp = sample_state(rng, psi)
             state = [samp[j] == 1 ? "Z+" : "Z-" for j in 1:nsite]
         end
         if outputlevel > 0 && step % print_every == 0

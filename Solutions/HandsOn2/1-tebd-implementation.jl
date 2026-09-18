@@ -10,7 +10,7 @@ using StableRNGs: StableRNG
 # Load the Plots package for plotting
 using Plots: Plots, plot, plot!
 
-include(joinpath(@__DIR__, "..", "..", "Tutorials", "HandsOn2", "resources", "reference_tebd.jl"))
+include("../../Tutorials/HandsOn2/resources/reference_tebd.jl")
 
 function tebd_step(gate::ITensor, A::ITensor, B::ITensor; truncation_keyword_args...)
 
