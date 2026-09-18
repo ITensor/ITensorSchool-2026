@@ -276,9 +276,9 @@ ITensorMPS has its own version of this, [`ITensorMPS.sample!`](https://docs.iten
 
 Here are some followup questions regarding the performance of the implementation.
 
-1. For a spin-1/2 site, `sample_state` computes the probabilities of both states even though the second one is whatever probability is left over. How would you draw a state without computing every one of its probabilities? On a spin-1/2 site that saves at most one of the two projected environments, but on a site with a larger physical dimension it saves most of them, since you can stop as soon as the running total passes the random number you drew. Hint: closing `L` with `Rs[j]` gives the total weight of all of the states of site `j` added together, which is what you were dividing by in step (2).
+1. How would you sample the state of a site without computing the probability of every state of the site? This saves more the larger the physical dimension of the site is. Hint: you only need to compute probabilities up to the random number drawn, if you know the normalization.
 
-2. To check your work, `main` calls your `sample_state` 2000 times on the same MPS, and every one of those calls contracts the norm network from the right all over again. How would you draw many states without repeating that work? Hint: `Rs` does not depend on the states that get drawn.
+2. How would you draw many states from the same MPS without repeating the work that does not change between them? Hint: `Rs` does not depend on the states that get drawn.
 
 This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 
