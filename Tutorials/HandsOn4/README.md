@@ -21,11 +21,12 @@ julia> pwd()
 "[...]/ITensorSchool-2026/Tutorials/HandsOn4"
 
 julia> readdir()
-10-element Vector{String}:
+14-element Vector{String}:
  "1-tensornetworks.jl"
  "2-bp-implementation.jl"
  "3-beliefpropagation.jl"
  "4-clusterexpansion.jl"
+ "5-quantumbp.jl"
 [...]
 
 julia> ]
@@ -427,26 +428,28 @@ $$P_{2} = \frac{1}{3} + \frac{1}{2}\mathbf{S}_{i} \cdot \mathbf{S}_{j} + \frac{1
 
 which is where the biquadratic term in the usual AKLT Hamiltonian comes from. Affleck, Kennedy, Lieb and Tasaki introduced the model in 1987 as a rigorous example of the Haldane gap, and its spin-1/2 edge states are the standard first example of a symmetry protected topological phase.
 
-The template is [quantum_belief_propagation.jl](./quantum_belief_propagation.jl). The message passing loop, the initial messages and an exact contraction routine to check against are written for you; the three numbered steps are yours. Running it before you start will tell you how far off you are:
+The code you have to write is in [quantum_belief_propagation.jl](./quantum_belief_propagation.jl), and the driver that exercises it is [5-quantumbp.jl](./5-quantumbp.jl), which works the same way as the numbered scripts in the tutorials above. The message passing loop, the initial messages and an exact contraction routine to check against are written for you; the three numbered steps are yours. Running the driver before you start will tell you how far off you are:
 
 ```julia
-julia> include("quantum_belief_propagation.jl")
+julia> include("5-quantumbp.jl")
 main
 
 julia> res = main();
-Quantum BP converged after 1 iterations
+BP Algorithm Converged after 1 iterations
 Physical spin on vertex 2: S = 1.0
 ⟨(Sᶻ)²⟩ BP    = 0.0
 ⟨(Sᶻ)²⟩ exact = 0.6666666666666666
 Quantum BP DOES NOT agree with exact contraction (it should on a tree)
 ```
 
-Step (1) is the message update, step (2) a single vertex expectation value and step (3) a two vertex one, each built by absorbing messages into the ket layer before touching the bra. Note that expectation values are ratios of two contractions sharing the same messages, so the normalization cancels and nothing like `binormalized_messages` is needed. The default graph is an open path, which is a tree, so belief propagation is exact there and `main` checks it for you.
+Step (1) is `updated_message`, step (2) is `expect` for a single vertex and step (3) is `expect_bond` for a neighbouring pair, each built by absorbing messages into the ket layer before touching the bra. Note that expectation values are ratios of two contractions sharing the same messages, so the normalization cancels and nothing like `binormalized_messages` is needed. The default graph is an open path, which is a tree, so belief propagation is exact there and `main` checks it for you.
+
+These functions share their names with the ones in `belief_propagation.jl`, but they all take the `state` as their first argument, so the two sets stay apart.
 
 Once it passes, the physics is yours to explore. Some suggestions:
 
 - On a ring, check $\langle S^{z} \rangle = 0$ and $\langle (S^{z})^{2} \rangle = 2/3$. Be warned that these are not a real test: the single site reduced density matrix of the AKLT state is maximally mixed by symmetry, so any method that respects the symmetry gets them right.
-- Assemble the Heisenberg bond energy from your two site function, using $\mathbf{S}_{v} \cdot \mathbf{S}_{w} = S^{z}S^{z} + (S^{+}S^{-} + S^{-}S^{+})/2$, and compare to the exact thermodynamic limit value $-4/3$ for the spin-1 chain, which follows from the famous correlation function $\langle S^{z}_{i} S^{z}_{j} \rangle = \frac{4}{3}\left(-\frac{1}{3}\right)^{|i-j|}$. Compare also to exact contraction of the finite ring. Belief propagation gives $-4/3$ at *every* ring size, while exact contraction of the finite ring only approaches it as the ring grows, the same effect you saw for the periodic Ising chain in Tutorial 3.
+- Assemble the Heisenberg bond energy from your two site function, using $\mathbf{S}_{v} \cdot \mathbf{S}_{w} = S^{z}S^{z} + (S^{+}S^{-} + S^{-}S^{+})/2$, and compare to the exact thermodynamic limit value $-4/3$ for the spin-1 chain, which follows from the famous correlation function $\langle S^{z}_{i} S^{z}_{j} \rangle = \frac{4}{3}\left(-\frac{1}{3}\right)^{|i-j|}$. Compare also to exact contraction of the finite ring, for which `expect_exact` takes a pair of vertices and operators. Belief propagation gives $-4/3$ at *every* ring size, while exact contraction of the finite ring only approaches it as the ring grows, the same effect you saw for the periodic Ising chain in Tutorial 3.
 - Evaluate the parent Hamiltonian itself and confirm the bond energy vanishes to machine precision. Squaring the sum of three terms above gives nine, each still a product of one operator per vertex since $(A \otimes B)(A' \otimes B') = AA' \otimes BB'$. Unlike the correlations, this is a statement about the state alone, so it holds at any ring size.
 - Move to a periodic square lattice, where the state becomes the spin-2 AKLT state and belief propagation is genuinely approximate. How large is the discrepancy against exact contraction, and how does it compare to the Ising errors from Tutorial 3? Note the $P_{2}$ formula above is the spin-1 projector and no longer applies; the parent Hamiltonian there projects onto total spin 4.
 

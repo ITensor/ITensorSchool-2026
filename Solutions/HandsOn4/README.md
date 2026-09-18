@@ -11,7 +11,9 @@ intentionally left partially blank.
 - [quantum_belief_propagation.jl](./quantum_belief_propagation.jl): the completed quantum
   belief propagation from stretch goal 4, with steps (1), (2) and (3) filled in, followed by
   the Heisenberg bond energy and the AKLT parent Hamiltonian projector asked for at the end
-  of that stretch goal.
+  of that stretch goal. Copy this file over
+  `Tutorials/HandsOn4/quantum_belief_propagation.jl` to run `5-quantumbp.jl` if you get
+  stuck.
 
 Each file here loads whatever it needs from `Tutorials/HandsOn4`, so you can `include` it
 from this folder as it is. The figures in the Hands-On 4 README that show the result of an
