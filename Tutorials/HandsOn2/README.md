@@ -276,7 +276,7 @@ ITensorMPS has its own version of this, [`ITensorMPS.sample!`](https://docs.iten
 
 Here are some followup questions regarding the performance of the implementation.
 
-1. For a spin-1/2 site, `sample_state` computes the probabilities of both states even though the second one is whatever probability is left over. How would you draw a state without computing every one of its probabilities? On a spin-1/2 site that saves at most one contraction, but on a site with a larger physical dimension it saves most of them, since you can stop as soon as the running total passes the random number you drew. Hint: closing `L` with `Rs[j]` gives the total weight of all of the states of site `j` added together, which is what you were dividing by in step (2).
+1. For a spin-1/2 site, `sample_state` computes the probabilities of both states even though the second one is whatever probability is left over. How would you draw a state without computing every one of its probabilities? On a spin-1/2 site that saves at most one of the two projected environments, but on a site with a larger physical dimension it saves most of them, since you can stop as soon as the running total passes the random number you drew. Hint: closing `L` with `Rs[j]` gives the total weight of all of the states of site `j` added together, which is what you were dividing by in step (2).
 
 2. To check your work, `main` calls your `sample_state` 2000 times on the same MPS, and every one of those calls contracts the norm network from the right all over again. How would you draw many states without repeating that work? Hint: `Rs` does not depend on the states that get drawn.
 
