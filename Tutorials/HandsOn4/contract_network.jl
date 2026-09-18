@@ -1,4 +1,4 @@
-using Graphs: add_edge!, edges, nv, rem_vertex!, vertices
+using Graphs: add_edge!, dst, edges, neighbors, nv, rem_vertex!, src, vertices
 using ITensors: dim, inds
 using NamedGraphs: NamedGraph
 
