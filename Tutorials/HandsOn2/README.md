@@ -243,17 +243,13 @@ The sweep then runs left to right, keeping a left environment `L` which holds th
 
 <!-- TODO: diagram of L, site j projected onto state n, and Rs[j+1] closing into a number -->
 
-Take advantage of printing ITensors, adding lines such as
-```
-@show inds(L)
-```
-to understand the structure of the tensors.
+The following functionality may be useful:
 
-Some functions you will want:
+- `@show inds(L)` prints the indices of an ITensor, which is the quickest way to see what you are holding at any point.
+- `onehot(s => n)` picks out state `n` of the site index `s`.
+- `scalar` turns a tensor with no indices into a number.
 
-1. `onehot(s => n)` picks out state `n` of the site index `s`.
-
-2. `scalar` turns a tensor with no indices into a number, and `cumsum` and `searchsortedfirst` make the draw.
+The [ITensor code examples](https://docs.itensor.org/ITensors/stable/examples/ITensor.html) page has more on working with ITensors.
 
 <!-- TODO: with the diagrams in place, say which functions each step needs -->
 
@@ -274,9 +270,9 @@ Your number will not be this one. `main` draws with a fresh random number genera
 
 The two curves do not lie on top of each other, and they should not: sampling gives a Monte Carlo estimate of $\langle Sz_j \rangle$, so the difference shrinks like $1/\sqrt{\rm nsample}$. Try raising and lowering `nsample` to see that.
 
-ITensorMPS has its own version of this, `ITensorMPS.sample!`, which gets at the same conditional probabilities by orthogonalizing the MPS rather than by building environments. Compare yours against it if you like. The exclamation mark is there because it works in place, changing the MPS you hand it, and it needs that MPS normalized, while yours leaves `psi` alone and samples it in whatever form it arrives in.
+ITensorMPS has its own version of this, [`ITensorMPS.sample!`](https://docs.itensor.org/ITensorMPS/stable/MPSandMPO.html#ITensorMPS.sample!-Tuple{MPS}), which gets at the same conditional probabilities by orthogonalizing the MPS rather than by building environments. (The exclamation mark is there to indicate that the state is orthogonalized in-place.) Compare yours against it if you like.
 
-Two questions to think about, both about work that `sample_state` is doing more of than it needs to.
+Two questions to think about, both about doing less work than the version you just wrote.
 
 1. For a spin-1/2 site, `sample_state` computes the probabilities of both states even though the second one is whatever probability is left over. How would you draw a state without computing every one of its probabilities? Hint: closing `L` with `Rs[j]` gives the total weight of all of the states of site `j` added together, which is what you were dividing by in step (2).
 
@@ -295,11 +291,11 @@ We are now going to run the METTS (minimally entangled thermal states) algorithm
 
 METTS reaches finite temperature by evolving in imaginary time rather than real time, which with tensor networks is just the substitution $dt \rightarrow - {\rm i} d \beta$. The script makes gates for a step of size `betastep` that way, so the loop is your `tebd` from Tutorial 1 and your `sample_state` from Tutorial 3 used together: evolve a product state to inverse temperature $\beta/2$, measure it, collapse it back to a product state by sampling it, and repeat.
 
-This tutorial is the one place both of your earlier implementations have to work at once, so do not let an unfinished exercise stop you from getting here. If your `sample_state` from Tutorial 3 is not working yet, replace both `sample_state(rng, psi)` calls in the METTS loop with ITensorMPS's own version:
+If your `sample_state` from Tutorial 3 is not working yet, replace both `sample_state(rng, psi)` calls in the METTS loop with ITensorMPS's own version:
 ```julia
             samp = ITensorMPS.sample!(rng, psi)
 ```
-and come back to your own later. For `tebd_step`, or if you would rather just run the finished code, completed versions of both files are in [Solutions/HandsOn2](../../Solutions/HandsOn2) and can be copied over the ones in this folder.
+and come back to your own later. Completed versions of both files are in [Solutions/HandsOn2](../../Solutions/HandsOn2), which you can copy over the ones in this folder if `tebd_step` is also unfinished, or if you would rather just run the working code.
 
 1. Run the `main` function from `4-metts.jl` to get an estimate of the energy of the 1D Heisenberg chain at finite temperature (by default, `nsite = 10` and `beta = 4.0`):
 ```julia
