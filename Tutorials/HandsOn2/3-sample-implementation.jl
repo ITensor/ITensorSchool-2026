@@ -100,7 +100,8 @@ Average ⟨Szⱼ⟩ on each site j over a collection of sampled product states, 
 spin-1/2 site is up and state 2 is down.
 """
 function sampled_sz(states::Vector{Vector{Int}})
-    return [mean(state[j] == 1 ? 1 / 2 : -1 / 2 for state in states) for j in 1:length(first(states))]
+    spin(n) = n == 1 ? 1 / 2 : -1 / 2
+    return [mean(spin(state[j]) for state in states) for j in 1:length(first(states))]
 end
 
 """
