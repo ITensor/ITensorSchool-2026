@@ -26,8 +26,9 @@ of the mean (= the width of distribution of the numbers).
 """
 function mean_and_sem(v::Vector)
     mn = mean(v)
-    mn2 = sum(v .^ 2) / length(v)
-    return mn, √((mn2 - mn^2) / length(v))
+    # Summing the squared deviations rather than ⟨v²⟩ - ⟨v⟩² keeps this from going slightly
+    # negative, and taking the square root of a negative number, when every entry is the same
+    return mn, √(sum(abs2, v .- mn)) / length(v)
 end
 
 """

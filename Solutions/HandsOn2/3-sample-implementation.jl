@@ -69,8 +69,7 @@ sample_state(psi::MPS) = sample_state(default_rng(), psi)
 Draw one product state from |⟨state|ψ⟩|² using right environments `Rs` that were contracted
 from `psi` and `psid` beforehand.
 
-`psid` has to be passed along with `Rs`, since the link indices it was built with are new
-ones that nothing else can reproduce.
+`psid` is passed along with `Rs` so that the link indices match up properly.
 """
 function sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor})
     nsite = length(psi)
@@ -130,23 +129,28 @@ function sampled_sz(states::Vector{Vector{Int}})
     return [mean(state[j] == 1 ? 1 / 2 : -1 / 2 for state in states) for j in 1:length(first(states))]
 end
 
-# Draw many product states from a random MPS with your `sample_state` function and compare the
-# magnetization they give against `expect`.
-#
-# Keywords:
-# - `nsite::Int = 20`: Number of sites in the spin chain.
-# - `nsample::Int = 2000`: Number of product states to draw.
-# - `linkdim::Int = 4`: Bond dimension of the random MPS that is sampled.
-# - `outputlevel::Int = 1`: Controls how much information will be printed by the script.
-#
-# Returns a named tuple containing:
-# - `psi::MPS`: The MPS that was sampled.
-# - `states::Vector{Vector{Int}}`: The product states that were drawn.
-# - `sz::Vector{Float64}`: Vector of ⟨Szⱼ⟩ from your samples.
-# - `sz_reference::Vector{Float64}`: Vector of ⟨Szⱼ⟩ from `expect`, for checking.
-# - `nsite::Int`: Same as above.
-# - `nsample::Int`: Same as above.
-# - `linkdim::Int`: Same as above.
+"""
+    main(; kwargs...)
+
+Draw many product states from a random MPS with your `sample_state` function and compare the
+magnetization they give against `expect`.
+
+# Keywords
+- `nsite::Int = 20`: Number of sites in the spin chain.
+- `nsample::Int = 2000`: Number of product states to draw.
+- `linkdim::Int = 4`: Bond dimension of the random MPS that is sampled.
+- `outputlevel::Int = 1`: Controls how much information will be printed by the script.
+
+# Returns
+A named tuple containing:
+- `psi::MPS`: The MPS that was sampled.
+- `states::Vector{Vector{Int}}`: The product states that were drawn.
+- `sz::Vector{Float64}`: Vector of ⟨Szⱼ⟩ from your samples.
+- `sz_reference::Vector{Float64}`: Vector of ⟨Szⱼ⟩ from `expect`, for checking.
+- `nsite::Int`: Same as above.
+- `nsample::Int`: Same as above.
+- `linkdim::Int`: Same as above.
+"""
 function main(; nsite = 20, nsample = 2000, linkdim = 4, outputlevel = 1)
     rng = StableRNG(1234)
     sites = siteinds("S=1/2", nsite)

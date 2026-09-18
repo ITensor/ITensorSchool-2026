@@ -249,13 +249,13 @@ Take advantage of printing ITensors, adding lines such as
 ```
 to understand the structure of the tensors.
 
-Here are tips for each step.
+Some functions you will want:
 
-1. The `onehot(s => n)` function makes a vector on the site index `s` which is 1 for state `n` and 0 otherwise, so contracting it with a tensor picks out that state. Both `psi[j]` and `psid[j]` share the site index `s`, so each has to be projected. Watch the order you contract in: projecting a site tensor first keeps the largest intermediate tensor as small as possible.
+1. `onehot(s => n)` picks out state `n` of the site index `s`.
 
-2. Each of the environments from step (1) closes with `Rs[j + 1]` into a tensor with no indices, and the ITensor `scalar` function turns that into a number. Those numbers are the relative probabilities of the states of site `j`, so dividing them by their sum gives probabilities which add up to 1. To draw from them, compare a uniform random number `rand(rng)` against the running total `cumsum(probabilities)`, which the Julia function `searchsortedfirst` will do for you.
+2. `scalar` turns a tensor with no indices into a number, and `cumsum` and `searchsortedfirst` make the draw.
 
-3. The environment you built in step (1) for the state that was drawn already has site `j` projected onto it, so it is exactly the left environment the next site needs.
+<!-- TODO: with the diagrams in place, say which functions each step needs -->
 
 Once `sample_state` works, running `main()` draws 2000 product states from a random MPS and compares the magnetization they give against `expect`:
 ```julia
@@ -272,7 +272,7 @@ julia> res = main();
 
 The two curves do not lie on top of each other, and they should not: sampling gives a Monte Carlo estimate of $\langle Sz_j \rangle$, so the difference shrinks like $1/\sqrt{\rm nsample}$. Try raising and lowering `nsample` to see that.
 
-ITensorMPS has its own version of this, `ITensorMPS.sample`, which gets at the same conditional probabilities by orthogonalizing the MPS rather than by building environments. Compare yours against it if you like. It expects an MPS that is already normalized with its orthogonality center on site 1, so calling it means writing `ITensorMPS.sample(rng, orthogonalize(psi, 1))`, while yours needs neither of those things: the environments carry the normalization for you, which is what lets it sample an MPS in any form.
+ITensorMPS has its own version of this, `ITensorMPS.sample!`, which gets at the same conditional probabilities by orthogonalizing the MPS rather than by building environments. Compare yours against it if you like. The exclamation mark is there because it works in place, changing the MPS you hand it, and it needs that MPS normalized, while yours leaves `psi` alone and samples it in whatever form it arrives in.
 
 Two questions to think about, both about work that `sample_state` is doing more of than it needs to.
 
@@ -295,7 +295,7 @@ METTS reaches finite temperature by evolving in imaginary time rather than real 
 
 This tutorial is the one place both of your earlier implementations have to work at once, so do not let an unfinished exercise stop you from getting here. If your `sample_state` from Tutorial 3 is not working yet, replace both `sample_state(rng, psi)` calls in the METTS loop with ITensorMPS's own version:
 ```julia
-            samp = ITensorMPS.sample(rng, orthogonalize(psi, 1))
+            samp = ITensorMPS.sample!(rng, psi)
 ```
 and come back to your own later. For `tebd_step`, or if you would rather just run the finished code, completed versions of both files are in [Solutions/HandsOn2](../../Solutions/HandsOn2) and can be copied over the ones in this folder.
 

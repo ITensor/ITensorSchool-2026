@@ -1,6 +1,6 @@
-# ITensorMPS itself is loaded so that its own `ITensorMPS.sample` is available to compare
-# against, or to fall back on
-using ITensorMPS: ITensorMPS, MPS, orthogonalize, random_mps, siteinds
+# ITensorMPS itself is loaded so that its own `ITensorMPS.sample!` is available to compare
+# against
+using ITensorMPS: ITensorMPS, MPS, random_mps, siteinds
 # Functions for performing measurements of MPS
 using ITensorMPS: dag, expect, sim_linkinds
 # Functions for building the tensors used when sampling
@@ -45,7 +45,9 @@ function sample_state(rng::AbstractRNG, psi::MPS)
     # L is the part of the norm network to the left of site j, projected onto the states
     # that have been drawn so far. It starts out trivial and grows one site at a time.
     L = ITensor(1.0)
-    result = zeros(Int, nsite)
+    # Until step (3) is filled in this stays as it starts, so the unfinished `sample_state`
+    # returns every site in its first state rather than something that is not a state at all
+    result = ones(Int, nsite)
     for j in 1:nsite
         s = sites[j]
 
@@ -101,23 +103,28 @@ function sampled_sz(states::Vector{Vector{Int}})
     return [mean(state[j] == 1 ? 1 / 2 : -1 / 2 for state in states) for j in 1:length(first(states))]
 end
 
-# Draw many product states from a random MPS with your `sample_state` function and compare the
-# magnetization they give against `expect`.
-#
-# Keywords:
-# - `nsite::Int = 20`: Number of sites in the spin chain.
-# - `nsample::Int = 2000`: Number of product states to draw.
-# - `linkdim::Int = 4`: Bond dimension of the random MPS that is sampled.
-# - `outputlevel::Int = 1`: Controls how much information will be printed by the script.
-#
-# Returns a named tuple containing:
-# - `psi::MPS`: The MPS that was sampled.
-# - `states::Vector{Vector{Int}}`: The product states that were drawn.
-# - `sz::Vector{Float64}`: Vector of ⟨Szⱼ⟩ from your samples.
-# - `sz_reference::Vector{Float64}`: Vector of ⟨Szⱼ⟩ from `expect`, for checking.
-# - `nsite::Int`: Same as above.
-# - `nsample::Int`: Same as above.
-# - `linkdim::Int`: Same as above.
+"""
+    main(; kwargs...)
+
+Draw many product states from a random MPS with your `sample_state` function and compare the
+magnetization they give against `expect`.
+
+# Keywords
+- `nsite::Int = 20`: Number of sites in the spin chain.
+- `nsample::Int = 2000`: Number of product states to draw.
+- `linkdim::Int = 4`: Bond dimension of the random MPS that is sampled.
+- `outputlevel::Int = 1`: Controls how much information will be printed by the script.
+
+# Returns
+A named tuple containing:
+- `psi::MPS`: The MPS that was sampled.
+- `states::Vector{Vector{Int}}`: The product states that were drawn.
+- `sz::Vector{Float64}`: Vector of ⟨Szⱼ⟩ from your samples.
+- `sz_reference::Vector{Float64}`: Vector of ⟨Szⱼ⟩ from `expect`, for checking.
+- `nsite::Int`: Same as above.
+- `nsample::Int`: Same as above.
+- `linkdim::Int`: Same as above.
+"""
 function main(; nsite = 20, nsample = 2000, linkdim = 4, outputlevel = 1)
     rng = StableRNG(1234)
     sites = siteinds("S=1/2", nsite)
