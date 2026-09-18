@@ -1,4 +1,4 @@
-using ITensorMPS: MPS, MPO, OpSum, dmrg, maxlinkdim, random_mps, sample!, siteinds
+using ITensorMPS: MPS, MPO, OpSum, dmrg, maxlinkdim, random_mps, siteinds
 # Functions for performing measurements of MPS
 using ITensorMPS: expect, inner
 # Functions for time evolution
@@ -13,7 +13,9 @@ using Plots: Plots, plot
 using Printf: @printf
 
 # Load the `tebd` function from the TEBD implementation tutorial
-include(joinpath(@__DIR__, "1-tebd-implementation.jl"))
+include("1-tebd-implementation.jl")
+# Load the `sample_state` function from the sampling tutorial
+include("3-sample-implementation.jl")
 
 """
     mean_and_sem(v::Vector)
@@ -153,10 +155,10 @@ function main(;
         # Measure in X or Z basis on alternating steps
         if step % 2 == 1
             psi = apply(Ry_gates, psi)
-            samp = sample!(rng, psi)
+            samp = sample_state(rng, psi)
             state = [samp[j] == 1 ? "X+" : "X-" for j in 1:nsite]
         else
-            samp = sample!(rng, psi)
+            samp = sample_state(rng, psi)
             state = [samp[j] == 1 ? "Z+" : "Z-" for j in 1:nsite]
         end
         if outputlevel > 0 && step % print_every == 0
