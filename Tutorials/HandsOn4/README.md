@@ -401,6 +401,46 @@ julia> g3 = named_grid((4, 4, 4));
 
 3. The BP implementation you wrote updates every message simultaneously from the previous set of messages (a "parallel" or Jacobi-style schedule). Modify `update_messages` so that each new message is immediately used when computing the following ones (a "sequential" or Gauss-Seidel-style schedule). How does the number of iterations to converge change? Does the order in which you visit the edges matter?
 
+4. Everything so far has been a classical partition function. Belief propagation works just as well on a quantum state, and this stretch goal uses it to study the AKLT state.
+
+A tensor network state puts a tensor on every vertex carrying one extra *physical* index. Its norm $\langle \psi | \psi \rangle$ is obtained by contracting each tensor with its own conjugate over that physical index, which leaves a tensor network on the **same** graph. That network is an ordinary dictionary of tensors, so the `belief_propagation` function you wrote in Tutorial 2 runs on it unchanged. An expectation value is then a ratio of two contractions,
+
+$$\langle O_{v} \rangle = \frac{\langle \psi | O_{v} | \psi \rangle}{\langle \psi | \psi \rangle},$$
+
+where the numerator is the same network with the operator inserted at vertex $v$.
+
+The state we will use is the AKLT (valence bond solid) state, provided in [aklt_tensornetwork.jl](./aklt_tensornetwork.jl). Every edge of the graph carries a singlet of two spin-1/2s, and at a vertex of degree $z$ those $z$ spin-1/2s are projected onto their maximal total spin $S = z/2$. On a ring every vertex has $z = 2$, so this is the spin-1 AKLT chain. On a square lattice $z = 4$ and it is the spin-2 AKLT state.
+
+```julia
+julia> include("aklt_tensornetwork.jl")
+operator_tensor
+
+julia> using NamedGraphs: named_grid
+
+julia> g = named_grid((6, 1); periodic = true);
+
+julia> state = aklt_tensornetwork(g);
+
+julia> messages, niters = belief_propagation(state.tn, g; niters = 2000, tol = 1e-14);
+BP Algorithm Converged after 16 iterations
+```
+
+Note the tighter `tol` than we used for the Ising model. The error in an expectation value goes roughly like the square root of the message convergence measure, so a loose tolerance leaves you several digits short.
+
+Write a function that computes $\langle O_{v} \rangle$ from your converged messages. It is `phi_factor` with an operator inserted: contract `operator_tensor(state, v, O)` with all of the messages incident to `v` for the numerator, and `state.tn[v]` with the same messages for the denominator. The spin operators on a vertex are available as `spin_operators(state.sites[v])`, which returns $S^{z}$, $S^{+}$ and $S^{-}$.
+
+Check that $\langle S^{z} \rangle = 0$ and $\langle (S^{z})^{2} \rangle = 2/3$ on the ring. Be warned that these two are not a real test of belief propagation: the single site reduced density matrix of the AKLT state is maximally mixed by symmetry, so *any* method that respects the symmetry gets them right.
+
+The honest test is a two site quantity. Extend your function to a pair of neighbouring vertices `v` and `w`, contracting both vertex tensors together with the messages on the boundary of the pair, `boundary_edges(g, [v, w]; dir = :in)`. This is exactly what `phi_cluster_correction` does for a loop, applied to a cluster of two. Assemble the Heisenberg bond energy
+
+$$\langle \mathbf{S}_{v} \cdot \mathbf{S}_{w} \rangle = \langle S^{z}_{v} S^{z}_{w} \rangle + \frac{1}{2}\left( \langle S^{+}_{v} S^{-}_{w} \rangle + \langle S^{-}_{v} S^{+}_{w} \rangle \right).$$
+
+For the spin-1 AKLT chain this is known exactly in the thermodynamic limit, $\langle \mathbf{S}_{i} \cdot \mathbf{S}_{i+1} \rangle = -4/3$, which follows from the famous correlation function $\langle S^{z}_{i} S^{z}_{j} \rangle = \frac{4}{3}\left(-\frac{1}{3}\right)^{|i-j|}$.
+
+Compare your belief propagation answer on the ring to that exact value, and also to exact contraction of the finite ring using `contract_network`. You should find that belief propagation gives $-4/3$ for *every* ring size, while exact contraction of the finite ring only approaches it as the ring grows. This is the same effect you saw for the periodic Ising chain in Tutorial 3: belief propagation on a ring is working directly in the thermodynamic limit.
+
+Finally, move to a periodic square lattice, where the state becomes the spin-2 AKLT state and belief propagation is genuinely approximate. How large is the discrepancy against exact contraction now, and how does it compare to the Ising errors you measured in Tutorial 3?
+
 This is the end of the tutorials, click [here](#table-of-contents) to return to the table of contents.
 
 </details>

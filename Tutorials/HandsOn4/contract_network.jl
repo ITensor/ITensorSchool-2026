@@ -15,6 +15,11 @@ function contract_network(tn::Dict, g::NamedGraph)
     if nv(g) == 1
         return only(values(tn))
     end
+    if isempty(edges(g))
+        # Nothing left to contract over: the remaining tensors share no indices, so the
+        # result is just their product.
+        return prod(values(tn))
+    end
     min_e = argmin(edges(g)) do e
         t1 = tn[src(e)]
         t2 = tn[dst(e)]
