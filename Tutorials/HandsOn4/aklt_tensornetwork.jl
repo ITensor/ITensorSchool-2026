@@ -12,9 +12,10 @@ spin-1/2s are projected onto their maximal total spin `S = z/2`, so the physical
 has dimension `z + 1`. On a ring every vertex has `z = 2` and the state is the familiar
 spin-1 AKLT chain; on a square lattice `z = 4` and it is the spin-2 AKLT state.
 
-This returns the state itself, one tensor per vertex, each carrying one physical index and
-one virtual index per incident edge. It does *not* build the norm network `⟨ψ|ψ⟩`: see
-`ket_tensor` and `bra_tensor`, and the note there about why the two layers are kept apart.
+The result is the state itself: one tensor per vertex, each carrying one physical index and
+one virtual index per incident edge. The norm network `⟨ψ|ψ⟩` is never built explicitly.
+Its two layers are reached through `ket_tensor` and `bra_tensor` and kept apart until they
+are contracted with messages, see the note on `bra_tensor`.
 
 # Returns
 A named tuple containing:
@@ -28,9 +29,10 @@ function aklt_tensornetwork(g::NamedGraph)
     links = merge(links, Dict(reverse(e) => links[e] for e in edges(g)))
     sites = Dict(v => Index(degree(g, v) + 1, "s$(v)") for v in vertices(g))
 
-    # Project the z virtual spin-1/2s on each vertex onto total spin S = z/2. A virtual index
-    # value of 1 is "up" and 2 is "down"; a configuration with k downs contributes to the
-    # physical basis state k + 1, with the normalization of a symmetrized state.
+    # Project the z virtual spin-1/2s on each vertex onto total spin S = z/2. Virtual index
+    # value 1 is "up" and 2 is "down". A configuration of the virtual spins with k downs
+    # belongs to the physical state with S^z = S - k, stored as index value k + 1, and every
+    # such configuration enters with the same weight, normalized over the binomial(z, k) of them.
     psi = Dict{Any, ITensor}()
     for v in vertices(g)
         es = incident_edges(g, v)
@@ -44,7 +46,8 @@ function aklt_tensornetwork(g::NamedGraph)
         psi[v] = t
     end
 
-    # Place the singlet on each edge, absorbed into the source endpoint.
+    # Turn the shared virtual index on each edge into a singlet by absorbing the
+    # antisymmetric tensor ε into the tensor at one end of the edge.
     for e in edges(g)
         l = links[e]
         epsilon = ITensor(prime(l), l)
@@ -59,7 +62,11 @@ end
 """
     link_indices(state, v)
 
-The virtual indices on the edges incident to vertex `v`.
+The virtual indices of the tensor on vertex `v`, one per incident edge.
+
+This and the functions below work for any tensor network state stored the way
+`aklt_tensornetwork` returns it: a named tuple with the graph `g`, the tensors `psi`, the
+physical indices `sites` and the virtual indices `links`.
 """
 function link_indices(state, v)
     return [state.links[e] for e in incident_edges(state.g, v)]
@@ -69,10 +76,11 @@ end
     ket_tensor(state, v)
     ket_tensor(state, v, O::ITensor)
 
-The ket layer at vertex `v`, optionally with the operator `O` applied to its physical index.
+The ket layer of the norm network at vertex `v`, which is just the tensor `ψ_v` of the state,
+optionally with the operator `O` applied to its physical index.
 
 `O` is applied with `apply`, so the physical index of the result is unprimed and still
-contracts with `bra_tensor(state, v)`.
+contracts with `bra_tensor(state, v)`. Passing `nothing` for `O` returns the plain ket.
 """
 ket_tensor(state, v) = state.psi[v]
 ket_tensor(state, v, O::ITensor) = apply(O, state.psi[v])
@@ -81,31 +89,31 @@ ket_tensor(state, v, ::Nothing) = ket_tensor(state, v)
 """
     bra_tensor(state, v)
 
-The bra layer at vertex `v`: the conjugate of the ket with its *virtual* indices primed.
+The bra layer of the norm network at vertex `v`: the complex conjugate of `ψ_v` with its
+*virtual* indices primed.
 
-The physical index is left unprimed so that `ket_tensor(state, v) * bra_tensor(state, v)`
-contracts over it, while the virtual indices stay distinct. Each edge of the norm network
+The physical index is left unprimed, so `ket_tensor(state, v) * bra_tensor(state, v)`
+contracts over it while the virtual indices stay distinct. Each edge of the norm network
 therefore carries two indices, the ket leg `l` and the bra leg `l'`.
 
-Note that the two layers are deliberately never multiplied together to form a single
-"double layer" tensor per vertex. Doing so would produce a tensor with `2z` virtual indices,
-costing `χ^(2z)` memory at bond dimension `χ`, which is by far the most expensive object in
-sight. Contracting the messages into the ket first and only then closing with the bra keeps
-the cost down to roughly `χ^(z+1)`. For a degree four vertex at `χ = 10` that is the
-difference between 763 MiB and under a megabyte.
+The two layers are deliberately never multiplied together into one "double layer" tensor per
+vertex. At bond dimension `χ` and degree `z` that tensor has `2z` virtual indices and costs
+`χ^(2z)` to store, far more than anything else in the calculation. Contracting messages into
+the ket first and only then closing with the bra costs about `χ^(z+1)` instead.
 """
 bra_tensor(state, v) = dag(prime(state.psi[v], link_indices(state, v)))
 
 """
     spin_operators(s::Index)
 
-The spin operators `Sᶻ`, `S⁺` and `S⁻` on a physical index `s` of dimension `2S + 1`,
-returned as `ITensor`s with indices `(s', s)`.
+The spin operators `Sᶻ`, `S⁺` and `S⁻` for a spin `S`, on a physical index `s` of dimension
+`2S + 1`, as `ITensor`s with indices `(s', s)`. Index value `i` holds `Sᶻ = S - (i - 1)`, so
+value `1` is the fully polarized "up" state, matching the convention of `aklt_tensornetwork`.
 """
 function spin_operators(s::Index)
     d = dim(s)
     S = (d - 1) / 2
-    m(i) = S - (i - 1)   # the index value i holds magnetic quantum number m
+    m(i) = S - (i - 1)   # index value i holds S^z eigenvalue m
     sz = zeros(d, d)
     sp = zeros(d, d)
     sm = zeros(d, d)

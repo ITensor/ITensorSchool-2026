@@ -8,13 +8,13 @@ include("belief_propagation.jl")
 """
     main(; kwargs...)
 
-Builds the Ising tensor network on an open path graph of `L` vertices, runs your belief
-propagation implementation from `belief_propagation.jl` on it and compares the resulting
-free energy density `ϕ = log(Z) / L` to the exact value obtained by contracting the network.
-On a tree (such as a path graph) belief propagation is exact, so the two should agree once
-your implementation is complete. The pass/fail check is therefore only performed when the
-graph is a tree. If you change the graph to one with loops, BP becomes approximate and the
-script will just print both numbers without judging them.
+Build the Ising tensor network on an open path graph of `L` vertices, run your belief
+propagation from `belief_propagation.jl` on it, and compare the resulting free energy
+density `ϕ = log(Z) / L` to the value from contracting the network exactly.
+
+A path graph is a tree, and on a tree belief propagation is exact, so the two agree once
+your implementation is complete. The pass/fail check is only performed on a tree. On a
+graph with loops belief propagation is approximate, and the script just prints both numbers.
 
 # Keywords
 - `L::Int = 6`: The number of vertices in the path graph.
@@ -23,8 +23,8 @@ script will just print both numbers without judging them.
 
 # Returns
 A named tuple containing:
-- `phi_bp_tn::Number`: The free energy density computed via belief propagation.
-- `phi_contracted_tn::Number`: The free energy density computed via exact contraction.
+- `phi_bp_tn::Number`: The free energy density from belief propagation.
+- `phi_contracted_tn::Number`: The free energy density from exact contraction.
 - `tn::Dict`: The Ising tensor network.
 - `g::NamedGraph`: The graph of the tensor network.
 - `messages::Dict`: The belief propagation messages returned by your implementation.

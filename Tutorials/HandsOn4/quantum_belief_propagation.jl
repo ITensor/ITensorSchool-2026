@@ -10,31 +10,29 @@ include("aklt_tensornetwork.jl")
 """
 Stretch goal: quantum belief propagation.
 
-You are asked to run belief propagation on the norm network `⟨ψ|ψ⟩` of a quantum state and
-use it to compute expectation values. For each numbered step (1), (2), (3) below, fill in
-the missing code, then run `main` in [5-quantumbp.jl](./5-quantumbp.jl).
+You are asked to run belief propagation on the norm network `⟨ψ|ψ⟩` of a tensor network
+state and use it to compute expectation values. For each numbered step (1), (2), (3) below,
+fill in the missing code, then run `main` in `5-quantumbp.jl`.
 
 The norm network has *two* tensors per vertex, the ket `ψ_v` and the bra `conj(ψ_v)`, joined
 over the physical index. Each edge therefore carries two indices, the ket leg `l` and the bra
-leg `l'`, so a message here is a matrix rather than a vector.
+leg `l'`, so a message here is a matrix rather than a vector. Absorb the incoming messages
+into the ket one at a time and only then close with the bra. Never multiply the ket and bra
+of a vertex together first: that is the most expensive object in the whole calculation.
 
-The whole point of this exercise is to never multiply the ket and the bra at a vertex
-together. That product is a tensor with `2z` virtual legs and costs `χ^(2z)` to store, which
-dwarfs everything else in the calculation. Instead, absorb the incoming messages into the
-ket one at a time and only then close with the bra, which costs about `χ^(z+1)`.
+Expectation values are ratios of two contractions that share the same messages, so the
+normalization of the messages cancels. Nothing like `binormalized_messages` is needed here.
 
-Unlike the classical free energy, expectation values are ratios of two contractions that
-share the same messages, so the normalization of the messages cancels and there is no need
-for anything like `binormalized_messages` here.
-
-Every function here takes the `state` returned by `aklt_tensornetwork` as its first argument,
-which is what keeps these names apart from the ones in `belief_propagation.jl`.
+Nothing in this file is specific to the AKLT state. It works for any state stored the way
+`aklt_tensornetwork` returns it, and every function takes that `state` as its first
+argument, which is what keeps these names apart from the ones in `belief_propagation.jl`.
 """
 
 """
     initial_messages(state::NamedTuple)
 
-Initial messages: the identity matrix on the ket and bra legs of each edge.
+The messages to start from: on each directed edge, the identity matrix between the ket leg
+and the bra leg, normalized.
 """
 function initial_messages(state::NamedTuple)
     return Dict(
@@ -46,7 +44,8 @@ end
 """
     updated_message(state::NamedTuple, messages, e)
 
-The new message along the directed edge `e`, from `src(e)` to `dst(e)`.
+The new message along the directed edge `e`, sent from `src(e)` to `dst(e)`: the ket and bra
+on `src(e)` contracted with every message arriving at `src(e)` except the one from `dst(e)`.
 """
 function updated_message(state::NamedTuple, messages, e)
     # The directed edges pointing into `src(e)`, excluding the one coming from `dst(e)`
@@ -75,18 +74,19 @@ end
 """
     belief_propagation(state::NamedTuple[, messages]; kwargs...)
 
-Run belief propagation on the norm network of `state`.
+Run belief propagation on the norm network of `state`: update every message from the current
+ones, repeatedly, until they stop changing.
 
 # Keywords
 - `niters::Int = 2000`: The maximum number of iterations to perform.
-- `tol::Float64 = 1e-14`: The tolerance for convergence. This is tighter than the default
-  used for the Ising model because the error in an expectation value goes roughly like the
-  square root of this measure, so a loose tolerance costs you several digits.
-- `outputlevel::Int = 1`: The verbosity level of the output.
+- `tol::Float64 = 1e-14`: Stop once `message_distance` drops below this. It is tighter than
+  the default used for the Ising model because the error in an expectation value goes
+  roughly like the square root of this measure, so a loose tolerance costs several digits.
+- `outputlevel::Int = 1`: Set to `0` to suppress the printed convergence message.
 
 # Returns
-- `messages::Dict`: The converged messages.
-- `niters`: The number of iterations taken, or `nothing` if it did not converge.
+- `messages::Dict`: The converged messages, one per directed edge.
+- `niters`: The number of iterations taken, or `nothing` if `niters` was reached first.
 """
 function belief_propagation(
         state::NamedTuple, messages = initial_messages(state);
@@ -124,7 +124,8 @@ end
 """
     expect_bond(state::NamedTuple, messages, v, w, Ov, Ow)
 
-The expectation value of `Ov` on vertex `v` times `Ow` on the neighbouring vertex `w`.
+The expectation value `⟨ψ|O_v O_w|ψ⟩ / ⟨ψ|ψ⟩` of an operator on vertex `v` times one on the
+neighbouring vertex `w`. Either operator may be `nothing`, meaning the identity.
 """
 function expect_bond(state::NamedTuple, messages, v, w, Ov, Ow)
     incoming = [messages[e] for e in boundary_edges(state.g, [v, w]; dir = :in)]
@@ -143,10 +144,11 @@ end
     expect_exact(state::NamedTuple, v, O::ITensor)
     expect_exact(state::NamedTuple, v, w, Ov::ITensor, Ow::ITensor)
 
-The same expectation values, obtained by contracting the whole norm network exactly.
+The same expectation values, from contracting the whole norm network exactly with
+`contract_network`. `operators` maps vertices to the operators to insert there.
 
-Only usable on small graphs, and provided here so that you have something to check your
-belief propagation answers against.
+Only usable on small graphs. It is provided so that you have something to check your belief
+propagation answers against.
 """
 function expect_exact(state::NamedTuple, operators::Dict)
     vs = collect(vertices(state.g))

@@ -7,8 +7,8 @@ include("contract_network.jl")
 
 """
     main(; kwargs...)
-    
-Creates a simple path graph, constructs the Ising tensor network on it, and computes the
+
+Create a simple path graph, constructs the Ising tensor network on it, and computes the
 partition function Z by contracting the tensor network.
 
 # Keywords
@@ -17,10 +17,10 @@ partition function Z by contracting the tensor network.
 
 # Returns
 A named tuple containing:
-- `tn::Dict{Any, ITensor}`: The tensor network representation of the Ising model on the graph.
+- `tn::Dict{Any, ITensor}`: The Ising tensor network, one tensor per vertex of `g`.
 - `g::NamedGraph`: The created graph.
-- `z::Number`: The partition function Z computed by contracting the tensor network.
-- `beta::Number`: Same as above.
+- `z::Number`: The partition function, from contracting the network exactly.
+- `beta::Number`: The inverse temperature, as passed in.
 """
 function main(; beta::Number = 0.2, outputlevel::Int = 1)
     # Create a simple graph

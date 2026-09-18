@@ -5,20 +5,28 @@ using QuadGK: quadgk
 """
     ising_tensornetwork(g::NamedGraph, β::Real)
 
-Constructs the tensor network representation of the Ising model on a given graph.
+The tensor network whose full contraction is the partition function of the ferromagnetic
+Ising model on the graph `g` at inverse temperature `β`, with the Boltzmann weight on every
+edge scaled by `1/2`.
+
+The tensor on a vertex is a copy tensor (`delta`), which forces the spin to take the same
+value on every incident edge, with the symmetric square root of the Boltzmann matrix
+`W = exp(β s s') / 2` absorbed into each of its legs. Two neighbouring tensors then share one
+full `W` across their common edge.
 
 # Arguments
-- `g::NamedGraph`: The graph representing the lattice structure of the Ising model.
-- `β::Real`: The inverse temperature parameter.
+- `g::NamedGraph`: The graph whose vertices carry the spins and whose edges carry the couplings.
+- `β::Real`: The inverse temperature.
 
 # Returns
-- `tn::Dict{Any, ITensor}`: A dictionary mapping each vertex to its corresponding tensor in the network.
+- `tn::Dict{Any, ITensor}`: A dictionary mapping each vertex of `g` to its tensor.
 """
 function ising_tensornetwork(g::NamedGraph, β::Real)
     links = Dict(e => Index(2, "e$(src(e))_$(dst(e))") for e in edges(g))
     links = merge(links, Dict(reverse(e) => links[e] for e in edges(g)))
 
-    # symmetric sqrt of Boltzmann matrix W = exp(β σσ')
+    # symmetric square root of the Boltzmann matrix W = exp(β s s') / 2, whose eigenvalues
+    # are cosh(β) and sinh(β)
     λ1, λ2 = cosh(β), sinh(β)
     α = 0.5 * (sqrt(λ1) + sqrt(λ2))
     ϕ = 0.5 * (sqrt(λ1) - sqrt(λ2))
@@ -38,13 +46,15 @@ end
 """
     ising_phi(β::Real)
 
-Computes `ϕ(β) = - β * f(β)` for the 2D Ising model in the thermodynamic limit using Onsager's solution.
+The exact free energy density `ϕ(β) = -β f(β) = log(Z) / N` of the 2D Ising model on the
+square lattice in the thermodynamic limit, from Onsager's solution. The `-log(2)` accounts
+for the `1/2` scaling of the Boltzmann weights used in `ising_tensornetwork`.
 
 # Arguments
-- `β::Real`: The inverse temperature parameter.
+- `β::Real`: The inverse temperature.
 
 # Returns
-- `phi::Real`: `ϕ(β) = - β * f(β)` where `f(β)`` is the exact free energy density.
+- `phi::Real`: The free energy density.
 """
 function ising_phi(β)
     g(θ1, θ2) = log(

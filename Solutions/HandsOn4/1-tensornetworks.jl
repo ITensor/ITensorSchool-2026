@@ -8,7 +8,7 @@ include("../../Tutorials/HandsOn4/contract_network.jl")
 """
     main(; kwargs...)
 
-Creates a path graph on `L` vertices (optionally periodic), constructs the Ising tensor
+Create a path graph on `L` vertices (optionally periodic), constructs the Ising tensor
 network on it, and computes the partition function Z by contracting the tensor network.
 
 This is the completed solution to exercise 1 of Tutorial 1.
@@ -21,10 +21,10 @@ This is the completed solution to exercise 1 of Tutorial 1.
 
 # Returns
 A named tuple containing:
-- `tn::Dict{Any, ITensor}`: The tensor network representation of the Ising model on the graph.
+- `tn::Dict{Any, ITensor}`: The Ising tensor network, one tensor per vertex of `g`.
 - `g::NamedGraph`: The created graph.
-- `z::Number`: The partition function Z computed by contracting the tensor network.
-- `beta::Number`: Same as above.
+- `z::Number`: The partition function, from contracting the network exactly.
+- `beta::Number`: The inverse temperature, as passed in.
 """
 function main(; L::Int = 3, periodic::Bool = false, beta::Number = 0.2, outputlevel::Int = 1)
     # Create a path graph on L vertices

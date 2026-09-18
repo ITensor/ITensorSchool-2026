@@ -4,12 +4,19 @@ using NamedGraphs: NamedGraph
 
 """
     contract_network(tn::Dict, g::NamedGraph)
+    contract_network(tn::Dict)
+    contract_network(tn::Vector)
 
-Contract the tensor network using an eager contraction sequence.
+Contract a whole tensor network down to a single `ITensor`.
 
-# Arguments
-- `tn::Dict`: A dictionary representing the tensor network, where keys are vertices and values are tensors.
-- `g::NamedGraph`: The named graph representing the structure of the tensor network.
+The contraction is greedy: at each step the pair of neighbouring tensors that is cheapest to
+multiply together is contracted, and the graph is updated to merge those two vertices. This
+is fine for the small networks in these tutorials, but the cost still grows exponentially
+with the size of the network, which is why we turn to belief propagation.
+
+The tensor network can be given as a dictionary `tn` from the vertices of `g` to tensors, as
+a dictionary alone, in which case tensors that share an index are treated as neighbours, or
+simply as a vector of tensors.
 """
 function contract_network(tn::Dict, g::NamedGraph)
     if nv(g) == 1

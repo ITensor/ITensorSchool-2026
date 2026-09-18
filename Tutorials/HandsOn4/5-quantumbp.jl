@@ -8,13 +8,14 @@ include("quantum_belief_propagation.jl")
 """
     main(; kwargs...)
 
-Build the AKLT state on a graph, run your quantum belief propagation implementation from
-[quantum_belief_propagation.jl](./quantum_belief_propagation.jl) on its norm network, and
-compare `⟨(Sᶻ)²⟩` on one vertex to exact contraction of the same network.
+Build the AKLT state on a graph, run your quantum belief propagation from
+`quantum_belief_propagation.jl` on its norm network, and compare `⟨(Sᶻ)²⟩` on one vertex to
+the value from contracting the network exactly.
 
-The default graph is an open path, which is a tree, so belief propagation is exact there and
-the two should agree once your implementation is complete. On a graph with loops belief
-propagation is only approximate, so the check is skipped.
+The default graph is an open path, which is a tree, and on a tree belief propagation is
+exact, so the two agree once your implementation is complete. The pass/fail check is only
+performed on a tree. On a graph with loops belief propagation is approximate, and the script
+just prints both numbers.
 
 # Keywords
 - `g`: The graph to build the AKLT state on. Defaults to an open path of six vertices.
@@ -24,7 +25,7 @@ propagation is only approximate, so the check is skipped.
 A named tuple containing:
 - `sz2_bp::Number`: `⟨(Sᶻ)²⟩` on one vertex, from belief propagation.
 - `sz2_exact::Number`: The same quantity, from exact contraction.
-- `state`: The AKLT state.
+- `state`: The AKLT state, as returned by `aklt_tensornetwork`.
 - `messages::Dict`: The messages returned by your implementation.
 - `niters`: The number of iterations taken for convergence.
 """
