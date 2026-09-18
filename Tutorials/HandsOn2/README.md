@@ -235,9 +235,9 @@ In this tutorial you will write that sampling function. Open the file [3-sample-
 
 At the top there is an incomplete `sample_state` function which draws one product state from an MPS. Your task is to complete `sample_state`.
 
-Sites cannot be drawn independently of each other, since the spins of an MPS are correlated. Instead the sites are drawn one at a time from left to right, each one conditioned on the states already drawn to its left, which is what makes the product states that come out samples of $|\langle n_1 n_2 \ldots n_N|\psi\rangle|^2$.
+Sites cannot be drawn independently of each other, since the spins of an MPS are correlated. They are drawn in a sweep from left to right, each one conditioned on the states already drawn to its left, so the result is a sample of $|\langle n_1 n_2 \ldots n_N|\psi\rangle|^2$.
 
-The code that is already written sets this up for you. It builds the norm network $\langle \psi|\psi\rangle$ out of `psi` and a conjugated copy `psid`, then contracts that network from the right, storing the partial contractions in `Rs` so that `Rs[j]` holds everything from site `j` to the end of the chain:
+The code at the top of `sample_state` builds the norm network $\langle \psi|\psi\rangle$ out of `psi` and a conjugated copy `psid`, then contracts that network from the right, storing the partial contractions in `Rs` so that `Rs[j]` holds everything from site `j` to the end of the chain:
 
 <!-- TODO: diagram of the norm network being contracted from the right into the environments Rs -->
 
@@ -270,7 +270,7 @@ Run it a few times and watch that difference move around.
   <img src="resources/images/3-sampled_sz.png" alt="Sampled ⟨Szⱼ⟩ against the exact values" width="500">
 </p>
 
-The two curves do not lie on top of each other, and they should not: sampling gives a Monte Carlo estimate of $\langle Sz_j \rangle$, so the difference shrinks like $1/\sqrt{\rm nsample}$. Try raising and lowering `nsample` to see that.
+The two curves will not lie on top of each other. Sampling gives a Monte Carlo estimate of $\langle Sz_j \rangle$, so the difference shrinks like $1/\sqrt{\rm nsample}$. Try raising and lowering `nsample` to see that.
 
 ITensorMPS has its own version of this, [`ITensorMPS.sample!`](https://docs.itensor.org/ITensorMPS/stable/MPSandMPO.html#ITensorMPS.sample!-Tuple{MPS}), which gets at the same conditional probabilities by orthogonalizing the MPS rather than by building environments. (The exclamation mark is there to indicate that the state is orthogonalized in-place.) Compare yours against it if you like.
 

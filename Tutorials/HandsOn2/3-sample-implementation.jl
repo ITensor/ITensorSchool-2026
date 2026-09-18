@@ -20,8 +20,8 @@ using Plots: Plots, plot, plot!
 Draw one product state from the probability distribution |⟨state|ψ⟩|² defined by the MPS
 `psi`, returned as a vector holding the state that was drawn on each site.
 
-Each site is drawn in turn, conditioned on the states already drawn for the sites to its
-left, which is what makes the states that come out independent samples of |⟨state|ψ⟩|².
+The sites are drawn in a sweep from left to right, each one conditioned on the states
+already drawn to its left, so the result is a sample of |⟨state|ψ⟩|².
 """
 function sample_state(rng::AbstractRNG, psi::MPS)
 
@@ -96,8 +96,8 @@ sample_state(psi::MPS) = sample_state(default_rng(), psi)
 """
     sampled_sz(states::Vector{Vector{Int}})
 
-Average ⟨Szⱼ⟩ on each site j over a collection of sampled product states, where state 1 of a
-spin-1/2 site is up and state 2 is down.
+Average ⟨Szⱼ⟩ on each site j over a collection of sampled product states. Assumes the sites
+are spin-1/2.
 """
 function sampled_sz(states::Vector{Vector{Int}})
     spin(n) = n == 1 ? 1 / 2 : -1 / 2
