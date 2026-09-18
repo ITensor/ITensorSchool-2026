@@ -297,7 +297,7 @@ If your `sample_state` from Tutorial 3 is not working yet, replace both `sample_
 ```julia
             samp = ITensorMPS.sample!(rng, psi)
 ```
-and come back to your own later. Completed versions of both files are in [Solutions/HandsOn2](../../Solutions/HandsOn2), which you can copy over the ones in this folder if `tebd_step` is also unfinished, or if you would rather just run the working code.
+and come back to your own later. If your `tebd_step` from Tutorial 1 is also unfinished, the same trick works for the evolution: replace `tebd(gates, psi; cutoff)` in the loop with `apply(gates, psi; cutoff)`, which is ITensorMPS's own gate application.
 
 1. Run the `main` function from `4-metts.jl` to get an estimate of the energy of the 1D Heisenberg chain at finite temperature (by default, `nsite = 10` and `beta = 4.0`):
 ```julia
