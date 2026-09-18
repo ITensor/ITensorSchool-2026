@@ -45,8 +45,8 @@ function sample_state(rng::AbstractRNG, psi::MPS)
     # L is the part of the norm network to the left of site j, projected onto the states
     # that have been drawn so far. It starts out trivial and grows one site at a time.
     L = ITensor(1.0)
-    # Until step (3) is filled in this stays as it starts, so the unfinished `sample_state`
-    # returns every site in its first state rather than something that is not a state at all
+    # Your implementation should overwrite this state with a sample from the MPS. Until you
+    # implement that, this function will return this trivial all up product state every time.
     result = ones(Int, nsite)
     for j in 1:nsite
         s = sites[j]
