@@ -237,11 +237,11 @@ At the top there is an incomplete `sample_state` function which samples one prod
 
 Sites cannot be sampled independently of each other, since the spins of an MPS are correlated. They are sampled in a sweep from left to right, each one conditioned on the states already sampled to its left, so the result is a sample of $|\langle n_1 n_2 \ldots n_N|\psi\rangle|^2$.
 
-The code at the top of `sample_state` builds the norm network $\langle \psi|\psi\rangle$ out of `psi` and a conjugated copy `psid`, then contracts that network from the right, storing the partial contractions in `Rs` so that `Rs[j]` holds everything from site `j` to the end of the chain:
+The code at the top of `sample_state` builds the norm network $\langle \psi|\psi\rangle$ out of `psi` and a conjugated copy `psid`, whose link indices are primed so that the two copies only meet on the site indices, then contracts that network from the right, storing the partial contractions in `Rs` so that `Rs[j]` holds everything from site `j` to the end of the chain:
 
 <!-- TODO: diagram of the norm network being contracted from the right into the environments Rs -->
 
-The sweep then runs left to right, keeping a left environment `L` which holds the part of the network to the left of site `j`, projected onto the states sampled from that part of the chain. Closing `L` and `Rs[j+1]` around site `j` projected onto one of its states gives the probability of sampling that state:
+The sweep then runs left to right, keeping `L`, the part of `psi` to the left of site `j` projected onto the states sampled so far. Its conjugate `dag(prime(L))` is the matching part of `psid`, so closing the two of them and `Rs[j+1]` around site `j` projected onto one of its states gives the probability of sampling that state:
 
 <!-- TODO: diagram of L, site j projected onto state n, and Rs[j+1] closing into a number -->
 
@@ -250,6 +250,7 @@ The following functionality may be useful:
 - `@show inds(L)` prints the indices of an ITensor, which can be helpful for debugging contraction issues.
 - `onehot(s => n)` is a tensor with Index `s` of all zeros except for the element `n`, which is `1`. Contract it with an ITensor that has Index `s` to project onto that state.
 - `scalar` turns a tensor with no indices into a number.
+- `dag(prime(L))` conjugates `L` and primes its links, which is what makes it line up with `psid`.
 
 The [ITensor code examples](https://docs.itensor.org/ITensors/stable/examples/ITensor.html) page has more on working with ITensors.
 

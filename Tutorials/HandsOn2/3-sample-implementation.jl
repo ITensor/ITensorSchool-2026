@@ -2,9 +2,9 @@
 # against
 using ITensorMPS: ITensorMPS, MPS, random_mps, siteinds
 # Functions for performing measurements of MPS
-using ITensorMPS: dag, expect, sim_linkinds
+using ITensorMPS: dag, expect, linkinds
 # Functions for building the tensors used when sampling
-using ITensors: ITensor, dim, onehot, scalar
+using ITensors: ITensor, dim, onehot, prime, scalar
 using LinearAlgebra: normalize
 using Random: AbstractRNG, default_rng
 # Use to set the RNG seed for reproducibility
@@ -30,9 +30,9 @@ function sample_state(rng::AbstractRNG, psi::MPS)
     nsite = length(psi)
     sites = siteinds(psi)
 
-    # psid is a copy of psi with new internal link indices and with all of the tensors
-    # conjugated, so psi and psid together form the norm network ⟨ψ|ψ⟩
-    psid = dag(sim_linkinds(psi))
+    # psid is a copy of psi with primed link indices and with all of the tensors conjugated,
+    # so psi and psid together form the norm network ⟨ψ|ψ⟩
+    psid = dag(prime(linkinds, psi))
 
     # Rs[j] is the part of the norm network from site j to the end of the chain contracted
     # together, so Rs[nsite + 1] is a trivial scalar environment
@@ -42,8 +42,9 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         Rs[j] = Rs[j + 1] * psid[j] * psi[j]
     end
 
-    # L is the part of the norm network to the left of site j, projected onto the states
-    # that have been sampled so far. It starts out trivial and grows one site at a time.
+    # L is the part of psi to the left of site j, projected onto the states that have been
+    # sampled so far, so `dag(prime(L))` is the matching part of psid. It starts out trivial
+    # and grows one site at a time.
     L = ITensor(1.0)
     # Your implementation should overwrite this state with a sample from the MPS. Until you
     # implement that, this function will return this trivial all up product state every time.
@@ -52,19 +53,20 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         s = sites[j]
 
         # (1)
-        # For each state n of site j, project the tensors of psi and psid on that site onto
-        # the state with `onehot(s => n)` and contract them with the left environment L
+        # For each state n of site j, project the tensor of psi on that site onto the state
+        # with `onehot(s => n)` and contract it with the left environment L
         #
         # Ls = [... for n in 1:dim(s)]
         #
 
         #TODO remove
-        Ls = [L * (psi[j] * onehot(s => n)) * (psid[j] * onehot(s => n)) for n in 1:dim(s)]
+        Ls = [L * (psi[j] * onehot(s => n)) for n in 1:dim(s)]
 
         # (2)
-        # Closing each of those with the right environment Rs[j + 1] gives a number, the
-        # probability of sampling that state of site j given the states already sampled.
-        # Compute those probabilities, normalize them, and sample a state n from them.
+        # Closing each of those and its conjugate `dag(prime(Ln))` with the right environment
+        # Rs[j + 1] gives a number, the probability of sampling that state of site j given the
+        # states already sampled. Compute those probabilities, normalize them, and sample a
+        # state n from them.
         #
         # probabilities = [... for Ln in Ls]
         # n = ...
@@ -72,7 +74,7 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         n = 1
 
         #TODO remove
-        probabilities = [real(scalar(Ln * Rs[j + 1])) for Ln in Ls]
+        probabilities = [real(scalar(Ln * Rs[j + 1] * dag(prime(Ln)))) for Ln in Ls]
         probabilities /= sum(probabilities)
         n = searchsortedfirst(cumsum(probabilities), rand(rng))
 
