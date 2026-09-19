@@ -259,7 +259,7 @@ Site 1's density matrix is then determined by the following diagram:
 
 The diagonal values of that density matrix give the probability of each state, and one of the states is chosen by sampling from them.
 
-The following set of diagrams illustrates how to then sample from site 2:
+The following set of diagrams illustrates how to then sample from site 2, assuming for demonstration that we sampled $|\uparrow\rangle$ on the first site:
 
 <p align="center">
   <img src="resources/images/3-sample_second_site.png" alt="Sampling the second site" width="700">

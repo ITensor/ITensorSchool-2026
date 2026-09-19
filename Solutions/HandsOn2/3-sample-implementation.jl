@@ -65,36 +65,43 @@ sample_state(psi::MPS) = sample_state(default_rng(), psi)
 # Answers to the follow-up questions in the Hands-On 2 README
 
 """
-    sample_state(rng::AbstractRNG, psi::MPS, Rs::Vector{ITensor})
+    sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor})
 
 Sample one product state from |⟨state|ψ⟩|² using right environments `Rs` that were
-contracted beforehand.
+contracted from `psi` and `psid` beforehand.
+
+`psid` is taken as an argument rather than derived from `psi`, so that this works whatever
+was done to keep the link indices of the two copies apart.
 """
-function sample_state(rng::AbstractRNG, psi::MPS, Rs::Vector{ITensor})
+function sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor})
     nsite = length(psi)
     sites = siteinds(psi)
     L = ITensor(1.0)
+    Ld = ITensor(1.0)
     result = zeros(Int, nsite)
     for j in 1:nsite
         s = sites[j]
         # Closing L with Rs[j] gives the weight of all states of site j added together,
         # which is what the probabilities below would be normalized by, so the state can be
         # sampled against a running sum and the states after it never have to be computed
-        r = rand(rng) * real(scalar(L * Rs[j] * dag(prime(L))))
+        r = rand(rng) * real(scalar(L * Rs[j] * Ld))
         cumulative = 0.0
         n = dim(s)
         Ln = L
+        Lnd = Ld
         for m in 1:dim(s)
             n = m
             Ln = L * (psi[j] * onehot(s => m))
+            Lnd = Ld * (psid[j] * onehot(s => m))
             # Whatever weight is left over belongs to the last state, so it is sampled
             # without closing its environment at all
             m == dim(s) && break
-            cumulative += real(scalar(Ln * Rs[j + 1] * dag(prime(Ln))))
+            cumulative += real(scalar(Ln * Rs[j + 1] * Lnd))
             cumulative > r && break
         end
         result[j] = n
         L = Ln
+        Ld = Lnd
     end
     return result
 end
@@ -115,7 +122,7 @@ function sample_states(rng::AbstractRNG, psi::MPS, nsample::Int)
     for j in reverse(1:nsite)
         Rs[j] = Rs[j + 1] * psid[j] * psi[j]
     end
-    return [sample_state(rng, psi, Rs) for _ in 1:nsample]
+    return [sample_state(rng, psi, psid, Rs) for _ in 1:nsample]
 end
 
 """
