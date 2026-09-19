@@ -259,7 +259,7 @@ Site 1's density matrix is then determined by the following diagram:
 
 The diagonal values of that density matrix give the probability of each state, and one of the states is chosen by sampling from them.
 
-Site 1 is then fixed to the state you sampled, and both copies of it get projected onto that state. Site 2's density matrix, conditioned on that choice, is determined by the following diagram:
+Once you have a state for site 1, you project both copies of that site onto it. Site 2's density matrix, conditioned on that choice, is determined by the following diagram:
 
 <p align="center">
   <img src="resources/images/3-sample_second_site.png" alt="Sampling the second site" width="700">
