@@ -259,13 +259,13 @@ Site 1's density matrix is then determined by the following diagram:
 
 The diagonal values of that density matrix give the probability of each state, and one of the states is chosen by sampling from them.
 
-Once you have a state for site 1, you project both copies of that site onto it. Site 2's density matrix, conditioned on that choice, is determined by the following diagram:
+Once you have a state for site 1, you project both copies of that site onto it. Those projected tensors become the first `L`, and closing `L` and `Rs[3]` around site 2 gives its density matrix conditioned on that choice, which is sampled the same way:
 
 <p align="center">
   <img src="resources/images/3-sample_second_site.png" alt="Sampling the second site" width="700">
 </p>
 
-Projecting site 1 onto that state gives us the first `L`, which helps us form the density matrix for site 2 conditioned on the outcome of sampling from site 1. We then sample from site 2, and the sweep carries on to the end of the chain, absorbing the projected sites one by one into `L`.
+The sweep carries on to the end of the chain, absorbing each sampled site into `L` as it goes.
 
 The following functionality may be useful:
 
