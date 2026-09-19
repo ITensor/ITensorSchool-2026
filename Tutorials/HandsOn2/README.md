@@ -265,7 +265,7 @@ Once you have a state for site 1, you project both copies of that site onto it. 
   <img src="resources/images/3-sample_second_site.png" alt="Sampling the second site" width="700">
 </p>
 
-The projected tensors of site 1 are absorbed into `L`, which plays the same role on the left that `Rs[3]` plays on the right. The state of site 2 is chosen from its diagonal the same way, and the sweep carries on to the end of the chain, growing `L` by one site each time. In the code `L` is a single tensor, the upper of the two green ones, and `dag(prime(L))` is the lower one.
+Projecting site 1 onto that state is what constructs the first `L`, which plays the same role on the left that `Rs[3]` plays on the right. The state of site 2 is chosen from its diagonal the same way, and the sweep carries on to the end of the chain, with each site you sample extending `L` by one tensor. In the code `L` is a single tensor, the upper of the two green ones, and `dag(prime(L))` is the lower one.
 
 The following functionality may be useful:
 
