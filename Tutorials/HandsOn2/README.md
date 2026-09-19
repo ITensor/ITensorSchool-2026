@@ -276,8 +276,6 @@ The following functionality may be useful:
 
 The [ITensor code examples](https://docs.itensor.org/ITensors/stable/examples/ITensor.html) page has more on working with ITensors.
 
-In the code, step (1) projects site `j` onto each of its states and attaches the result to `L`, step (2) closes those with `Rs[j + 1]` to get the probabilities and samples one state from them, and step (3) records that state and keeps its tensor as the `L` for the next site.
-
 Once `sample_state` works, running `main()` samples 2000 product states from a random MPS and compares the magnetization they give against `expect`:
 ```julia
 julia> include("3-sample-implementation.jl")
