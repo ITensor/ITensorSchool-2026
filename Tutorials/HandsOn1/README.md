@@ -560,15 +560,15 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
   <summary><h2>Stretch Goals</h2></summary>
   <hr>
 
-If you completed all the tutorials and would like more of a challenge, you can try this "stretch goal" exploring topological physics through the spin-1 Heisenberg chain.
+If you completed all the tutorials and would like to try more aspects of ITensorMPS, you can try this "stretch goal" of exploring topological physics through the spin-1 Heisenberg chain.
 
 The S=1 version of the 1D Heisenberg chain is in a topological phase (the "Haldane phase") which is characterized by emergent S=1/2 edge states on each end and an associated four-fold ground state degeneracy. (Another model in the same phase is the exactly solvable "AKLT" model.)
 
 We can explore this phase using ITensor DMRG by making the following changes to the Tutorial 3 file `3-dmrg-measure.jl` and re-running the main function in this file.
 
-1. First, change the local Hilbert space type to "S=1". This is the first argument to the `siteinds` function which appears near the top of the `main` function.
+1. Make sure the local Hilbert space type is still set to "S=1". This is the first argument to the `siteinds` function which appears near the top of the `main` function.
 
-2. Now, include your changed file and rerun the calculation. We recommend using `nsite = 100` and calling `main` for this part as
+2. Change the number of sites to a rather large value: we recommend using `nsite = 100` and calling `main` for this part as
 ```julia
 julia> include("3-dmrg-measure.jl")
 main
