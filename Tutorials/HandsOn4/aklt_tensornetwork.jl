@@ -13,8 +13,8 @@ has dimension `z + 1`. On a ring every vertex has `z = 2` and the state is the f
 spin-1 AKLT chain; on a square lattice `z = 4` and it is the spin-2 AKLT state.
 
 The result is the state itself: one tensor per vertex, each carrying one physical index and
-one virtual index per incident edge. The norm network `⟨ψ|ψ⟩` is never built explicitly for efficiency.
-Its two layers are reached through `ket_tensor` and `bra_tensor`.
+one virtual index per incident edge. For efficiency the norm network `⟨ψ|ψ⟩` is never built
+explicitly. Its two layers are reached through `ket_tensor` and `bra_tensor`.
 
 # Returns
 A named tuple containing:

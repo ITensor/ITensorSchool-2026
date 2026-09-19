@@ -1,5 +1,5 @@
 using Graphs: add_edge!, dst, edges, neighbors, nv, rem_vertex!, src, vertices
-using ITensors: dim, inds
+using ITensors: ITensors, dim, inds
 using NamedGraphs: NamedGraph
 
 """
@@ -37,7 +37,9 @@ function contract_network(tn::Dict, g::NamedGraph)
     end
     v1, v2 = src(min_e), dst(min_e)
     tn = copy(tn)
-    tn[v2] = tn[v1] * tn[v2]
+    # Intermediate tensors in an exact contraction can have many indices. That is expected
+    # here, so silence the warning ITensors prints when one has more than 14.
+    tn[v2] = ITensors.@disable_warn_order tn[v1] * tn[v2]
     delete!(tn, v1)
     g = copy(g)
     neighbors_src = setdiff(neighbors(g, v1), [v2])

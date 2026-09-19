@@ -125,8 +125,8 @@ end
     binormalized_messages(g::NamedGraph, messages::Dict)
 
 Rescale the messages so that on every edge the two oppositely directed messages contract to
-one. This fixes the arbitrary normalization of each message, which is needed before the
-`Z_v` factors can be combined into a free energy.
+one. This fixes the arbitrary normalization of each message, which is helpful for
+simplifying the free energy formula.
 """
 function binormalized_messages(g::NamedGraph, messages::Dict)
     binorm_messages = copy(messages)
