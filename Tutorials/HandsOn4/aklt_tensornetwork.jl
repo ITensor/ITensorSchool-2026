@@ -14,8 +14,7 @@ spin-1 AKLT chain; on a square lattice `z = 4` and it is the spin-2 AKLT state.
 
 The result is the state itself: one tensor per vertex, each carrying one physical index and
 one virtual index per incident edge. The norm network `⟨ψ|ψ⟩` is never built explicitly.
-Its two layers are reached through `ket_tensor` and `bra_tensor` and kept apart until they
-are contracted with messages, see the note on `bra_tensor`.
+Its two layers are reached through `ket_tensor` and `bra_tensor`.
 
 # Returns
 A named tuple containing:
@@ -96,10 +95,8 @@ The physical index is left unprimed, so `ket_tensor(state, v) * bra_tensor(state
 contracts over it while the virtual indices stay distinct. Each edge of the norm network
 therefore carries two indices, the ket leg `l` and the bra leg `l'`.
 
-The two layers are deliberately never multiplied together into one "double layer" tensor per
-vertex. At bond dimension `χ` and degree `z` that tensor has `2z` virtual indices and costs
-`χ^(2z)` to store, far more than anything else in the calculation. Contracting messages into
-the ket first and only then closing with the bra costs about `χ^(z+1)` instead.
+The two layers are kept as separate tensors. When contracting with messages, multiply the
+messages into the ket first and then multiply by the bra.
 """
 bra_tensor(state, v) = dag(prime(state.psi[v], link_indices(state, v)))
 

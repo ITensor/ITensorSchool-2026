@@ -16,9 +16,8 @@ fill in the missing code, then run `main` in `Tutorials/HandsOn4/5-quantumbp.jl`
 
 The norm network has *two* tensors per vertex, the ket `ψ_v` and the bra `conj(ψ_v)`, joined
 over the physical index. Each edge therefore carries two indices, the ket leg `l` and the bra
-leg `l'`, so a message here is a matrix rather than a vector. Absorb the incoming messages
-into the ket one at a time and only then close with the bra. Never multiply the ket and bra
-of a vertex together first: that is the most expensive object in the whole calculation.
+leg `l'`, so a message here is a matrix rather than a vector. Multiply the incoming messages
+into the ket one at a time, then multiply by the bra.
 
 Expectation values are ratios of two contractions that share the same messages, so the
 normalization of the messages cancels. Nothing like `binormalized_messages` is needed here.
@@ -51,9 +50,7 @@ function updated_message(state::NamedTuple, messages, e)
     # The directed edges pointing into `src(e)`, excluding the one coming from `dst(e)`
     incoming_es = setdiff(boundary_edges(state.g, [src(e)]; dir = :in), [reverse(e)])
 
-    # (1) Absorb the incoming messages into the ket one at a time, and only then close with
-    #     the bra. The ket never meets the bra until every message is already in, so the
-    #     expensive double layer tensor is never formed.
+    # (1) Multiply the incoming messages into the ket one at a time, then multiply by the bra.
     t = ket_tensor(state, src(e))
     for e_in in incoming_es
         t = t * messages[e_in]
