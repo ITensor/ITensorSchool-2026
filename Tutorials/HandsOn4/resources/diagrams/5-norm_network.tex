@@ -2,24 +2,25 @@
 \input{common}
 \begin{document}
 \begin{tikzpicture}
-  % a message is a matrix: it carries both the ket leg and the bra leg of an edge
-  \coordinate (M) at (0.5,1.2);
-  \draw[leg] (M) -- (2.0,0); \draw[leg] (M) -- (2.0,2.4);
-  % ket layer (bottom) and bra layer (top) on a path of three vertices
-  \foreach \i in {1,2,3} {
-    \node[tensor] (k\i) at (2.0*\i,0) {};
-    \node[tensor] (b\i) at (2.0*\i,2.4) {};
-    \draw[leg] (k\i) -- (b\i);
-  }
-  \foreach \i/\j in {1/2,2/3} { \draw[leg] (k\i) -- (k\j); \draw[leg] (b\i) -- (b\j); }
-  \draw[leg] (k3) -- ++(1.4,0);  \draw[leg] (b3) -- ++(1.4,0);
-  \node[msgmat] at (M) {};
-  \node[code,anchor=east] at (-0.6,2.4) {bra\_tensor(state, v)};
-  \node[lab,anchor=east]  at (-0.6,1.2) {$m_{u \to v}$};
-  \node[code,anchor=east] at (-0.6,0.0) {ket\_tensor(state, v)};
-  \node[lab] at (4.0,-0.85) {$v$};
-  \node[lab,anchor=west] at (7.55,0.0) {$\ell$};
-  \node[lab,anchor=west] at (7.55,2.4) {$\ell'$};
-  \node[lab,anchor=west] at (4.15,1.2) {\small$s_v$};
+  % top: the norm of an MPS is a chain of tensors, one per site
+  \node[lab,anchor=east] at (0.6,0) {$\langle \psi | \psi \rangle \;=$};
+  \foreach \i in {1,...,4} { \node[tensor] (t\i) at (2.0*\i,0) {}; \node[lab] at (2.0*\i,-0.85) {$T_\i$}; }
+  \foreach \i/\j in {1/2,2/3,3/4} { \draw[leg] (t\i) -- (t\j); }
+  % bottom: each tensor is the ket and the bra on that site, joined over the physical index
+  \begin{scope}[yshift=-4.6cm]
+    \node[lab,anchor=east] at (0.6,1.2) {$=$};
+    \foreach \i in {1,...,4} {
+      \node[tensor] (k\i) at (2.0*\i,0) {};
+      \node[tensor] (b\i) at (2.0*\i,2.4) {};
+      \draw[leg] (k\i) -- (b\i);
+    }
+    \foreach \i/\j in {1/2,2/3,3/4} { \draw[leg] (k\i) -- (k\j); \draw[leg] (b\i) -- (b\j); }
+    \node[lab,anchor=west] at (8.6,2.4) {$\overline{\psi_v}$};
+    \node[lab,anchor=west] at (8.6,0.0) {$\psi_v$};
+    \node[lab,anchor=west] at (4.15,1.2) {\small$s_2$};
+    % the pair on one site is the tensor T_2 of the chain above
+    \draw[dashed,line width=0.9pt,rounded corners=4pt] (3.3,-0.7) rectangle (4.7,3.1);
+    \node[lab] at (4.0,-1.15) {$T_2$};
+  \end{scope}
 \end{tikzpicture}
 \end{document}

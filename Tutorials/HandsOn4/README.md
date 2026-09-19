@@ -418,19 +418,21 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 
 So far we have used belief propagation on classical partition functions. In this tutorial we use it on a quantum state. It is longer than the others, so it is here for anyone who finishes the first four.
 
-Take a matrix product state $|\psi\rangle$, with a tensor $\psi_{v}$ on each site $v$ of a chain. Its norm $\langle \psi | \psi \rangle$ is itself a tensor network. On each site there is the ket $\psi_{v}$ and the bra $\overline{\psi_{v}}$, joined over the physical index $s_{v}$, and the bond indices of the two layers are kept separate:
+Take a matrix product state $|\psi\rangle$, with a tensor $\psi_{v}$ on each site $v$ of a chain. Its norm $\langle \psi | \psi \rangle$ is a tensor network of the kind we have been contracting all along: a chain of tensors $T_{v}$, one per site. The tensor on site $v$ is the ket $\psi_{v}$ and the bra $\overline{\psi_{v}}$ joined over the physical index $s_{v}$, with the bond indices of the two kept separate.
 
 <p align="center">
-  <img src="resources/images/5-norm_network.png" alt="The norm network of a matrix product state" width="800">
+  <img src="resources/images/5-norm_network.png" alt="The norm of a matrix product state as a chain of tensors, each the ket and bra on one site" width="800">
 </p>
 
-Read column by column this is once again a chain of tensors, one per site, where the tensor on site $v$ is the pair $\psi_{v}\overline{\psi_{v}}$. So we can run belief propagation on it exactly as in Tutorial 2. Two things change. Each edge now carries two indices, the ket bond $\ell$ and the bra bond $\ell'$, so a message $m_{u \to v}$ is a matrix rather than a vector. And we keep the ket and the bra of each site as two separate tensors rather than multiplying them together into one.
+So we can run belief propagation on it exactly as in Tutorial 2. Each edge now carries two indices, the ket bond $\ell$ and the bra bond $\ell'$, so a message $m_{u \to v}$ is a matrix rather than a vector, and the update rule is the one from Tutorial 2 with $\psi_{v}\overline{\psi_{v}}$ in place of $T_{v}$,
 
-The update rule is the one from Tutorial 2 with $\psi_{v}\overline{\psi_{v}}$ in place of $T_{v}$,
+$$m_{v \to w} \propto \psi_{v}\,\overline{\psi_{v}} \prod_{u \in \partial v,\, u \neq w} m_{u \to v}.$$
 
-$$m_{v \to w} \propto \psi_{v}\,\overline{\psi_{v}} \prod_{u \in \partial v,\, u \neq w} m_{u \to v},$$
+<p align="center">
+  <img src="resources/images/5-message_update.png" alt="The message update rule on the norm network" width="800">
+</p>
 
-and we evaluate it in a fixed order. First multiply the incoming messages into the ket, one at a time. Then multiply by the bra. The ket and the bra only meet once every message is already in:
+We keep the ket and the bra of each site as two separate tensors and evaluate the update in a fixed order. First multiply the incoming messages into the ket, one at a time. Then multiply by the bra:
 
 <p align="center">
   <img src="resources/images/5-lazy_contraction.png" alt="The stages of the message update: messages into the ket, then the bra" width="900">

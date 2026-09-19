@@ -1,0 +1,29 @@
+\documentclass[tikz,border=8pt]{standalone}
+\input{common}
+\begin{document}
+\begin{tikzpicture}
+  \node[lab,anchor=east] at (-0.4,1.2) {$m_{v \to w} \;\propto$};
+  % site v as its ket and bra, with the incoming matrix message from u and open bonds towards w
+  \coordinate (M) at (0.6,1.2);
+  \coordinate (k) at (2.3,0); \coordinate (b) at (2.3,2.4);
+  \draw[leg] (M) -- (k); \draw[leg] (M) -- (b);
+  \draw[leg] (k) -- (b);
+  \draw[leg] (k) -- ++(1.6,0); \draw[leg] (b) -- ++(1.6,0);
+  \node[msgmat] at (M) {};
+  \node[tensor] at (k) {}; \node[tensor] at (b) {};
+  \node[lab,anchor=north] at (0.6,0.35) {$m_{u \to v}$};
+  \node[lab,anchor=west] at (2.55,1.2) {\small$s_v$};
+  \node[lab] at (2.3,-0.85) {$\psi_v$};
+  \node[lab] at (2.3,3.2) {$\overline{\psi_v}$};
+  \node[lab,anchor=west] at (4.0,0.0) {$\ell$};
+  \node[lab,anchor=west] at (4.0,2.4) {$\ell'$};
+  % the result is again a matrix on the bond towards w
+  \node[lab] at (5.6,1.2) {$\propto$};
+  \coordinate (N) at (6.7,1.2);
+  \draw[leg] (N) -- (8.4,0); \draw[leg] (N) -- (8.4,2.4);
+  \node[msgmat] at (N) {};
+  \node[lab,anchor=north] at (6.7,0.35) {$m_{v \to w}$};
+  \node[lab,anchor=west] at (8.5,0.0) {$\ell$};
+  \node[lab,anchor=west] at (8.5,2.4) {$\ell'$};
+\end{tikzpicture}
+\end{document}
