@@ -7,6 +7,7 @@
 - [Tutorial 3: Belief Propagation on the 2D Ising Model](#tutorial-3)
 - [Tutorial 4: BP Cluster Expansion](#tutorial-4)
 - [Stretch Tutorial: Quantum Belief Propagation](#stretch-tutorial)
+- [Stretch Goals](#stretch-goals)
 
 <a id="tutorial-1"></a>
 <details>
@@ -502,6 +503,21 @@ Now for some physics. Build the state on a periodic ring, `g = named_grid((L, 1)
 7. Evaluate the parent Hamiltonian bond energy $\langle P_{2} \rangle$ and check that it is zero to machine precision. For $\langle (\mathbf{S}_{v} \cdot \mathbf{S}_{w})^{2} \rangle$, square the sum of three terms above to get nine, each still a product of one operator on $v$ and one on $w$, since $(A \otimes B)(A' \otimes B') = AA' \otimes BB'$. Unlike the correlations, this is a property of the state alone, so it holds at any ring size.
 
 8. Move to a periodic square lattice, `named_grid((L, L); periodic = true)`, where the state becomes the spin-2 AKLT state and belief propagation is no longer exact. How far is the bond energy from exact contraction, and how does that compare to the Ising errors from Tutorial 3? The $P_{2}$ formula above is the spin-1 projector and does not apply here; on the square lattice the parent Hamiltonian projects onto total spin 4.
+
+This is the end of the current tutorial, continue on to the stretch goals or click [here](#table-of-contents) to return to the table of contents.
+
+</details>
+
+<a id="stretch-goals"></a>
+<details>
+  <summary><h2>Stretch Goals</h2></summary>
+  <hr>
+
+If you have finished everything above and want more, here are two open ended things to try.
+
+1. **The Ising model in three dimensions.** `named_grid((L, L, L); periodic = true)` gives a periodic cubic lattice, and `ising_tensornetwork`, `belief_propagation`, `phi_bp` and `phi_cluster_correction` all work on it unchanged. There is no Onsager solution to compare to in 3D, but there are still things to look at. Plot the number of BP iterations against $\beta$ as you did in Tutorial 3. Where does it peak? The critical point of the 3D Ising model is at $\beta_{c} \approx 0.2217$. Is the peak there, or somewhere else, and what does that tell you about what belief propagation is actually solving? Try the loop correction too. On the cubic lattice every vertex sits on three square plaquettes rather than one, so think about what `phi_cluster_correction` is summing over there. With $L = 4$ each run takes a few seconds away from the peak and up to half a minute near it.
+
+2. **The free energy of a quantum state.** In the stretch tutorial you computed expectation values, which are ratios, so the normalization of the messages never mattered. The norm $\langle \psi | \psi \rangle$ itself is a single contraction, and getting it from belief propagation needs the same care as the classical free energy in Tutorial 2. Write a function that returns $\frac{1}{N}\ln\langle \psi | \psi \rangle$ from your quantum messages, following `phi_bp`: binormalize the messages so that the two on each edge contract to one (the formula in `binormalized_messages` works just as well when the messages are matrices), then for each vertex contract the ket with all of its incoming messages and the bra to get $Z_{v}$, and return the sum of $\ln Z_{v}$ over the vertices divided by $N$. Check it against exact contraction on an open path, where it should agree exactly, then on rings of increasing length and on a periodic square lattice.
 
 This is the end of the tutorials, click [here](#table-of-contents) to return to the table of contents.
 
