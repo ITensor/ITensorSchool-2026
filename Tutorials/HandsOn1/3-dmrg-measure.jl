@@ -1,6 +1,6 @@
 using LinearAlgebra: norm
-using ITensors: ITensors, ITensor, apply, inds, pause
-using ITensorMPS: MPO, MPS, OpSum, apply, dag, dmrg, maxlinkdim, op, random_mps, sim_linkinds, siteind, siteinds
+using ITensors: ITensors, ITensor, apply, inds, pause, sim
+using ITensorMPS: MPO, MPS, OpSum, apply, dag, dmrg, linkinds, maxlinkdim, op, random_mps, siteind, siteinds
 # Functions for performing measurements of MPS
 using ITensorMPS: ITensorMPS, AbstractObserver, correlation_matrix, inner
 # Use to set the RNG seed for reproducibility
@@ -23,7 +23,7 @@ function expect(psi::MPS, opname::String, j::Int)
     # psid is a copy of psi with internal link indices replaced
     # with new ones of the same dimension (different ids) and
     # with all tensor Hermitian-conjugated
-    psid = dag(sim_linkinds(psi))
+    psid = dag(sim(linkinds, psi))
 
     L = ITensor(1.)
     # (1) Add a loop building the left environment or 'message' L
