@@ -43,8 +43,8 @@ function sample_state(rng::AbstractRNG, psi::MPS)
     end
 
     # L is the part of psi to the left of site j, projected onto the states that have been
-    # sampled so far, so `dag(prime(L))` is the matching part of psid. It starts out trivial
-    # and grows one site at a time.
+    # sampled so far. The matching part of psid is its conjugate, with primed links. L starts
+    # out trivial and grows one site at a time.
     L = ITensor(1.0)
     # Your implementation should overwrite this state with a sample from the MPS. Until you
     # implement that, this function will return this trivial all up product state every time.
@@ -63,10 +63,10 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         Ls = [L * (psi[j] * onehot(s => n)) for n in 1:dim(s)]
 
         # (2)
-        # Closing each of those and its conjugate `dag(prime(Ln))` with the right environment
-        # Rs[j + 1] gives a number, the probability of sampling that state of site j given the
-        # states already sampled. Compute those probabilities, normalize them, and sample a
-        # state n from them.
+        # Closing each of those, along with its counterpart from psid, against the right
+        # environment Rs[j + 1] gives a number, the probability of sampling that state of site j
+        # given the states already sampled. Compute those probabilities, normalize them, and
+        # sample a state n from them.
         #
         # probabilities = [... for Ln in Ls]
         # n = ...

@@ -243,7 +243,7 @@ The probabilities for the first site are the diagonal of its reduced density mat
   <img src="resources/images/3-site_density_matrix.png" alt="Reduced density matrix of site 1" width="400">
 </p>
 
-The lower row there is an MPS called `psid`, which the code already builds for you: a copy of `psi` with every tensor conjugated and with its link indices primed. Priming those indices keeps the two copies from contracting into each other along the chain, so they meet only on the site indices.
+The upper row is an MPS called `psid`, which the code already builds for you: a copy of `psi` with every tensor conjugated and with its link indices primed. Priming those indices keeps the two copies from contracting into each other along the chain, so they only contract on the site indices.
 
 Contracting that whole network again at every site would repeat a lot of work, since the part to the right of a site does not depend on anything you sample. The code contracts it once from the right instead and keeps the partial results in `Rs`, so `Rs[j]` holds everything from site `j` to the end of the chain:
 
@@ -265,14 +265,14 @@ Once you have a state for site 1, you project both copies of that site onto it. 
   <img src="resources/images/3-sample_second_site.png" alt="Sampling the second site" width="700">
 </p>
 
-Projecting site 1 onto that state is what constructs the first `L`, which plays the same role on the left that `Rs[3]` plays on the right. The state of site 2 is chosen from its diagonal the same way, and the sweep carries on to the end of the chain, with each site you sample extending `L` by one tensor. In the code `L` is a single tensor, the upper of the two green ones, and `dag(prime(L))` is the lower one.
+Projecting site 1 onto that state gives us the first `L`, which helps us form the density matrix for site 2 conditioned on the outcome of sampling from site 1. We then sample from site 2, and the sweep carries on to the end of the chain, absorbing the projected sites one by one into `L`.
 
 The following functionality may be useful:
 
 - `@show inds(L)` prints the indices of an ITensor, which can be helpful for debugging contraction issues.
-- `onehot(s => n)` is a tensor with Index `s` of all zeros except for the element `n`, which is `1`. Contract it with an ITensor that has Index `s` to project onto that state.
+- `prime` adds a prime to the indices of an ITensor. A primed index will not contract with its unprimed version, which is what keeps the link indices of `psi` and `psid` distinct.
+- `onehot(s => n)` is a tensor with Index `s` of all zeros except for the element `n`, which is `1`. You can contract it with an ITensor that has Index `s` to project onto that state.
 - `scalar` turns a tensor with no indices into a number.
-- `prime` adds a prime to the indices of an ITensor. A primed index will not contract with its unprimed version, which is what keeps `psi` and `psid` apart, so `dag(prime(L))` is the copy of `L` that belongs with `psid`.
 
 The [ITensor code examples](https://docs.itensor.org/ITensors/stable/examples/ITensor.html) page has more on working with ITensors.
 
