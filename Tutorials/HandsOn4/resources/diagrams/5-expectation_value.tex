@@ -1,0 +1,27 @@
+\documentclass[tikz,border=8pt]{standalone}
+\input{common}
+\begin{document}
+\begin{tikzpicture}
+  % one site of the chain with its two incoming matrix messages; the operator sits on the
+  % physical leg between the ket and the bra
+  \newcommand{\site}[2]{% #1 = y offset of the ket row, #2 = draw the operator (1) or not (0)
+    \begin{scope}[yshift=#1]
+      \coordinate (L) at (0,1.2); \coordinate (R) at (3.4,1.2);
+      \coordinate (k) at (1.7,0); \coordinate (b) at (1.7,2.4);
+      \draw[leg] (L) -- (k); \draw[leg] (L) -- (b);
+      \draw[leg] (R) -- (k); \draw[leg] (R) -- (b);
+      \draw[leg] (k) -- (b);
+      \node[msgmat] at (L) {};
+      \node[msgmat,shape border rotate=180] at (R) {};
+      \node[tensor] at (k) {}; \node[tensor] at (b) {};
+      \ifnum#2=1 \node[op] at (1.7,1.2) {}; \node[lab,anchor=west] at (2.0,1.2) {$O$}; \fi
+      \node[lab,anchor=north] at (0,0.45) {\small$m_{u \to v}$};
+      \node[lab,anchor=north] at (3.4,0.45) {\small$m_{w \to v}$};
+    \end{scope}
+  }
+  \node[lab,anchor=east] at (-0.9,0.4) {$\langle O_v \rangle \;=$};
+  \site{1.9cm}{1}
+  \draw[line width=1.1pt] (-0.6,0.4) -- (4.0,0.4);
+  \site{-3.6cm}{0}
+\end{tikzpicture}
+\end{document}

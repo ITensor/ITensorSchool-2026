@@ -9,9 +9,8 @@ include("belief_propagation.jl")
 """
     main(; kwargs...)
 
-Creates a grid graph of size `Lx` by `Ly`, constructs the Ising tensor network on it, and
-computes the Bethe-Peierls free energy density using the belief propagation implementation
-from `belief_propagation.jl` that you completed in Tutorial 2.
+Create an `Lx` by `Ly` square grid, build the Ising tensor network on it, and compute the
+free energy density with the belief propagation you completed in Tutorial 2.
 
 # Keywords
 - `Lx::Int = 3`: The number of columns in the grid.
@@ -22,12 +21,12 @@ from `belief_propagation.jl` that you completed in Tutorial 2.
 
 # Returns
 A named tuple containing:
-- `phi_bp_tn::Number`: The Bethe-Peierls free energy density computed via belief propagation.
-- `phi_exact::Number`: The exact free energy density from Onsager's solution in the thermodynamic limit.
+- `phi_bp_tn::Number`: The free energy density from belief propagation.
+- `phi_exact::Number`: The exact free energy density in the thermodynamic limit, from Onsager's solution.
 - `tn::Dict`: The Ising tensor network.
 - `g::NamedGraph`: The graph of the tensor network.
 - `messages::Dict`: The converged belief propagation messages.
-- `niters::Int`: The number of iterations taken for convergence in belief propagation.
+- `niters`: The number of belief propagation iterations taken, or `nothing` if it did not converge.
 """
 function main(; Lx::Int = 3, Ly::Int = 3, beta::Number = 0.2, periodic = false, outputlevel::Int = 1)
     g = named_grid((Lx, Ly); periodic)

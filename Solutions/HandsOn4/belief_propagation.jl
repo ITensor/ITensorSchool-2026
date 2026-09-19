@@ -20,7 +20,8 @@ This is the completed solution.
 """
     updated_message(tn::Dict, g::NamedGraph, messages::Dict, e::NamedEdge)
 
-Compute the new message to send along the directed edge `e`, from `src(e)` to `dst(e)`.
+The new message along the directed edge `e`, sent from `src(e)` to `dst(e)`: the tensor on
+`src(e)` contracted with every message arriving at `src(e)` except the one from `dst(e)`.
 """
 function updated_message(tn::Dict, g::NamedGraph, messages::Dict, e::NamedEdge)
     # The directed edges of `g` pointing into `src(e)`, excluding the edge coming from `dst(e)`
@@ -36,7 +37,8 @@ end
 """
     update_messages(tn::Dict, g::NamedGraph, messages::Dict)
 
-Compute a new message on every directed edge of `g`, using the current `messages`.
+A new message on every directed edge of `g`, each computed from the current `messages`.
+All messages are updated together, so the order of the loop does not matter.
 """
 function update_messages(tn::Dict, g::NamedGraph, messages::Dict)
     updated_messages = copy(messages)
@@ -49,8 +51,8 @@ end
 """
     message_distance(g::NamedGraph, messages::Dict, old_messages::Dict)
 
-A measure of how much the messages changed in the last update. It is zero when every
-new message is parallel to the corresponding old message.
+How much the messages changed in the last update, used to decide when to stop iterating.
+It is zero when every new message is parallel to the corresponding old one.
 """
 function message_distance(g::NamedGraph, messages::Dict, old_messages::Dict)
     # (2) For each directed edge `e` in `all_edges(g)`, compute 1 - dot(m_new, m_old)^2
@@ -62,7 +64,8 @@ end
 """
     initial_messages(tn::Dict, g::NamedGraph)
 
-Initial messages: a `onehot` vector on the index shared by the two tensors of each edge.
+The messages to start from: on each directed edge, the `onehot` vector `(1, 0, ...)` on the
+index shared by the two tensors at its ends.
 """
 function initial_messages(tn::Dict, g::NamedGraph)
     linkind(tn, e) = only(intersect(inds(tn[src(e)]), inds(tn[dst(e)])))
@@ -72,21 +75,22 @@ end
 """
     belief_propagation(tn::Dict, g::NamedGraph[, messages::Dict]; kwargs...)
 
-Performs the Belief Propagation algorithm on a given tensor network defined over a named graph.
+Run belief propagation on the tensor network `tn` defined on the graph `g`: update every
+message from the current ones, repeatedly, until they stop changing.
 
 # Arguments
-- `tn::Dict`: A dictionary representing the tensor network, where keys are vertices and values are tensors.
-- `g::NamedGraph`: The named graph representing the structure of the tensor network.
-- `messages::Dict = initial_messages(tn, g)`: Initial messages for each edge in the graph.
+- `tn::Dict`: The tensor network, mapping each vertex of `g` to its tensor.
+- `g::NamedGraph`: The graph the tensor network lives on.
+- `messages::Dict = initial_messages(tn, g)`: The messages to start from, one per directed edge.
 
 # Keywords
 - `niters::Int`: The maximum number of iterations to perform.
-- `tol::Float64 = 1e-10`: The tolerance for convergence.
-- `outputlevel::Int = 1`: The verbosity level of the output.
+- `tol::Float64 = 1e-10`: Stop once `message_distance` drops below this.
+- `outputlevel::Int = 1`: Set to `0` to suppress the printed convergence message.
 
 # Returns
-- `messages::Dict`: A dictionary containing the converged messages for each edge in the graph.
-- `niters::Int`: The number of iterations taken to converge, or `nothing` if not converged within `niters`.
+- `messages::Dict`: The converged messages, one per directed edge.
+- `niters`: The number of iterations taken, or `nothing` if `niters` was reached first.
 """
 function belief_propagation(
         tn::Dict, g::NamedGraph, messages::Dict = initial_messages(tn, g); niters::Int,
@@ -107,7 +111,8 @@ end
 """
     phi_factor(tn::Dict, g::NamedGraph, messages::Dict, v)
 
-The scalar obtained by contracting the tensor on vertex `v` with all of its incoming messages.
+The scalar `Z_v` obtained by contracting the tensor on vertex `v` with all of the messages
+arriving at `v`.
 """
 function phi_factor(tn::Dict, g::NamedGraph, messages::Dict, v)
     # (3) Gather the messages on every directed edge pointing into `v`, contract them with
@@ -119,7 +124,9 @@ end
 """
     binormalized_messages(g::NamedGraph, messages::Dict)
 
-Rescale the messages so that the pair of messages on each edge contract to one.
+Rescale the messages so that on every edge the two oppositely directed messages contract to
+one. This fixes the arbitrary normalization of each message, which is helpful for
+simplifying the free energy formula.
 """
 function binormalized_messages(g::NamedGraph, messages::Dict)
     binorm_messages = copy(messages)
@@ -134,15 +141,16 @@ end
 """
     phi_bp(tn::Dict, g::NamedGraph, messages::Dict)
 
-Computes the Bethe-Peierls free energy density `ϕ = log(Z_BP) / nv(g)`.
+The belief propagation estimate of the free energy density, `ϕ = log(Z_BP) / nv(g)`, where
+`log(Z_BP)` is the sum of `log(Z_v)` over the vertices with binormalized messages.
 
 # Arguments
-- `tn::Dict`: A dictionary representing the tensor network, where keys are vertices and values are tensors.
-- `g::NamedGraph`: The named graph representing the structure of the tensor network.
-- `messages::Dict`: A dictionary containing the messages for each edge in the graph.
+- `tn::Dict`: The tensor network, mapping each vertex of `g` to its tensor.
+- `g::NamedGraph`: The graph the tensor network lives on.
+- `messages::Dict`: Converged messages, as returned by `belief_propagation`.
 
 # Returns
-- `phi::Number`: The free energy estimate per vertex.
+- `phi::Number`: The free energy density estimate.
 """
 function phi_bp(tn::Dict, g::NamedGraph, messages::Dict)
     messages = binormalized_messages(g, messages)
@@ -152,18 +160,22 @@ end
 """
     phi_cluster_correction(tn::Dict, g::NamedGraph, messages::Dict; smallest_loop_size::Int)
 
-Computes the first order correction to the Bethe-Peierls free energy.
+The first order loop correction to the free energy density from `phi_bp`: for every loop of
+length up to `smallest_loop_size`, the loop's tensors are contracted with the messages
+arriving from outside the loop, and `log` of the result is added, divided by the number of
+vertices. Each tensor is first rescaled by its own `Z_v` so that the correction vanishes when
+belief propagation is exact.
 
 # Arguments
-- `tn::Dict`: A dictionary representing the tensor network, where keys are vertices and values are tensors.
-- `g::NamedGraph`: The named graph representing the structure of the tensor network.
-- `messages::Dict`: A dictionary containing the messages for each edge in the graph.
+- `tn::Dict`: The tensor network, mapping each vertex of `g` to its tensor.
+- `g::NamedGraph`: The graph the tensor network lives on.
+- `messages::Dict`: Converged messages, as returned by `belief_propagation`.
 
 # Keywords
-- `smallest_loop_size::Int`: The size of the smallest loops to consider for the correction.
+- `smallest_loop_size::Int`: Loops up to this length are included.
 
 # Returns
-- `phi::Number`: The correction to the free energy estimate per vertex.
+- `phi::Number`: The correction, to be added to `phi_bp`.
 """
 function phi_cluster_correction(tn::Dict, g::NamedGraph, messages::Dict; smallest_loop_size::Int)
     messages = binormalized_messages(g, messages)

@@ -1,0 +1,21 @@
+\documentclass[tikz,border=8pt]{standalone}
+\input{common}
+\begin{document}
+\begin{tikzpicture}
+  \node[lab] at (-3.6,0) {$Z_\ell \;=$};
+  % a loop of four tensors of a square lattice: two legs each leave the loop
+  \coordinate (a) at (-1,1); \coordinate (b) at (1,1); \coordinate (c) at (1,-1); \coordinate (d) at (-1,-1);
+  \draw[leg] (a) -- (b) -- (c) -- (d) -- (a);
+  \foreach \n/\dx/\dy in {a/-1/0,a/0/1,b/1/0,b/0/1,c/1/0,c/0/-1,d/-1/0,d/0/-1} {
+    \draw[leg] (\n) -- ++(1.5*\dx,1.5*\dy);
+  }
+  \foreach \n in {a,b,c,d} { \node[tensor] at (\n) {}; }
+  % every message points into the loop
+  \node[msg]  at ($(a)+(-1.5,0)$) {}; \node[msg]  at ($(d)+(-1.5,0)$) {};
+  \node[msgl] at ($(b)+(1.5,0)$) {};  \node[msgl] at ($(c)+(1.5,0)$) {};
+  \node[msgd] at ($(a)+(0,1.5)$) {};  \node[msgd] at ($(b)+(0,1.5)$) {};
+  \node[msgu] at ($(d)+(0,-1.5)$) {}; \node[msgu] at ($(c)+(0,-1.5)$) {};
+  \node[anchor=west] at (3.2,0.3) {\small the four tensors of the loop $\ell$,};
+  \node[anchor=west] at (3.2,-0.3) {\small closed by the messages arriving from outside it};
+\end{tikzpicture}
+\end{document}

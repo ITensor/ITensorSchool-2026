@@ -1,0 +1,27 @@
+% Shared styles for the Hands-On 4 diagrams. Colours match the Hands-On 1 diagrams.
+\usepackage{amsmath,amssymb}
+\usetikzlibrary{positioning,calc,arrows.meta,decorations.pathreplacing,shapes.geometric}
+\definecolor{tensorblue}{HTML}{3274B5}
+\definecolor{msggrey}{HTML}{8C8C8C}
+\definecolor{opteal}{HTML}{357A76}
+\tikzset{
+  leg/.style={line width=1.7pt},
+  thinedge/.style={line width=1.0pt},
+  tensor/.style={circle,draw,line width=1.5pt,fill=tensorblue,minimum size=9mm,inner sep=0},
+  vertex/.style={circle,draw,line width=1.0pt,fill=white,minimum size=6mm,inner sep=0,font=\small},
+  copy/.style={circle,draw,line width=1.5pt,fill=black,minimum size=3.6mm,inner sep=0},
+  op/.style={rectangle,draw,line width=1.5pt,fill=opteal,minimum size=5.6mm,inner sep=0},
+  % messages are triangles pointing in the direction the message travels
+  msg/.style={isosceles triangle,isosceles triangle apex angle=75,draw,line width=1.5pt,fill=msggrey,inner sep=0,
+              minimum width=4.5mm,minimum height=5.5mm,shape border rotate=0},
+  msgl/.style={msg,shape border rotate=180},
+  msgu/.style={msg,shape border rotate=90},
+  msgd/.style={msg,shape border rotate=270},
+  % a matrix message: a slightly larger triangle, its two legs fan out from it
+  msgmat/.style={msg,minimum width=5.5mm,minimum height=7mm},
+  % a partially contracted intermediate: bigger than a single tensor
+  blob/.style={circle,draw,line width=1.5pt,fill=tensorblue!55!msggrey,minimum size=14mm,inner sep=0},
+  lab/.style={font=\large},
+  code/.style={font=\ttfamily\large},
+  arrow/.style={-{Latex[length=3mm]},line width=1.2pt},
+}
