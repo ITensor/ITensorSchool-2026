@@ -20,9 +20,9 @@ leg `l'`, so a message here is a matrix rather than a vector. Multiply the incom
 into the ket one at a time, then multiply by the bra.
 
 Expectation values are ratios of two contractions that share the same messages, so the
-normalization of the messages cancels. Nothing like `binormalized_messages` is needed here.
+normalization of the messages cancels.
 
-Nothing in this file is specific to the AKLT state. It works for any state stored the way
+Nothing in this file is specific to the AKLT state. It works for any tensor network state stored the way
 `aklt_tensornetwork` returns it, and every function takes that `state` as its first
 argument, which is what keeps these names apart from the ones in `belief_propagation.jl`.
 """
@@ -31,7 +31,7 @@ argument, which is what keeps these names apart from the ones in `belief_propaga
     initial_messages(state::NamedTuple)
 
 The messages to start from: on each directed edge, the identity matrix between the ket leg
-and the bra leg, normalized.
+and the bra leg, normalized is typically a good choice.
 """
 function initial_messages(state::NamedTuple)
     return Dict(

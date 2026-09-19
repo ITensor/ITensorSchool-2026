@@ -13,7 +13,7 @@ has dimension `z + 1`. On a ring every vertex has `z = 2` and the state is the f
 spin-1 AKLT chain; on a square lattice `z = 4` and it is the spin-2 AKLT state.
 
 The result is the state itself: one tensor per vertex, each carrying one physical index and
-one virtual index per incident edge. The norm network `⟨ψ|ψ⟩` is never built explicitly.
+one virtual index per incident edge. The norm network `⟨ψ|ψ⟩` is never built explicitly for efficiency.
 Its two layers are reached through `ket_tensor` and `bra_tensor`.
 
 # Returns
@@ -96,7 +96,7 @@ contracts over it while the virtual indices stay distinct. Each edge of the norm
 therefore carries two indices, the ket leg `l` and the bra leg `l'`.
 
 The two layers are kept as separate tensors. When contracting with messages, multiply the
-messages into the ket first and then multiply by the bra.
+messages into the ket first and then multiply by the bra. This scales more favorably.
 """
 bra_tensor(state, v) = dag(prime(state.psi[v], link_indices(state, v)))
 
