@@ -251,19 +251,21 @@ Contracting that whole network again at every site would repeat a lot of work, s
   <img src="resources/images/3-right_environment.png" alt="Right environment Rs[j]" width="400">
 </p>
 
-Site 1's density matrix is then just its own two tensors closed with `Rs[2]`, and its diagonal gives the probability of each state:
+Site 1's density matrix is then determined by the following diagram:
 
 <p align="center">
   <img src="resources/images/3-sample_first_site.png" alt="Sampling the first site" width="600">
 </p>
 
-Once you have sampled a state there, site 1 is fixed to it and both copies get projected onto it. Absorbing those two projected tensors gives `L`, which plays the same role on the left that `Rs[3]` plays on the right, and site 2 is sampled from the diagonal of what they close around it:
+The diagonal values of that density matrix give the probability of each state, and one of them is sampled.
+
+Site 1 is then fixed to the state you sampled, and both copies of it get projected onto that state. Site 2's density matrix, conditioned on that choice, is determined by the following diagram:
 
 <p align="center">
   <img src="resources/images/3-sample_second_site.png" alt="Sampling the second site" width="700">
 </p>
 
-The sweep carries on that way to the end of the chain, growing `L` by one site each time. In the code `L` is a single tensor, the upper of the two green ones, and `dag(prime(L))` is the lower one.
+The projected tensors of site 1 are absorbed into `L`, which plays the same role on the left that `Rs[3]` plays on the right. Site 2 is sampled from the diagonal in the same way, and the sweep carries on to the end of the chain, growing `L` by one site each time. In the code `L` is a single tensor, the upper of the two green ones, and `dag(prime(L))` is the lower one.
 
 The following functionality may be useful:
 
