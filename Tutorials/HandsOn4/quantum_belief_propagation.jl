@@ -8,7 +8,7 @@ include("contract_network.jl")
 include("aklt_tensornetwork.jl")
 
 """
-Stretch goal: quantum belief propagation.
+Stretch Tutorial: quantum belief propagation.
 
 You are asked to run belief propagation on the norm network `⟨ψ|ψ⟩` of a tensor network
 state and use it to compute expectation values. For each numbered step (1), (2), (3) below,

@@ -6,7 +6,7 @@
 - [Tutorial 2: Complete a Belief Propagation Implementation](#tutorial-2)
 - [Tutorial 3: Belief Propagation on the 2D Ising Model](#tutorial-3)
 - [Tutorial 4: BP Cluster Expansion](#tutorial-4)
-- [Stretch Goals](#stretch-goals)
+- [Stretch Tutorial: Quantum Belief Propagation](#stretch-tutorial)
 
 <a id="tutorial-1"></a>
 <details>
@@ -411,47 +411,26 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 
 </details>
 
-<a id="stretch-goals"></a>
+<a id="stretch-tutorial"></a>
 <details>
-  <summary><h2>Stretch Goals</h2></summary>
+  <summary><h2>Stretch Tutorial: Quantum Belief Propagation</h2></summary>
   <hr>
 
-If you completed all the tutorials and would like more of a challenge, choose from among the following "stretch goal" activities.
+This tutorial is longer and more open ended than the others, for those who have finished the first four. Everything so far has been a classical partition function. Here you will write belief propagation for a quantum state and use it to study the AKLT state.
 
-1. You can use `named_grid((nx, ny, nz, ...); periodic)` to construct any hypercubic lattice in your choice of dimension. Try using the code to use BP (and the cluster expansion if you're feeling confident) to solve the 3D Ising model. Do you think the errors are better or worse than in 2D? Why? What about in 4D?
-
-2. Try writing a function to construct a tensor network on a graph `g` with some bond dimension $\chi$ and random entries in the tensors. Use the function `ising_tensornetwork` in [ising_tensornetwork.jl](./ising_tensornetwork.jl) for a template. The `phi_bp` function, when passed converged `messages`, approximates the logarithm of the contraction of the given tensor network you pass it (divided by the number of vertices). Compare that result to exact contraction of the network, for which a function is provided in [contract_network.jl](./contract_network.jl).
-
-Study how the error from the BP contraction depends on the geometry of the tensor network.
-
-You might find it useful to know that you can import various pre-defined constructors for your favourite lattices such as
-```julia
-julia> using NamedGraphs: named_hexagonal_lattice_graph, named_comb_tree, named_grid
-
-julia> g1 = named_hexagonal_lattice_graph(4, 4; periodic = true);
-
-julia> g2 = named_comb_tree((4, 3));
-
-julia> g3 = named_grid((4, 4, 4));
-```
-
-3. The BP implementation you wrote updates every message simultaneously from the previous set of messages (a "parallel" or Jacobi-style schedule). Modify `update_messages` so that each new message is immediately used when computing the following ones (a "sequential" or Gauss-Seidel-style schedule). How does the number of iterations to converge change? Does the order in which you visit the edges matter?
-
-4. Everything so far has been a classical partition function. Belief propagation works just as well on a quantum state, and this stretch goal is a larger, more open one: you will write your own quantum belief propagation from a template and use it to study the AKLT state.
-
-A tensor network state puts a tensor on every vertex carrying one extra *physical* index. Its norm $\langle \psi | \psi \rangle$ is a tensor network containing **two** tensors per vertex, the ket $\psi_{v}$ and the bra $\overline{\psi_{v}}$, joined over the physical index $s_{v}$. Every edge therefore carries two indices, the ket leg $\ell$ and the bra leg $\ell'$, so a message here is a matrix rather than a vector.
+A tensor network state has a tensor on every vertex with one extra *physical* index. Its norm $\langle \psi | \psi \rangle$ is a tensor network with **two** tensors per vertex, the ket $\psi_{v}$ and the bra $\overline{\psi_{v}}$, joined over the physical index $s_{v}$. Every edge now carries two indices, the ket leg $\ell$ and the bra leg $\ell'$, so a message is a matrix rather than a vector.
 
 <p align="center">
   <img src="resources/images/5-norm_network.png" alt="The two-layer norm network of a tensor network state, with a matrix-valued message" width="800">
 </p>
 
-It is tempting to multiply the ket and the bra at each vertex together first, producing a single "double layer" tensor, so that the network looks exactly like the classical ones and your Tutorial 2 code runs on it untouched. Do not do this. At a vertex of degree $z$ and bond dimension $\chi$ that tensor has $2z$ virtual legs and costs $\chi^{2z}$ to store, which is by far the largest object in the calculation. Absorbing the messages into the ket one at a time and only then closing with the bra costs around $\chi^{z+1}$ instead. That order is the whole content of the message update here:
+You might be tempted to multiply the ket and the bra at each vertex together first. That gives a single "double layer" tensor per vertex, the network looks just like the classical ones, and your Tutorial 2 code runs on it unchanged. Don't. At a vertex of degree $z$ and bond dimension $\chi$ that tensor has $2z$ virtual legs and costs $\chi^{2z}$ to store, far more than anything else in the calculation. Absorbing the messages into the ket one at a time and only then closing with the bra costs about $\chi^{z+1}$.
 
 <p align="center">
   <img src="resources/images/5-lazy_contraction.png" alt="Absorb the messages into the ket first, then close with the bra" width="900">
 </p>
 
-On a degree four vertex the difference is already stark:
+On a degree four vertex the difference is already large:
 
 | Bond dimension | Double layer tensor | Absorbing messages first |
 | --- | --- | --- |
@@ -459,21 +438,23 @@ On a degree four vertex the difference is already stark:
 | 8 | 128 MiB, 81 ms | 0.3 MiB, 0.1 ms |
 | 10 | 763 MiB, 275 ms | 0.6 MiB, 0.2 ms |
 
-Keeping the two layers apart until a message has been applied is what every serious tensor network code does, and it is the point of this exercise.
+Keeping the two layers apart until a message has been applied is what every serious tensor network code does, and it is the point of this tutorial.
 
-The AKLT (valence bond solid) state is provided for you in [aklt_tensornetwork.jl](./aklt_tensornetwork.jl), along with the spin operators. Every edge of the graph carries a singlet of two spin-1/2s, and at a vertex of degree $z$ those $z$ spin-1/2s are projected onto their maximal total spin $S = z/2$. On a ring every vertex has $z = 2$, so this is the spin-1 AKLT chain. On a square lattice $z = 4$ and it is the spin-2 AKLT state. The file gives you `ket_tensor(state, v)`, `ket_tensor(state, v, O)` with an operator applied, `bra_tensor(state, v)` and `spin_operators(state.sites[v])`.
+**The AKLT state.** The state we will use is built for you in [aklt_tensornetwork.jl](./aklt_tensornetwork.jl), along with the spin operators. Every edge of the graph carries a singlet of two spin-1/2s, and at a vertex of degree $z$ those $z$ spin-1/2s are projected onto their maximal total spin $S = z/2$. On a ring every vertex has $z = 2$, so this is the spin-1 AKLT chain. On a square lattice $z = 4$ and it is the spin-2 AKLT state. The file gives you `ket_tensor(state, v)`, `ket_tensor(state, v, O)` with an operator applied, `bra_tensor(state, v)` and `spin_operators(state.sites[v])`.
 
-The AKLT state is not just a convenient tensor network, it is the exact ground state of a physical Hamiltonian. Because each bond carries a single shared singlet, the two spins on any bond can never combine into their maximum total spin, so the state is annihilated by the projector onto that maximum. The parent Hamiltonian is the sum of those projectors,
+The AKLT state is the exact ground state of a physical Hamiltonian. Each bond carries a single shared singlet, so the two spins on any bond can never combine into their maximum total spin, and the state is annihilated by the projector onto that maximum. The parent Hamiltonian is the sum of those projectors,
 
-$$H = \sum_{\langle ij \rangle} P^{(ij)}_{2S},$$
+$$H = \sum_{\langle ij \rangle} P^{(ij)}_{2S}.$$
 
-a sum of positive terms, so any state it annihilates is a ground state of energy exactly zero. For the spin-1 chain the projector onto total spin 2 is a polynomial in the Heisenberg coupling,
+This is a sum of positive terms, so any state it annihilates is a ground state with energy exactly zero. For the spin-1 chain the projector onto total spin 2 is a polynomial in the Heisenberg coupling,
 
 $$P_{2} = \frac{1}{3} + \frac{1}{2}\mathbf{S}_{i} \cdot \mathbf{S}_{j} + \frac{1}{6}\left(\mathbf{S}_{i} \cdot \mathbf{S}_{j}\right)^{2},$$
 
 which is where the biquadratic term in the usual AKLT Hamiltonian comes from. Affleck, Kennedy, Lieb and Tasaki introduced the model in 1987 as a rigorous example of the Haldane gap, and its spin-1/2 edge states are the standard first example of a symmetry protected topological phase.
 
-The code you have to write is in [quantum_belief_propagation.jl](./quantum_belief_propagation.jl), and the driver that exercises it is [5-quantumbp.jl](./5-quantumbp.jl), which works the same way as the numbered scripts in the tutorials above. The message passing loop, the initial messages and an exact contraction routine to check against are written for you; the three numbered steps are yours. Running the driver before you start will tell you how far off you are:
+**The code.** The functions to complete are in [quantum_belief_propagation.jl](./quantum_belief_propagation.jl) and the script that runs them is [5-quantumbp.jl](./5-quantumbp.jl), set up the same way as the numbered scripts above. The message passing loop, the initial messages and an exact contraction routine to check against are written for you. The three numbered steps are yours. These functions share their names with the ones in `belief_propagation.jl`, but they all take the `state` as their first argument, so the two sets stay apart.
+
+1. Run `main`. It builds the AKLT state on an open path, which is a tree, so belief propagation should agree with exact contraction. It does not yet.
 
 ```julia
 julia> include("5-quantumbp.jl")
@@ -487,16 +468,30 @@ Physical spin on vertex 2: S = 1.0
 Quantum BP DOES NOT agree with exact contraction (it should on a tree)
 ```
 
-Step (1) is `updated_message`, step (2) is `expect` for a single vertex and step (3) is `expect_bond` for a neighbouring pair, each built by absorbing messages into the ket layer before touching the bra. Note that expectation values are ratios of two contractions sharing the same messages, so the normalization cancels and nothing like `binormalized_messages` is needed. The default graph is an open path, which is a tree, so belief propagation is exact there and `main` checks it for you.
+2. Step `(1)` is `updated_message`. Start from `ket_tensor(state, src(e))`, multiply in the message on each edge of `incoming_es` one at a time, then multiply by `bra_tensor(state, src(e))` and normalize. Do not multiply the ket and the bra together first.
 
-These functions share their names with the ones in `belief_propagation.jl`, but they all take the `state` as their first argument, so the two sets stay apart.
+3. Step `(2)` is `expect`, the expectation value of an operator `O` on a vertex `v`. The numerator starts from `ket_tensor(state, v, O)`, absorbs every message in `incoming` and closes with `bra_tensor(state, v)`. The denominator is the same without `O`. Return the ratio. Because both share the same messages, the normalization of the messages cancels, and nothing like `binormalized_messages` is needed.
 
-Once it passes, the physics is yours to explore. Some suggestions:
+4. Step `(3)` is `expect_bond`, the same thing for two neighbouring vertices `v` and `w`. Absorb each message in `incoming` into whichever of the two kets carries its index, contract the two kets over the bond they share, then close with both bras. Once this is done `main` should pass:
 
-- On a ring, check $\langle S^{z} \rangle = 0$ and $\langle (S^{z})^{2} \rangle = 2/3$. Be warned that these are not a real test: the single site reduced density matrix of the AKLT state is maximally mixed by symmetry, so any method that respects the symmetry gets them right.
-- Assemble the Heisenberg bond energy from your two site function, using $\mathbf{S}_{v} \cdot \mathbf{S}_{w} = S^{z}S^{z} + (S^{+}S^{-} + S^{-}S^{+})/2$, and compare to the exact thermodynamic limit value $-4/3$ for the spin-1 chain, which follows from the famous correlation function $\langle S^{z}_{i} S^{z}_{j} \rangle = \frac{4}{3}\left(-\frac{1}{3}\right)^{|i-j|}$. Compare also to exact contraction of the finite ring, for which `expect_exact` takes a pair of vertices and operators. Belief propagation gives $-4/3$ at *every* ring size, while exact contraction of the finite ring only approaches it as the ring grows, the same effect you saw for the periodic Ising chain in Tutorial 3.
-- Evaluate the parent Hamiltonian itself and confirm the bond energy vanishes to machine precision. Squaring the sum of three terms above gives nine, each still a product of one operator per vertex since $(A \otimes B)(A' \otimes B') = AA' \otimes BB'$. Unlike the correlations, this is a statement about the state alone, so it holds at any ring size.
-- Move to a periodic square lattice, where the state becomes the spin-2 AKLT state and belief propagation is genuinely approximate. How large is the discrepancy against exact contraction, and how does it compare to the Ising errors from Tutorial 3? Note the $P_{2}$ formula above is the spin-1 projector and no longer applies; the parent Hamiltonian there projects onto total spin 4.
+```julia
+julia> res = main();
+BP Algorithm Converged after 1 iterations
+Physical spin on vertex 2: S = 1.0
+⟨(Sᶻ)²⟩ BP    = 0.6666666666666666
+⟨(Sᶻ)²⟩ exact = 0.6666666666666666
+Quantum BP AGREES with exact contraction (as it should on a tree)
+```
+
+Now for some physics. Build the state on a periodic ring, `g = named_grid((L, 1); periodic = true)`, where every vertex has degree two and the state is the spin-1 AKLT chain.
+
+5. Check that $\langle S^{z} \rangle = 0$ and $\langle (S^{z})^{2} \rangle = 2/3$. These are not a real test of belief propagation: the single site reduced density matrix of the AKLT state is maximally mixed by symmetry, so any method that respects the symmetry gets them right.
+
+6. Use `expect_bond` to build the Heisenberg bond energy $\langle \mathbf{S}_{v} \cdot \mathbf{S}_{w} \rangle = \langle S^{z}_{v} S^{z}_{w} \rangle + \tfrac{1}{2}(\langle S^{+}_{v} S^{-}_{w} \rangle + \langle S^{-}_{v} S^{+}_{w} \rangle)$ on one bond of the ring. In the thermodynamic limit the spin-1 AKLT chain has $\langle \mathbf{S}_{i} \cdot \mathbf{S}_{i+1} \rangle = -4/3$, which follows from its correlation function $\langle S^{z}_{i} S^{z}_{j} \rangle = \frac{4}{3}\left(-\frac{1}{3}\right)^{|i-j|}$. Compare your answer to this, and to exact contraction of the finite ring, which `expect_exact(state, v, w, Ov, Ow)` gives you. Do this for a few values of `L`. Belief propagation gives $-4/3$ at every $L$, while exact contraction only approaches it as the ring grows. This is the same thing you saw for the periodic Ising chain in Tutorial 3.
+
+7. Evaluate the parent Hamiltonian bond energy $\langle P_{2} \rangle$ and confirm it is zero to machine precision. You need $\langle (\mathbf{S}_{v} \cdot \mathbf{S}_{w})^{2} \rangle$: squaring the sum of three terms above gives nine, each still a product of one operator on $v$ and one on $w$, since $(A \otimes B)(A' \otimes B') = AA' \otimes BB'$. Unlike the correlations, this is a statement about the state alone, so it holds at any ring size.
+
+8. Move to a periodic square lattice, `named_grid((L, L); periodic = true)`, where the state becomes the spin-2 AKLT state and belief propagation is genuinely approximate. How large is the discrepancy in the bond energy against exact contraction, and how does it compare to the Ising errors from Tutorial 3? The $P_{2}$ formula above is the spin-1 projector and no longer applies here; the parent Hamiltonian on the square lattice projects onto total spin 4.
 
 This is the end of the tutorials, click [here](#table-of-contents) to return to the table of contents.
 
