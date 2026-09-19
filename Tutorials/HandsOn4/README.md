@@ -173,7 +173,7 @@ In the previous tutorial, we contracted the tensor network exactly by multiplyin
 
 In this tutorial we are going to contract tensor networks in an efficient, but approximate manner via belief propagation (BP). The BP code lives in the file [belief_propagation.jl](./belief_propagation.jl). It is not fully implemented, and you are asked to finish implementing it. Tutorials 3 and 4 both use this file, so they will only give correct answers once you have completed it.
 
-**The algorithm.** BP associates a *message* to every directed edge $v \to w$ of the graph. A message $m_{v \to w}$ is a vector (an `ITensor` with a single index) living on the index shared by the tensors $T_v$ and $T_w$. You can think of it as an approximation to the environment that vertex $w$ sees when it looks towards $v$, exactly like the `L` and `R` environment tensors you built in Hands-On 1 when computing an expectation value of an MPS. The messages are determined self-consistently by the update rule
+**The algorithm.** BP associates a *message* to every directed edge $v \to w$ of the graph. A message $m_{v \to w}$ is a an `ITensor` living on the indices shared by the tensors $T_v$ and $T_w$. You can think of it as an approximation to the environment that vertex $w$ sees when it looks towards $v$, exactly like the `L` and `R` environment tensors you built in Hands-On 1 when computing an expectation value of an MPS. The messages are determined self-consistently by the update rule
 
 $$m_{v \to w} \propto T_{v} \prod_{u \in \partial v,\, u \neq w} m_{u \to v},$$
 
@@ -191,7 +191,7 @@ Starting from some initial guess, all the messages are updated repeatedly until 
 
 and the BP approximation to the free energy density is
 
-$$\phi_{BP} = \frac{1}{N}\sum_{v} \ln Z_{v},$$
+$$\phi_{BP} = \frac{1}{N}\sum_{v} \ln Z_{v} \approx \frac{1}{N}\ln Z ,$$
 
 after the messages have been suitably normalized (that part is done for you). On a tree the messages are exactly the environments and BP is exact. On a path graph, for example, the message $m_{2 \to 3}$ is everything to the left of that edge contracted together, playing the same role as the `L` environment you built in Hands-On 1. On a graph with loops BP is an approximation.
 
@@ -271,7 +271,7 @@ julia> res.phi_bp_tn
 
 $$\phi_{OBC}(\beta) = \frac{1}{L_{x}}\ln\left(2\cosh^{L_{x}-1}(\beta)\right).$$
 
-They agree, even though we used BP to compute it. Why?
+They should agree if you're BP implementation is correct, even though we used BP to compute it. Why?
 
 2. We can also get the BP approximated free energy density for a periodic ring.
 ```julia
@@ -312,7 +312,7 @@ julia> phi_bps = [res.phi_bp_tn for res in results];
 
 Congratulations. You just approximately solved the 2D Ising model on a 15x15 square lattice for twenty one different inverse temperatures in a matter of seconds.
 
-3. How does the number of iterations that BP took to converge (`res.niters`) depend on the inverse temperature? Plot this. Where's the peak? Is it near the critical point $\beta_{c} = \ln(1 + \sqrt{2})/2 \approx 0.4407$ of the 2D model? Or somewhere different?
+3. How does the number of iterations that BP took to converge (`res.niters`) depend on the inverse temperature? Plot this. Where's the peak? Is it near the known critical point $\beta_{c} = \ln(1 + \sqrt{2})/2 \approx 0.4407$ of the 2D model? Or somewhere different?
 
 <p align="center">
   <img src="resources/images/3-bp_niters_vs_beta.png" alt="BP iterations to converge versus beta" width="500">
@@ -400,7 +400,12 @@ julia> plot(betas, [bp_errs, bp_corrected_errs]; xlabel = "β", ylabel = "Absolu
 
 2. By how much does the correction reduce the error at its peak? Where does the correction help the most and where does it help the least? What do you think happens at higher orders in the expansion?
 
-Using cluster expanded results to improve tensor network contraction is an active research area. In October 2025 two papers appeared on the arXiv about this (https://arxiv.org/abs/2510.05647 and https://arxiv.org/abs/2510.02290) and we used the expansion written in Eq. (5) of the former, so you are now at the bleeding edge of research in this area.
+Using cluster expansions to improve tensor network contraction is an active research area. Two papers on it appeared in October 2025 and have since been published:
+
+- J. Gray, G. Park, G. Evenbly, N. Pancotti, E. F. Kjønstad and G. K.-L. Chan, [Tensor network loop cluster expansions for quantum many-body problems](https://doi.org/10.1103/r6mz-6q3g), Phys. Rev. B **113**, 235135 (2026), [arXiv:2510.05647](https://arxiv.org/abs/2510.05647).
+- S. Midha and Y. F. Zhang, [Beyond belief propagation: cluster-corrected tensor network contraction with exponential convergence](https://doi.org/10.1103/sdlx-d3tn), PRX Quantum **7**, 033010 (2026), [arXiv:2510.02290](https://arxiv.org/abs/2510.02290).
+
+The expansion used here is Eq. (5) of the first paper, so you are now at the bleeding edge of research in this area.
 
 This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 

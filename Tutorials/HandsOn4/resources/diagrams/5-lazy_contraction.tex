@@ -2,37 +2,38 @@
 \input{common}
 \begin{document}
 \begin{tikzpicture}
-  % (a) ket with the incoming message absorbed
+  % (1) ket with the incoming message absorbed; the bra leg of the message is still free
   \begin{scope}
-    \node[msgtall] (M) at (0,1.2) {};
-    \node[tensor] (k) at (1.7,0) {};
-    \draw[leg] (M.east |- k) -- (k);
-    \draw[leg] (k) -- ++(0,1.5);
-    \draw[leg] (k) -- ++(1.6,0);
-    \draw[leg] (M.east |- 0,2.4) -- ++(1.2,0);
-    \node[anchor=north,align=center] at (1.5,-0.7) {\small(1) ket $\times$ incoming messages};
+    \coordinate (M) at (0,1.2);
+    \coordinate (k) at (1.7,0);
+    \draw[leg] (M) -- (k);
+    \draw[leg] (M) -- (1.7,2.4);
+    \draw[leg] (k) -- ++(0,1.4);
+    \draw[leg] (k) -- ++(1.5,0);
+    \node[msgmat] at (M) {};
+    \node[tensor] at (k) {};
+    \node[anchor=north,align=center] at (1.3,-0.7) {\small(1) ket $\times$ incoming messages};
   \end{scope}
-  \draw[arrow] (4.2,1.2) -- (5.2,1.2);
-  % (b) close with the bra
-  \begin{scope}[xshift=6.4cm]
-    \node[msgtall] (M) at (0,1.2) {};
-    \node[tensor] (k) at (1.7,0) {};
-    \node[tensor] (b) at (1.7,2.4) {};
-    \draw[leg] (M.east |- k) -- (k);
-    \draw[leg] (M.east |- b) -- (b);
+  \draw[arrow] (4.0,1.2) -- (5.0,1.2);
+  % (2) close with the bra
+  \begin{scope}[xshift=6.0cm]
+    \coordinate (M) at (0,1.2);
+    \coordinate (k) at (1.7,0); \coordinate (b) at (1.7,2.4);
+    \draw[leg] (M) -- (k); \draw[leg] (M) -- (b);
     \draw[leg] (k) -- (b);
-    \draw[leg] (k) -- ++(1.6,0);
-    \draw[leg] (b) -- ++(1.6,0);
-    \node[anchor=north,align=center] at (1.5,-0.7) {\small(2) $\times$ bra};
+    \draw[leg] (k) -- ++(1.5,0); \draw[leg] (b) -- ++(1.5,0);
+    \node[msgmat] at (M) {};
+    \node[tensor] at (k) {}; \node[tensor] at (b) {};
+    \node[anchor=north,align=center] at (1.3,-0.7) {\small(2) $\times$ bra};
   \end{scope}
-  \draw[arrow] (10.4,1.2) -- (11.4,1.2);
-  % (c) the new message
-  \begin{scope}[xshift=12.4cm]
-    \node[lab] at (-0.2,1.2) {$\propto$};
-    \node[msgtall] (N) at (1.0,1.2) {};
-    \draw[leg] (N.east |- 0,0)   -- ++(1.6,0);
-    \draw[leg] (N.east |- 0,2.4) -- ++(1.6,0);
-    \node[lab,anchor=north] at (1.0,-0.4) {$m_{v \to w}$};
+  \draw[arrow] (10.0,1.2) -- (11.0,1.2);
+  % (3) the new message
+  \begin{scope}[xshift=11.8cm]
+    \node[lab] at (0,1.2) {$\propto$};
+    \coordinate (N) at (1.2,1.2);
+    \draw[leg] (N) -- (2.9,0); \draw[leg] (N) -- (2.9,2.4);
+    \node[msgmat] at (N) {};
+    \node[lab,anchor=north] at (1.2,-0.7) {$m_{v \to w}$};
   \end{scope}
 \end{tikzpicture}
 \end{document}

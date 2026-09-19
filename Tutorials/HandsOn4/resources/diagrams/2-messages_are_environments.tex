@@ -16,8 +16,9 @@
     \draw[leg] (a) -- (b);
     \draw[leg] (b) -- ++(1.6,0);
     \node[lab] at (7.0,0) {$\propto$};
-    \node[msg] (M) at (8.2,0) {};
+    \coordinate (M) at (8.2,0);
     \draw[leg] (M) -- ++(1.6,0);
+    \node[msg] at (M) {};
   \end{scope}
 \end{tikzpicture}
 \end{document}

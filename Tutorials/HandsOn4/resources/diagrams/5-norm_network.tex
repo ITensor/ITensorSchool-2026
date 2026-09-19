@@ -2,6 +2,9 @@
 \input{common}
 \begin{document}
 \begin{tikzpicture}
+  % a message is a matrix: it carries both the ket leg and the bra leg of an edge
+  \coordinate (M) at (0.5,1.2);
+  \draw[leg] (M) -- (2.0,0); \draw[leg] (M) -- (2.0,2.4);
   % ket layer (bottom) and bra layer (top) on a path of three vertices
   \foreach \i in {1,2,3} {
     \node[tensor] (k\i) at (2.0*\i,0) {};
@@ -9,16 +12,14 @@
     \draw[leg] (k\i) -- (b\i);
   }
   \foreach \i/\j in {1/2,2/3} { \draw[leg] (k\i) -- (k\j); \draw[leg] (b\i) -- (b\j); }
-  \draw[leg] (k1) -- ++(-1.6,0); \draw[leg] (b1) -- ++(-1.6,0);
   \draw[leg] (k3) -- ++(1.4,0);  \draw[leg] (b3) -- ++(1.4,0);
-  \node[code,anchor=east] at (-1.0,2.4) {bra\_tensor(state, v)};
-  \node[code,anchor=east] at (-1.0,0.0) {ket\_tensor(state, v)};
+  \node[msgmat] at (M) {};
+  \node[code,anchor=east] at (-0.6,2.4) {bra\_tensor(state, v)};
+  \node[lab,anchor=east]  at (-0.6,1.2) {$m_{u \to v}$};
+  \node[code,anchor=east] at (-0.6,0.0) {ket\_tensor(state, v)};
   \node[lab] at (4.0,-0.85) {$v$};
   \node[lab,anchor=west] at (7.55,0.0) {$\ell$};
   \node[lab,anchor=west] at (7.55,2.4) {$\ell'$};
   \node[lab,anchor=west] at (4.15,1.2) {\small$s_v$};
-  % a message is a matrix: it spans both legs of an edge
-  \node[msgtall] (M) at (0.5,1.2) {};
-  \node[lab,anchor=north] at (0.5,-0.55) {$m_{u \to v}$};
 \end{tikzpicture}
 \end{document}
