@@ -1,8 +1,8 @@
 using ITensorMPS: MPS, random_mps, siteinds
 # Functions for performing measurements of MPS
-using ITensorMPS: dag, expect, sim_linkinds
+using ITensorMPS: dag, expect, linkinds
 # Functions for building the tensors used when sampling
-using ITensors: ITensor, dim, onehot, scalar
+using ITensors: ITensor, dim, onehot, prime, scalar
 using LinearAlgebra: normalize
 using Random: AbstractRNG, default_rng
 # Use to set the RNG seed for reproducibility
@@ -25,9 +25,9 @@ function sample_state(rng::AbstractRNG, psi::MPS)
     nsite = length(psi)
     sites = siteinds(psi)
 
-    # psid is a copy of psi with new internal link indices and with all of the tensors
-    # conjugated, so psi and psid together form the norm network ⟨ψ|ψ⟩
-    psid = dag(sim_linkinds(psi))
+    # psid is a copy of psi with primed link indices and with all of the tensors conjugated,
+    # so psi and psid together form the norm network ⟨ψ|ψ⟩
+    psid = dag(prime(linkinds, psi))
 
     # Rs[j] is the part of the norm network from site j to the end of the chain contracted
     # together, so Rs[nsite + 1] is a trivial scalar environment
@@ -37,18 +37,19 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         Rs[j] = Rs[j + 1] * psid[j] * psi[j]
     end
 
-    # L is the part of the norm network to the left of site j, projected onto the states
-    # that have been sampled so far. It starts out trivial and grows one site at a time.
+    # L is the part of psi to the left of site j, projected onto the states that have been
+    # sampled so far, so `dag(prime(L))` is the matching part of psid. It starts out trivial
+    # and grows one site at a time.
     L = ITensor(1.0)
     result = zeros(Int, nsite)
     for j in 1:nsite
         s = sites[j]
 
         # (1)
-        Ls = [L * (psi[j] * onehot(s => n)) * (psid[j] * onehot(s => n)) for n in 1:dim(s)]
+        Ls = [L * (psi[j] * onehot(s => n)) for n in 1:dim(s)]
 
         # (2)
-        probabilities = [real(scalar(Ln * Rs[j + 1])) for Ln in Ls]
+        probabilities = [real(scalar(Ln * Rs[j + 1] * dag(prime(Ln)))) for Ln in Ls]
         probabilities /= sum(probabilities)
         n = searchsortedfirst(cumsum(probabilities), rand(rng))
 
@@ -69,33 +70,38 @@ sample_state(psi::MPS) = sample_state(default_rng(), psi)
 Sample one product state from |⟨state|ψ⟩|² using right environments `Rs` that were
 contracted from `psi` and `psid` beforehand.
 
-`psid` is passed along with `Rs` so that the link indices match up properly.
+`psid` is taken as an argument rather than derived from `psi`, so that this works whatever
+was done to keep the link indices of the two copies apart.
 """
 function sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor})
     nsite = length(psi)
     sites = siteinds(psi)
     L = ITensor(1.0)
+    Ld = ITensor(1.0)
     result = zeros(Int, nsite)
     for j in 1:nsite
         s = sites[j]
         # Closing L with Rs[j] gives the weight of all states of site j added together,
         # which is what the probabilities below would be normalized by, so the state can be
         # sampled against a running sum and the states after it never have to be computed
-        r = rand(rng) * real(scalar(L * Rs[j]))
+        r = rand(rng) * real(scalar(L * Rs[j] * Ld))
         cumulative = 0.0
         n = dim(s)
         Ln = L
+        Lnd = Ld
         for m in 1:dim(s)
             n = m
-            Ln = L * (psi[j] * onehot(s => m)) * (psid[j] * onehot(s => m))
+            Ln = L * (psi[j] * onehot(s => m))
+            Lnd = Ld * (psid[j] * onehot(s => m))
             # Whatever weight is left over belongs to the last state, so it is sampled
             # without closing its environment at all
             m == dim(s) && break
-            cumulative += real(scalar(Ln * Rs[j + 1]))
+            cumulative += real(scalar(Ln * Rs[j + 1] * Lnd))
             cumulative > r && break
         end
         result[j] = n
         L = Ln
+        Ld = Lnd
     end
     return result
 end
@@ -110,7 +116,7 @@ once and reused for every sample.
 """
 function sample_states(rng::AbstractRNG, psi::MPS, nsample::Int)
     nsite = length(psi)
-    psid = dag(sim_linkinds(psi))
+    psid = dag(prime(linkinds, psi))
     Rs = Vector{ITensor}(undef, nsite + 1)
     Rs[nsite + 1] = ITensor(1.0)
     for j in reverse(1:nsite)

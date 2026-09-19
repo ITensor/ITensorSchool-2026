@@ -237,23 +237,44 @@ At the top there is an incomplete `sample_state` function which samples one prod
 
 Sites cannot be sampled independently of each other, since the spins of an MPS are correlated. They are sampled in a sweep from left to right, each one conditioned on the states already sampled to its left, so the result is a sample of $|\langle n_1 n_2 \ldots n_N|\psi\rangle|^2$.
 
-The code at the top of `sample_state` builds the norm network $\langle \psi|\psi\rangle$ out of `psi` and a conjugated copy `psid`, then contracts that network from the right, storing the partial contractions in `Rs` so that `Rs[j]` holds everything from site `j` to the end of the chain:
+The probabilities for the first site are the diagonal of its reduced density matrix, which is the norm network $\langle \psi|\psi\rangle$ with the site indices of site 1 left open:
 
-<!-- TODO: diagram of the norm network being contracted from the right into the environments Rs -->
+<p align="center">
+  <img src="resources/images/3-site_density_matrix.png" alt="Reduced density matrix of site 1" width="400">
+</p>
 
-The sweep then runs left to right, keeping a left environment `L` which holds the part of the network to the left of site `j`, projected onto the states sampled from that part of the chain. Closing `L` and `Rs[j+1]` around site `j` projected onto one of its states gives the probability of sampling that state:
+The upper row is an MPS called `psid`, which the code already builds for you: a copy of `psi` with every tensor conjugated and with its link indices primed. Priming those indices keeps the two copies from contracting into each other along the chain, so they only contract on the site indices.
 
-<!-- TODO: diagram of L, site j projected onto state n, and Rs[j+1] closing into a number -->
+Contracting that whole network again at every site would repeat a lot of work, since the part to the right of a site does not depend on anything you sample. The code contracts it once from the right instead and keeps the partial results in `Rs`, so `Rs[j]` holds everything from site `j` to the end of the chain:
+
+<p align="center">
+  <img src="resources/images/3-right_environment.png" alt="Right environment Rs[j]" width="400">
+</p>
+
+Site 1's density matrix is then determined by the following diagram:
+
+<p align="center">
+  <img src="resources/images/3-sample_first_site.png" alt="Sampling the first site" width="600">
+</p>
+
+The diagonal values of that density matrix give the probability of each state, and one of the states is chosen by sampling from them.
+
+The following set of diagrams illustrates how to then sample from site 2, assuming for demonstration that we sampled $|\uparrow\rangle$ on the first site:
+
+<p align="center">
+  <img src="resources/images/3-sample_second_site.png" alt="Sampling the second site" width="700">
+</p>
+
+You project both copies of site 1 onto the state you sampled, and those projected tensors become the first `L`. Closing `L` and `Rs[3]` around site 2 gives the density matrix for site 2 conditioned on the outcome at site 1, which you sample from the same way. The sweep carries on to the end of the chain, absorbing each sampled site into `L` as it goes.
 
 The following functionality may be useful:
 
 - `@show inds(L)` prints the indices of an ITensor, which can be helpful for debugging contraction issues.
-- `onehot(s => n)` is a tensor with Index `s` of all zeros except for the element `n`, which is `1`. Contract it with an ITensor that has Index `s` to project onto that state.
+- `prime` adds a prime to the indices of an ITensor. A primed index will not contract with its unprimed version, which is what keeps the link indices of `psi` and `psid` distinct.
+- `onehot(s => n)` is a tensor with Index `s` of all zeros except for the element `n`, which is `1`. You can contract it with an ITensor that has Index `s` to project onto that state.
 - `scalar` turns a tensor with no indices into a number.
 
 The [ITensor code examples](https://docs.itensor.org/ITensors/stable/examples/ITensor.html) page has more on working with ITensors.
-
-<!-- TODO: with the diagrams in place, say which functions each step needs -->
 
 Once `sample_state` works, running `main()` samples 2000 product states from a random MPS and compares the magnetization they give against `expect`:
 ```julia
