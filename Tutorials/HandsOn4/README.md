@@ -444,6 +444,10 @@ $$\langle O_{v} \rangle = \frac{\langle \psi | O_{v} | \psi \rangle}{\langle \ps
 
 where the numerator is the norm network with $O$ applied to the ket on site $v$. Numerator and denominator are contracted with the same messages, so the normalization of the messages cancels and nothing like `binormalized_messages` is needed.
 
+<p align="center">
+  <img src="resources/images/5-expectation_value.png" alt="A belief propagation expectation value: the site with the operator over the site without it, both closed by the same messages" width="450">
+</p>
+
 None of this is special to a chain. A tensor network state on any graph `g` has a norm network on the same graph, and everything above goes through unchanged.
 
 **The AKLT state.** The state we will use is built for you in [aklt_tensornetwork.jl](./aklt_tensornetwork.jl), along with the spin operators. Every edge of the graph carries a singlet of two spin-1/2s, and at a vertex of degree $z$ those $z$ spin-1/2s are projected onto their maximal total spin $S = z/2$. On a ring every vertex has $z = 2$ and this is the spin-1 AKLT chain. On a square lattice $z = 4$ and it is the spin-2 AKLT state. The file gives you `ket_tensor(state, v)`, `ket_tensor(state, v, O)` with an operator applied, `bra_tensor(state, v)`, and `spin_operators(state.sites[v])`.
