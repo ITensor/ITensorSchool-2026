@@ -265,7 +265,7 @@ The following set of diagrams illustrates how to then sample from site 2:
   <img src="resources/images/3-sample_second_site.png" alt="Sampling the second site" width="700">
 </p>
 
-You project both copies of site 1 onto the state you sampled, and those projected tensors become the first `L`. Closing `L` and `Rs[3]` around site 2 gives its density matrix conditioned on that state, which you sample from the same way. The sweep carries on to the end of the chain, absorbing each sampled site into `L` as it goes.
+You project both copies of site 1 onto the state you sampled, and those projected tensors become the first `L`. Closing `L` and `Rs[3]` around site 2 gives the density matrix for site 2 conditioned on the outcome at site 1, which you sample from the same way. The sweep carries on to the end of the chain, absorbing each sampled site into `L` as it goes.
 
 The following functionality may be useful:
 
