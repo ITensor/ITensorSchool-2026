@@ -257,7 +257,7 @@ Site 1's density matrix is then determined by the following diagram:
   <img src="resources/images/3-sample_first_site.png" alt="Sampling the first site" width="600">
 </p>
 
-The diagonal values of that density matrix give the probability of each state, and one of them is sampled.
+The diagonal values of that density matrix give the probability of each state, and one of the states is chosen by sampling from them.
 
 Site 1 is then fixed to the state you sampled, and both copies of it get projected onto that state. Site 2's density matrix, conditioned on that choice, is determined by the following diagram:
 
@@ -265,7 +265,7 @@ Site 1 is then fixed to the state you sampled, and both copies of it get project
   <img src="resources/images/3-sample_second_site.png" alt="Sampling the second site" width="700">
 </p>
 
-The projected tensors of site 1 are absorbed into `L`, which plays the same role on the left that `Rs[3]` plays on the right. Site 2 is sampled from the diagonal in the same way, and the sweep carries on to the end of the chain, growing `L` by one site each time. In the code `L` is a single tensor, the upper of the two green ones, and `dag(prime(L))` is the lower one.
+The projected tensors of site 1 are absorbed into `L`, which plays the same role on the left that `Rs[3]` plays on the right. The state of site 2 is chosen from its diagonal the same way, and the sweep carries on to the end of the chain, growing `L` by one site each time. In the code `L` is a single tensor, the upper of the two green ones, and `dag(prime(L))` is the lower one.
 
 The following functionality may be useful:
 
