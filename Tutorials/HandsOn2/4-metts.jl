@@ -14,7 +14,7 @@ using Plots: Plots, plot
 
 using Printf: @printf
 
-# Load the `tebd` function from the TEBD implementation tutorial
+# Load the `tebd` and `make_heisenberg_gates` functions from the TEBD implementation tutorial
 include("1-tebd-implementation.jl")
 # Load the `sample_state` function from the sampling tutorial
 include("3-sample-implementation.jl")
@@ -79,18 +79,7 @@ function main(;
     # Build the physical indices for nsite spins (spin 1/2)
     sites = siteinds("S=1/2", nsite)
 
-    # Make gates (1, 2), (2, 3), (3, 4), ...
-    function gate(j)
-        si, sj = sites[j], sites[j + 1]
-        hj = 1 / 2 * op("S+", si) * op("S-", sj) +
-            1 / 2 * op("S-", si) * op("S+", sj) +
-            op("Sz", si) * op("Sz", sj)
-        return exp(-betastep / 2 * hj)
-    end
-    gates = [gate(j) for j in 1:(nsite - 1)]
-    # Include gates in reverse order too
-    # (N, N - 1), (N - 1, N - 2), ...
-    append!(gates, reverse(gates))
+    gates = make_heisenberg_gates(sites, -betastep)
 
     # Make H for measuring the energy
     terms = OpSum()
@@ -103,7 +92,7 @@ function main(;
 
     # Compute the DMRG energy as a reference.
     energy_dmrg, _ = dmrg(
-        H, random_mps(sites; linkdims = 10); nsweeps = 5, maxdim = [10, 20, 100, 100, 200],
+        H, random_mps(rng, sites; linkdims = 10); nsweeps = 5, maxdim = [10, 20, 100, 100, 200],
         cutoff = [1.0e-10], outputlevel = 0
     )
 
