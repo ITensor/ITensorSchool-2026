@@ -81,9 +81,9 @@ function sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor}
     result = zeros(Int, nsite)
     for j in 1:nsite
         s = sites[j]
-        # Closing L with Rs[j] gives the weight of all states of site j added together,
-        # which is what the probabilities below would be normalized by, so the state can be
-        # sampled against a running sum and the states after it never have to be computed
+        # Closing L and Ld around Rs[j] gives the weight of all states of site j added
+        # together, which is what the probabilities below would be normalized by, so the state
+        # can be sampled against a running sum and the states after it never have to be computed
         r = rand(rng) * real(scalar(L * Rs[j] * Ld))
         cumulative = 0.0
         n = dim(s)
@@ -94,7 +94,7 @@ function sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor}
             Ln = L * (psi[j] * onehot(s => m))
             Lnd = Ld * (psid[j] * onehot(s => m))
             # Whatever weight is left over belongs to the last state, so it is sampled
-            # without closing its environment at all
+            # without closing it against Rs at all
             m == dim(s) && break
             cumulative += real(scalar(Ln * Rs[j + 1] * Lnd))
             cumulative > r && break
