@@ -1,6 +1,6 @@
 using ITensorMPS: siteinds, linkdims, maxlinkdim
 using Random: Random
-using Plots: contourf
+using Plots: contourf, plot!, RGB, mm
 
 
 include("resources/tensor_cross/tensor_cross.jl")
@@ -59,24 +59,28 @@ function main(; nbits = 16, random_seed=1)
   # Plot
   #
 
-  nn = 10
-  x = range(0, 1-1/2^nn, length=2^nn)
-  y = range(0, 1-1/2^nn, length=2^nn)
-  z = zeros(2^nn,2^nn)
-  max_f_x, max_x_x, max_y_x = -Inf,-Inf,-Inf
-  min_f_x, min_x_x, min_y_x = +Inf,+Inf,+Inf
-  for (i,x_) in enumerate(x), (j,y_) in enumerate(y)
-    val = f(x_,y_)
-    if val > max_f_x
-      max_f_x, max_x_x, max_y_x = val,x_,y_
-    end
-    if val < min_f_x
-      min_f_x, min_x_x, min_y_x = val,x_,y_
-    end
-    z[i,j] = val
-  end
+  # Do a brute-force search for minimum and maximum
+  (; x, y, z, max_x_x, max_y_x, min_x_x, min_y_x) = brute_force_search(f; nn = 10)
 
-  display(contourf(x, y, z, levels=20, color=:turbo))
+  plt = contourf(x, y, z'; levels=20, color=:lajolla, linewidth=0,
+                 aspect_ratio=:equal, xlims=(0,1), ylims=(0,1), size=(900,850),
+                 top_margin=10mm, legend=:outertop, legend_columns=2,
+                 legendfontsize=12, foreground_color_legend=nothing)
+
+  #
+  # Mark global max (green) and min (red) found by brute-force search
+  #
+  bright_green = RGB(1/255, 220/255, 0)
+  bright_red = RGB(240/255, 0, 0)
+  Δ = 0.05
+  linewidth = 3.0
+  plot!(plt, [max_x_x-Δ,max_x_x+Δ], [max_y_x,max_y_x]; color=bright_green, linewidth, label="Global maximum")
+  plot!(plt, [max_x_x,max_x_x], [max_y_x-Δ,max_y_x+Δ]; color=bright_green, linewidth, label="")
+
+  plot!(plt, [min_x_x-Δ,min_x_x+Δ], [min_y_x,min_y_x]; color=bright_red, linewidth, label="Global minimum")
+  plot!(plt, [min_x_x,min_x_x], [min_y_x-Δ,min_y_x+Δ]; color=bright_red, linewidth, label="")
+
+  display(plt)
 
   return (;)
 
@@ -117,5 +121,29 @@ function main(; nbits = 16, random_seed=1)
   display(F)
 
   return
+end
+
+#
+# Evaluate f on a 2^nn × 2^nn grid, recording the
+# location and value of its minimum and maximum.
+# Returns the grid points x,y and values z[i,j] = f(x[i],y[j])
+#
+function brute_force_search(f; nn = 10)
+  x = range(0, 1-1/2^nn, length=2^nn)
+  y = range(0, 1-1/2^nn, length=2^nn)
+  z = zeros(2^nn,2^nn)
+  max_f_x, max_x_x, max_y_x = -Inf,-Inf,-Inf
+  min_f_x, min_x_x, min_y_x = +Inf,+Inf,+Inf
+  for (i,x_) in enumerate(x), (j,y_) in enumerate(y)
+    val = f(x_,y_)
+    if val > max_f_x
+      max_f_x, max_x_x, max_y_x = val,x_,y_
+    end
+    if val < min_f_x
+      min_f_x, min_x_x, min_y_x = val,x_,y_
+    end
+    z[i,j] = val
+  end
+  return (; x, y, z, max_f_x, max_x_x, max_y_x, min_f_x, min_x_x, min_y_x)
 end
 
