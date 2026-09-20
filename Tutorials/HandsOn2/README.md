@@ -69,6 +69,8 @@ Here are tips for each step.
 
 3. The `svd` function returns three tensors but to restore the MPS form, we need to return two tensors replacing the original `A` and `B`. Since the outer code already handles technical issues like "MPS orthogonality" there are multiple choices for reconstructing `A` and `B` that will work here.
 
+Executing `res = main();` will test out your gate application code in a real time evolution of the S=1/2 Heisenberg model, and additionally you can plot the result with `plot_szs(res)` to check if you've implemented it correctly.
+
 This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 
 </details>
