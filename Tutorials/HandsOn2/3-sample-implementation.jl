@@ -1,5 +1,5 @@
-# ITensorMPS itself is loaded so that its own `ITensorMPS.sample!` is available to compare
-# against
+# ITensorMPS itself is loaded so that you can compare your `sample_state` against its own
+# `ITensorMPS.sample!`
 using ITensorMPS: ITensorMPS, MPS, random_mps, siteinds
 # Functions for performing measurements of MPS
 using ITensorMPS: dag, expect, linkinds

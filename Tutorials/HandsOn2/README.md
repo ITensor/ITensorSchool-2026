@@ -37,6 +37,7 @@ julia> ]
 <a id="tutorial-1"></a>
 <details>
   <summary><h2>Tutorial 1: Complete a TEBD Implementation</h2></summary>
+  <hr>
 
 In the first tutorial, you will complete a TEBD implementation that you will use in the remaining tutorials. Open the file [1-tebd-implementation.jl](./1-tebd-implementation.jl) to begin. 
 
@@ -68,6 +69,7 @@ Here are tips for each step.
 
 3. The `svd` function returns three tensors but to restore the MPS form, we need to return two tensors replacing the original `A` and `B`. Since the outer code already handles technical issues like "MPS orthogonality" there are multiple choices for reconstructing `A` and `B` that will work here.
 
+This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 
 </details>
 
@@ -159,7 +161,7 @@ julia> res.energies # Energy is approximately conserved
 
 julia> sum.(res.szs) # Total spin at each time is approximately conserved
 61-element Vector{Float64}:
- 0.9999999999785e02
+ 0.9999999999785
  1.0000000000049107
  1.000000000004897
  1.0000000000048772
@@ -198,7 +200,7 @@ julia> plot(res.times, res.entanglements; xlabel = "Time", ylabel = "Entanglemen
 
 Is this what you would expect for a local quench? Why or why not? What happens around time `t ~ 5.0`? Try increasing the time of the simulation to `time = 8.0` to resolve the long-time behavior better. Notice that the simulation time per time step increases as a function of time, why is that the case?
 
-2. We can change the initial state to something different. Let's try a state where all the spins are polarised along the z-axis. This can be done by commenting out the code between the `# --- Initial state ---` and `# --- End initial state ---` comments in `main`, where the initial state is created by DMRG and then excited, and substituting it for:
+2. We can change the initial state to something different. Let's try a state where all the spins are polarized along the z-axis. This can be done by commenting out the code between the `# --- Initial state ---` and `# --- End initial state ---` comments in `main`, where the initial state is created by DMRG and then excited, and substituting it for:
 ```julia
     psit = MPS(sites, ["Z+" for i in 1:nsite])
 ```
@@ -432,7 +434,7 @@ julia> specific_heat(res) = [...]
 julia> specific_heat(res)
 0.2563153342962835
 ```
-For the default parameters ($\beta = 4.0$, NMETTS $=100, nsite = 10$) provided you should find $C_{v}(\beta = 4.0) \approx 0.26$ (the random number generator (RNG) for the initial state and sampling is seeded so that the results are numerically reproducable).
+For the default parameters ($\beta = 4.0$, NMETTS $=100, nsite = 10$) provided you should find $C_{v}(\beta = 4.0) \approx 0.26$ (the value is approximate and moves a little from run to run, since the initial state and the sampling both use the random number generator).
 Next we are going to measure the specific heat as a function of inverse temperature.
 
 3. Construct an array of $\beta$ values:
@@ -480,7 +482,7 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 
 If you completed all the tutorials and would like more of a challenge, you can try the following "stretch goal".
 
-In the low temperature regime the spin 1/2 1D Heisenberg model is known to be a gapless Luttinger Liquid which is a phase of matter characterised by a specific heat $C_{v} \propto T$. See if you can confirm this by running the METTS code in the low temperature regime (say $8.0 \leq \beta \leq 10.0$) and measuring the specific heat capacity. Note that in this low-temperature regime, finite size effects will be more significant and the imaginary time evolution needed to reach the lower temperatures will take longer, so you will have to be careful about the parameters you choose and simulations could take some time. It can help to take a large enough `betastep` (say `betastep = O(0.1)`) so your simulations run in reasonable time.
+In the low temperature regime the spin 1/2 1D Heisenberg model is known to be a gapless Luttinger Liquid which is a phase of matter characterized by a specific heat $C_{v} \propto T$. See if you can confirm this by running the METTS code in the low temperature regime (say $8.0 \leq \beta \leq 10.0$) and measuring the specific heat capacity. Note that in this low-temperature regime, finite size effects will be more significant and the imaginary time evolution needed to reach the lower temperatures will take longer, so you will have to be careful about the parameters you choose and simulations could take some time. It can help to take a large enough `betastep` (say `betastep = O(0.1)`) so your simulations run in reasonable time.
 
 This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 
