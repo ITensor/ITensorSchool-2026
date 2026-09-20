@@ -47,7 +47,7 @@ At the top, there is an incomplete `tebd_step` function which performs one local
 Your task is to complete `tebd_step`.
 
 First, read through the rest of the code to see how `tebd_step` is called from a `tebd` function which loops over it for each bond of an MPS, and the `main` function which sets up a system of `N` spin-1/2 spins. 
-The `main` function calls `make_heisenberg_gates` to obtain a quantum circuit of "Trotter split time evolution" gates which are applied to the MPS to advance by a time step `dt`.
+The `main` function calls `make_heisenberg_gates` to obtain a quantum circuit of "Trotter split time evolution" gates which are applied to the MPS to advance by a time step `timestep`.
 
 Below are diagrams depicting what `tebd_step` should do:
 
@@ -137,6 +137,7 @@ Bond dimension: 119
 ∑ⱼ⟨ψₜ|Szⱼ|ψₜ⟩: 1.00000000001218
 ⟨ψₜ|H|ψₜ⟩: -11.929345107661792 - 4.71650358907334e-15im
 
+[ Info: Total ⟨Sz⟩ is conserved over the evolution (maximum drift = 3.315914209878201e-11)
 
 julia> plot_tebd_sz(res; step = 1) # S⁺|ψ⟩
 ```
@@ -316,7 +317,7 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 
 We are now going to run the METTS (minimally entangled thermal states) algorithm to extract finite temperature properties of the system while remaining in the pure state picture. This is done in the file [4-metts.jl](./4-metts.jl). For more on the algorithm, including the alternating basis collapses used here, see [Minimally Entangled Typical Thermal State Algorithms](https://arxiv.org/abs/1002.1305) (New J. Phys. 12, 055026).
 
-METTS reaches finite temperature by evolving in imaginary time rather than real time, which with tensor networks is just the substitution $dt \rightarrow - {\rm i} d \beta$. The script makes gates for a step of size `betastep` that way, so the loop is your `tebd` from Tutorial 1 and your `sample_state` from Tutorial 3 used together: evolve a product state to inverse temperature $\beta/2$, measure it, collapse it back to a product state by sampling it, and repeat.
+METTS reaches finite temperature by evolving in imaginary time rather than real time, which with tensor networks is just the substitution $dt \rightarrow - {\rm i} d \beta$. The script makes its gates with that substitution made, passing `-betastep` to `make_heisenberg_gates` where Tutorial 1 passes `-im * timestep`, so the loop is your `tebd` from Tutorial 1 and your `sample_state` from Tutorial 3 used together: evolve a product state to inverse temperature $\beta/2$, measure it, collapse it back to a product state by sampling it, and repeat.
 
 If your `sample_state` from Tutorial 3 is not working yet, replace both `sample_state(rng, psi)` calls in the METTS loop with ITensorMPS's own version:
 ```julia
