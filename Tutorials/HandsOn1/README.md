@@ -508,8 +508,11 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
   <summary><h2>Tutorial 4: 2D Ising Model</h2></summary>
   <hr>
 
-In this tutorial, you will explore 2D DMRG calculations, using the transverse-field Ising model on a square-lattice cylinder. 
-
+In this tutorial, you will explore 2D DMRG calculations, using the transverse-field Ising model on a square-lattice cylinder. The transverse field is not uniform. It ramps along the length of the cylinder as:
+```julia
+field(x) = h_max * (1 / 2 + 1 / 2 * tanh((x - nx ÷ 2) / ramp_width))
+```
+so each column sits at a different transverse field. That's a clever technique for quickly scanning a phase diagram in a single DMRG calculation.
 
 1. Run the `main` function provided in the file [4-2d-tfim.jl](./4-2d-tfim.jl). DMRG will run and you will see information about each sweep.
 ```julia
