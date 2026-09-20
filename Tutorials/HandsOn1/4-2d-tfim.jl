@@ -2,7 +2,7 @@ using ITensorMPS: MPO, OpSum, dmrg, maxlinkdim, random_mps, siteinds
 # Functions for performing 2D DMRG
 using ITensorMPS: square_lattice
 # Functions for performing measurements of MPS
-using ITensorMPS: ITensorMPS, AbstractObserver, expect
+using ITensorMPS: ITensorMPS, AbstractObserver
 # Use to set the RNG seed for reproducibility
 using StableRNGs: StableRNG
 # Load the Plots package for plotting
@@ -49,8 +49,8 @@ end
     szs::Vector{Matrix{Float64}} = Vector{Float64}[]
 end
 function ITensorMPS.measure!(obs::SxSzObserver; psi, kwargs...)
-    push!(obs.sxs, reshape(expect(psi, "Sx"), (obs.ny, obs.nx)))
-    push!(obs.szs, reshape(expect(psi, "Sz"), (obs.ny, obs.nx)))
+    push!(obs.sxs, reshape(ITensorMPS.expect(psi, "Sx"), (obs.ny, obs.nx)))
+    push!(obs.szs, reshape(ITensorMPS.expect(psi, "Sz"), (obs.ny, obs.nx)))
     return nothing
 end
 
