@@ -80,7 +80,7 @@ In this tutorial we will use the TEBD code you created to simulate the time evol
 of several initial states under the 1D spin-1/2 Heisenberg
 Hamiltonian. We will work off of the script [2-tebd-spin-chain.jl](./2-tebd-spin-chain.jl).
 
-This script runs on your `tebd` from Tutorial 1, so finish that one first. With `tebd_step` left blank the state never changes and every plot below comes out flat. If you would rather come back to it later, replace `tebd(gates, psit; cutoff)` in `main` with `apply(gates, psit; cutoff)`, which is ITensorMPS's own gate application.
+This script runs on your `tebd` from Tutorial 1, so finish that one first. With `tebd_step` left blank the state never changes and every plot below comes out flat. If you would rather come back to it later, replace `tebd(gates, psit; cutoff)` in `main` with `apply(gates, psit; cutoff)`, which is ITensorMPS's own gate application function.
 
 
 The initial state constructed in `main` is the ground state of the Hamiltonian with the central spin excited. Running this with `main()` simulates the dynamics up until time `time = 6.0`:
@@ -320,7 +320,7 @@ If your `sample_state` from Tutorial 3 is not working yet, replace both `sample_
 ```julia
             samp = ITensorMPS.sample!(rng, psi)
 ```
-and come back to your own later. If your `tebd_step` from Tutorial 1 is also unfinished, the same trick works for the evolution: replace `tebd(gates, psi; cutoff)` in the loop with `apply(gates, psi; cutoff)`, which is ITensorMPS's own gate application.
+and come back to your own later. If your `tebd_step` from Tutorial 1 is also unfinished, the same trick works for the evolution: replace `tebd(gates, psi; cutoff)` in the loop with `apply(gates, psi; cutoff)`, which is ITensorMPS's own gate application function.
 
 1. Run the `main` function from `4-metts.jl` to get an estimate of the energy of the 1D Heisenberg chain at finite temperature (by default, `nsite = 10` and `beta = 4.0`):
 ```julia
