@@ -19,6 +19,14 @@ const IMAGE_DIR = joinpath(@__DIR__, "images")
 
 module SpinChain
 include(joinpath(@__DIR__, "..", "2-tebd-spin-chain.jl"))
+# Tutorial 2 has no exercise of its own, but it pulls in the blank `tebd_step` from Tutorial 1,
+# so point that name at the completed one before any figure is made
+module Solution
+include(joinpath(@__DIR__, "..", "..", "..", "Solutions", "HandsOn2", "1-tebd-implementation.jl"))
+end
+function tebd_step(gate::ITensor, A::ITensor, B::ITensor; truncation_keyword_args...)
+    return Solution.tebd_step(gate, A, B; truncation_keyword_args...)
+end
 end
 
 module Sampling
@@ -32,8 +40,8 @@ end
 Plots.default(; linewidth = 2, markersize = 5, markerstrokewidth = 0, size = (600, 400), dpi = 150)
 
 # Tutorial 2: the local quench of the Heisenberg ground state, at the README defaults
-function plot_quench(; nsite = 30, time = 6.0)
-    res = SpinChain.main(; nsite, time, outputlevel = 0)
+function plot_quench(; nsite = 30, time = 6.0, rng = StableRNG(1234))
+    res = SpinChain.main(; nsite, time, rng, outputlevel = 0)
     # A blank `tebd_step` still runs and returns the state unchanged, which would quietly
     # produce a figure set showing no dynamics at all
     if res.szs[end] ≈ res.szs[1]
@@ -57,7 +65,7 @@ end
 # Tutorial 2, exercise 3: the same quantity starting from an anti-ferromagnetic state
 function plot_neel_entanglement(; nsite = 30, time = 6.0, timestep = 0.1, cutoff = 1.0e-10)
     sites = siteinds("S=1/2", nsite)
-    gates = SpinChain.make_heisenberg_gates(sites, timestep)
+    gates = SpinChain.make_heisenberg_gates(sites, -im * timestep)
     psit = MPS(sites, [iseven(j) ? "Z+" : "Z-" for j in 1:nsite])
     times = 0.0:timestep:time
     entanglements = [SpinChain.entanglement_entropy(psit, nsite ÷ 2)]

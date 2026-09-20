@@ -1,5 +1,5 @@
-# ITensorMPS itself is loaded so that its own `ITensorMPS.sample!` is available to compare
-# against
+# ITensorMPS itself is loaded so that you can compare your `sample_state` against its own
+# `ITensorMPS.sample!`
 using ITensorMPS: ITensorMPS, MPS, random_mps, siteinds
 # Functions for performing measurements of MPS
 using ITensorMPS: dag, expect, linkinds
@@ -54,13 +54,10 @@ function sample_state(rng::AbstractRNG, psi::MPS)
 
         # (1)
         # For each state n of site j, project the tensor of psi on that site onto the state
-        # with `onehot(s => n)` and contract it with the left environment L
+        # with `onehot(s => n)` and contract it with L
         #
         # Ls = [... for n in 1:dim(s)]
         #
-
-        #TODO remove
-        Ls = [L * (psi[j] * onehot(s => n)) for n in 1:dim(s)]
 
         # (2)
         # Closing each of those, along with its counterpart from psid, against the right
@@ -73,22 +70,13 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         #
         n = 1
 
-        #TODO remove
-        probabilities = [real(scalar(Ln * Rs[j + 1] * dag(prime(Ln)))) for Ln in Ls]
-        probabilities /= sum(probabilities)
-        n = searchsortedfirst(cumsum(probabilities), rand(rng))
-
         # (3)
-        # Record the sampled state. The environment you built for it in step (1) is
-        # the left environment for the next site.
+        # Record the sampled state. The tensor you built for it in step (1) is the L for
+        # the next site.
         #
         # result[j] = ...
         # L = ...
         #
-
-        #TODO remove
-        result[j] = n
-        L = Ls[n]
     end
     return result
 end

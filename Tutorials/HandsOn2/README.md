@@ -14,7 +14,7 @@ julia> pwd()
 "[...]/ITensorSchool-2026/Tutorials/HandsOn2"
 
 julia> readdir()
-8-element Vector{String}:
+7-element Vector{String}:
  "1-tebd-implementation.jl"
  "2-tebd-spin-chain.jl"
  "3-sample-implementation.jl"
@@ -37,6 +37,7 @@ julia> ]
 <a id="tutorial-1"></a>
 <details>
   <summary><h2>Tutorial 1: Complete a TEBD Implementation</h2></summary>
+  <hr>
 
 In the first tutorial, you will complete a TEBD implementation that you will use in the remaining tutorials. Open the file [1-tebd-implementation.jl](./1-tebd-implementation.jl) to begin. 
 
@@ -45,8 +46,8 @@ The [ITensorMPS.jl tutorial on TEBD](https://docs.itensor.org/ITensorMPS/stable/
 At the top, there is an incomplete `tebd_step` function which performs one local step of the TEBD algorithm. 
 Your task is to complete `tebd_step`.
 
-First, read through the rest of the code to see how `tebd_step` is called from a `tebd` function which loops over it for each bond of an MPS, and the `main` function which sets up a system of `N` spin-1/2 spins. 
-The `main` function calls `make_heisenberg_gates` to obtain a quantum circuit of "Trotter split time evolution" gates which are applied to the MPS to advance by a time step `dt`.
+First, read through the rest of the code to see how `tebd_step` is called from a `tebd` function which loops over it for each bond of an MPS, and the `main` function which sets up a system of `nsite` spin-1/2 spins. 
+The `main` function calls `make_heisenberg_gates` to obtain a quantum circuit of "Trotter split time evolution" gates which are applied to the MPS to advance by a time step `timestep`.
 
 Below are diagrams depicting what `tebd_step` should do:
 
@@ -68,6 +69,7 @@ Here are tips for each step.
 
 3. The `svd` function returns three tensors but to restore the MPS form, we need to return two tensors replacing the original `A` and `B`. Since the outer code already handles technical issues like "MPS orthogonality" there are multiple choices for reconstructing `A` and `B` that will work here.
 
+This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 
 </details>
 
@@ -79,6 +81,8 @@ Here are tips for each step.
 In this tutorial we will use the TEBD code you created to simulate the time evolution 
 of several initial states under the 1D spin-1/2 Heisenberg
 Hamiltonian. We will work off of the script [2-tebd-spin-chain.jl](./2-tebd-spin-chain.jl).
+
+This script runs on your `tebd` from Tutorial 1, so finish that one first. With `tebd_step` left blank the state never changes and every plot below comes out flat. If you would rather come back to it later, replace `tebd(gates, psit; cutoff)` in `main` with `apply(gates, psit; cutoff)`, which is ITensorMPS's own gate application function.
 
 
 The initial state constructed in `main` is the ground state of the Hamiltonian with the central spin excited. Running this with `main()` simulates the dynamics up until time `time = 6.0`:
@@ -157,7 +161,7 @@ julia> res.energies # Energy is approximately conserved
 
 julia> sum.(res.szs) # Total spin at each time is approximately conserved
 61-element Vector{Float64}:
- 0.9999999999785e02
+ 0.9999999999785
  1.0000000000049107
  1.000000000004897
  1.0000000000048772
@@ -183,7 +187,7 @@ Two frames of the animation, at `t = 3.0` and at `t = 6.0`:
 
 The animation lets us visualize how the excitation propagates through the system as a function of time.
 
-1. Included in `main()` is a function `entanglement_entropy(ψ::MPS, bond::Int = length(ψ) ÷ 2)` to compute the von Neumann entanglement entropy between sites `1..bond` and `bond+1...N` of the MPS. The vector of half-chain entanglement entropies is output by `main` as `entanglements`.
+1. Included in the script is a function `entanglement_entropy(ψ::MPS, bond::Int = length(ψ) ÷ 2)` to compute the von Neumann entanglement entropy between sites `1..bond` and `bond+1...nsite` of the MPS. The vector of half-chain entanglement entropies is output by `main` as `entanglements`.
 Plot this half chain entanglement entropy as a function of time, how does it behave?
 
 ```julia
@@ -196,7 +200,7 @@ julia> plot(res.times, res.entanglements; xlabel = "Time", ylabel = "Entanglemen
 
 Is this what you would expect for a local quench? Why or why not? What happens around time `t ~ 5.0`? Try increasing the time of the simulation to `time = 8.0` to resolve the long-time behavior better. Notice that the simulation time per time step increases as a function of time, why is that the case?
 
-2. We can change the initial state to something different. Let's try a state where all the spins are polarised along the z-axis. This can be done by commenting out the code between the `# --- Initial state ---` and `# --- End initial state ---` comments in `main`, where the initial state is created by DMRG and then excited, and substituting it for:
+2. We can change the initial state to something different. Let's try a state where all the spins are polarized along the z-axis. This can be done by commenting out the code between the `# --- Initial state ---` and `# --- End initial state ---` comments in `main`, where the initial state is created by DMRG and then excited, and substituting it for:
 ```julia
     psit = MPS(sites, ["Z+" for i in 1:nsite])
 ```
@@ -265,7 +269,7 @@ The following set of diagrams illustrates how to then sample from site 2, assumi
   <img src="resources/images/3-sample_second_site.png" alt="Sampling the second site" width="700">
 </p>
 
-You project both copies of site 1 onto the state you sampled, and those projected tensors become the first `L`. Closing `L` and `Rs[3]` around site 2 gives the density matrix for site 2 conditioned on the outcome at site 1, which you sample from the same way. The sweep carries on to the end of the chain, absorbing each sampled site into `L` as it goes.
+You project both copies of site 1 onto the state you sampled. The projected copy from `psi` is the first `L`, and the one above it, from `psid`, is the `L†` in the diagram. Closing those two and `Rs[3]` around site 2 gives the density matrix for site 2 conditioned on the outcome at site 1, which you sample from the same way. The sweep carries on to the end of the chain, absorbing each sampled site into `L` as it goes.
 
 The following functionality may be useful:
 
@@ -312,13 +316,13 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 
 We are now going to run the METTS (minimally entangled thermal states) algorithm to extract finite temperature properties of the system while remaining in the pure state picture. This is done in the file [4-metts.jl](./4-metts.jl). For more on the algorithm, including the alternating basis collapses used here, see [Minimally Entangled Typical Thermal State Algorithms](https://arxiv.org/abs/1002.1305) (New J. Phys. 12, 055026).
 
-METTS reaches finite temperature by evolving in imaginary time rather than real time, which with tensor networks is just the substitution $dt \rightarrow - {\rm i} d \beta$. The script makes gates for a step of size `betastep` that way, so the loop is your `tebd` from Tutorial 1 and your `sample_state` from Tutorial 3 used together: evolve a product state to inverse temperature $\beta/2$, measure it, collapse it back to a product state by sampling it, and repeat.
+METTS reaches finite temperature by evolving in imaginary time rather than real time, which with tensor networks is just the substitution $dt \rightarrow - {\rm i} d \beta$. The script makes its gates with that substitution made, passing `-betastep` to `make_heisenberg_gates` where Tutorial 1 passes `-im * timestep`, so the loop is your `tebd` from Tutorial 1 and your `sample_state` from Tutorial 3 used together: evolve a product state to inverse temperature $\beta/2$, measure it, collapse it back to a product state by sampling it, and repeat.
 
 If your `sample_state` from Tutorial 3 is not working yet, replace both `sample_state(rng, psi)` calls in the METTS loop with ITensorMPS's own version:
 ```julia
             samp = ITensorMPS.sample!(rng, psi)
 ```
-and come back to your own later. If your `tebd_step` from Tutorial 1 is also unfinished, the same trick works for the evolution: replace `tebd(gates, psi; cutoff)` in the loop with `apply(gates, psi; cutoff)`, which is ITensorMPS's own gate application.
+and come back to your own later. If your `tebd_step` from Tutorial 1 is also unfinished, the same trick works for the evolution: replace `tebd(gates, psi; cutoff)` in the loop with `apply(gates, psi; cutoff)`, which is ITensorMPS's own gate application function.
 
 1. Run the `main` function from `4-metts.jl` to get an estimate of the energy of the 1D Heisenberg chain at finite temperature (by default, `nsite = 10` and `beta = 4.0`):
 ```julia
@@ -430,7 +434,7 @@ julia> specific_heat(res) = [...]
 julia> specific_heat(res)
 0.2563153342962835
 ```
-For the default parameters ($\beta = 4.0$, NMETTS $=100, nsite = 10$) provided you should find $C_{v}(\beta = 4.0) \approx 0.26$ (the random number generator (RNG) for the initial state and sampling is seeded so that the results are numerically reproducable).
+For the default parameters ($\beta = 4.0$, NMETTS $=100, nsite = 10$) provided you should find $C_{v}(\beta = 4.0) \approx 0.26$ (the value is approximate and moves a little from run to run, since the initial state and the sampling both use the random number generator).
 Next we are going to measure the specific heat as a function of inverse temperature.
 
 3. Construct an array of $\beta$ values:
@@ -478,7 +482,7 @@ This is the end of the current tutorial, continue on to the next tutorial or cli
 
 If you completed all the tutorials and would like more of a challenge, you can try the following "stretch goal".
 
-In the low temperature regime the spin 1/2 1D Heisenberg model is known to be a gapless Luttinger Liquid which is a phase of matter characterised by a specific heat $C_{v} \propto T$. See if you can confirm this by running the METTS code in the low temperature regime (say $8.0 \leq \beta \leq 10.0$) and measuring the specific heat capacity. Note that in this low-temperature regime, finite size effects will be more significant and the imaginary time evolution needed to reach the lower temperatures will take longer, so you will have to be careful about the parameters you choose and simulations could take some time. It can help to take a large enough `betastep` (say `betastep = O(0.1)`) so your simulations run in reasonable time.
+In the low temperature regime the spin 1/2 1D Heisenberg model is known to be a gapless Luttinger Liquid which is a phase of matter characterized by a specific heat $C_{v} \propto T$. See if you can confirm this by running the METTS code in the low temperature regime (say $8.0 \leq \beta \leq 10.0$) and measuring the specific heat capacity. Note that in this low-temperature regime, finite size effects will be more significant and the imaginary time evolution needed to reach the lower temperatures will take longer, so you will have to be careful about the parameters you choose and simulations could take some time. It can help to take a large enough `betastep` (say `betastep = O(0.1)`) so your simulations run in reasonable time.
 
 This is the end of the current tutorial, continue on to the next tutorial or click [here](#table-of-contents) to return to the table of contents.
 

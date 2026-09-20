@@ -451,12 +451,14 @@ Energy: -54.85080492005011
 </p>
 
 2. The partially implemented `expect` function is at the top of the `3-dmrg-measure.jl` code file. The goal of this function will be to evaluate the following (scalar-valued) diagram:
-  <p align="center">
-    <img src="resources/images/3-expect_diagram.png" alt="Expectation value diagram" width="500">
-  </p>
-  We have already provided an MPS called `psid` which is a copy of the input MPS `psi` except that all bond or link indices are replaced with ones having similar properties (e.g. same dimension) but different, random id numbers so they don't automatically contract with those of `psi`. Also `psid` has each tensor conjugated for convenience.
+
+<p align="center">
+  <img src="resources/images/3-expect_diagram.png" alt="Expectation value diagram" width="500">
+</p>
+
+We have already provided an MPS called `psid` which is a copy of the input MPS `psi` except that all bond or link indices are replaced with ones having similar properties (e.g. same dimension) but different, random id numbers so they don't automatically contract with those of `psi`. Also `psid` has each tensor conjugated for convenience.
   
-3. You should compute the expected value in in three stages. First, write loops that use ITensor contraction to build up the tensors `L` and `R` depicted below.
+3. You should compute the expected value in three stages. First, write loops that use ITensor contraction to build up the tensors `L` and `R` depicted below.
 
 <p align="center">
   <img src="resources/images/3-L_R_tensors.png" alt="Diagrams of L and R" width="400">

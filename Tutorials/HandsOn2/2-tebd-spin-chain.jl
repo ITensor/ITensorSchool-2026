@@ -4,12 +4,13 @@ using ITensorMPS: expect, inner, orthogonalize
 # Functions for time evolution
 using ITensorMPS: apply, op
 using LinearAlgebra: normalize, diag, svd
+using Random: AbstractRNG, default_rng
 # Use to set the RNG seed for reproducibility
 using StableRNGs: StableRNG
 # Load the Plots package for plotting
 using Plots: Plots, plot
 
-# Load the `tebd` function from the TEBD implementation tutorial
+# Load the `tebd` and `make_heisenberg_gates` functions from the TEBD implementation tutorial
 include("1-tebd-implementation.jl")
 include("resources/animate.jl")
 
@@ -58,6 +59,8 @@ chain.
 - `time::Float64 = 6.0`: Total time for evolution.
 - `timestep::Float64 = 0.1`: Time step for each TEBD application.
 - `cutoff::Float64 = 1.0e-10`: Cutoff for truncation during TEBD.
+- `rng::AbstractRNG = default_rng()`: Random number generator for the DMRG starting state.
+  Pass a seeded one, such as `StableRNG(1234)`, to get the same state every run.
 - `outputlevel::Int = 1`: Controls how much information will be printed by the script.
 
 # Returns
@@ -80,6 +83,7 @@ function main(;
         time = 6.0,
         timestep = 0.1,
         cutoff = 1.0e-10,
+        rng = default_rng(),
         outputlevel = 1,
     )
     # Build the physical indices for nsite spins (spin 1/2)
@@ -103,7 +107,7 @@ function main(;
 
     # --- Initial state ---
     # Run DMRG to get a starting state for time evolution
-    psi0 = random_mps(sites; linkdims = 10)
+    psi0 = random_mps(rng, sites; linkdims = 10)
     _, psi = dmrg(
         H, psi0; nsweeps = 5, maxdim = [10, 20, 100, 100, 200],
         cutoff = [1.0e-10], outputlevel = min(outputlevel, 1)
@@ -112,17 +116,7 @@ function main(;
     psit = normalize(apply(op("S+", sites[j]), psi))
     # --- End initial state ---
 
-    # Make gates (1, 2), (2, 3), (3, 4), ...
-    gates = map(1:(nsite - 1)) do j
-        si, sj = sites[j], sites[j + 1]
-        hj = 1 / 2 * op("S+", si) * op("S-", sj) +
-            1 / 2 * op("S-", si) * op("S+", sj) +
-            op("Sz", si) * op("Sz", sj)
-        return exp(-im * timestep / 2 * hj)
-    end
-    # Include gates in reverse order too
-    # (N, N - 1), (N - 1, N - 2), ...
-    append!(gates, reverse(gates))
+    gates = make_heisenberg_gates(sites, -im * timestep)
 
     if outputlevel > 0
         println("\nStarting real time evolution")
@@ -150,6 +144,12 @@ function main(;
                 println()
             end
         end
+    end
+
+    # A blank `tebd_step` hands the state back untouched, which still plots as a perfectly
+    # plausible flat time series
+    if szs[end] ≈ szs[1]
+        @warn "The state did not change over the evolution, is `tebd_step` implemented?"
     end
 
     res = (;
