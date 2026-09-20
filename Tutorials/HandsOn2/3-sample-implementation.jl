@@ -54,7 +54,7 @@ function sample_state(rng::AbstractRNG, psi::MPS)
 
         # (1)
         # For each state n of site j, project the tensor of psi on that site onto the state
-        # with `onehot(s => n)` and contract it with the left environment L
+        # with `onehot(s => n)` and contract it with L
         #
         # Ls = [... for n in 1:dim(s)]
         #
@@ -79,8 +79,8 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         n = searchsortedfirst(cumsum(probabilities), rand(rng))
 
         # (3)
-        # Record the sampled state. The environment you built for it in step (1) is
-        # the left environment for the next site.
+        # Record the sampled state. The tensor you built for it in step (1) is the L for
+        # the next site.
         #
         # result[j] = ...
         # L = ...
