@@ -14,7 +14,7 @@ julia> pwd()
 "[...]/ITensorSchool-2026/Tutorials/HandsOn2"
 
 julia> readdir()
-8-element Vector{String}:
+7-element Vector{String}:
  "1-tebd-implementation.jl"
  "2-tebd-spin-chain.jl"
  "3-sample-implementation.jl"
@@ -46,7 +46,7 @@ The [ITensorMPS.jl tutorial on TEBD](https://docs.itensor.org/ITensorMPS/stable/
 At the top, there is an incomplete `tebd_step` function which performs one local step of the TEBD algorithm. 
 Your task is to complete `tebd_step`.
 
-First, read through the rest of the code to see how `tebd_step` is called from a `tebd` function which loops over it for each bond of an MPS, and the `main` function which sets up a system of `N` spin-1/2 spins. 
+First, read through the rest of the code to see how `tebd_step` is called from a `tebd` function which loops over it for each bond of an MPS, and the `main` function which sets up a system of `nsite` spin-1/2 spins. 
 The `main` function calls `make_heisenberg_gates` to obtain a quantum circuit of "Trotter split time evolution" gates which are applied to the MPS to advance by a time step `timestep`.
 
 Below are diagrams depicting what `tebd_step` should do:
@@ -187,7 +187,7 @@ Two frames of the animation, at `t = 3.0` and at `t = 6.0`:
 
 The animation lets us visualize how the excitation propagates through the system as a function of time.
 
-1. Included in `main()` is a function `entanglement_entropy(ψ::MPS, bond::Int = length(ψ) ÷ 2)` to compute the von Neumann entanglement entropy between sites `1..bond` and `bond+1...N` of the MPS. The vector of half-chain entanglement entropies is output by `main` as `entanglements`.
+1. Included in the script is a function `entanglement_entropy(ψ::MPS, bond::Int = length(ψ) ÷ 2)` to compute the von Neumann entanglement entropy between sites `1..bond` and `bond+1...nsite` of the MPS. The vector of half-chain entanglement entropies is output by `main` as `entanglements`.
 Plot this half chain entanglement entropy as a function of time, how does it behave?
 
 ```julia
