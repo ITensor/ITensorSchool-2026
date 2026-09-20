@@ -92,7 +92,7 @@ function main(;
 
     # Compute the DMRG energy as a reference.
     energy_dmrg, _ = dmrg(
-        H, random_mps(sites; linkdims = 10); nsweeps = 5, maxdim = [10, 20, 100, 100, 200],
+        H, random_mps(rng, sites; linkdims = 10); nsweeps = 5, maxdim = [10, 20, 100, 100, 200],
         cutoff = [1.0e-10], outputlevel = 0
     )
 
