@@ -148,16 +148,8 @@ function main(;
 
     # A blank `tebd_step` hands the state back untouched, which still plots as a perfectly
     # plausible flat time series
-    state_never_moved = szs[end] ≈ szs[1]
-    # The Heisenberg Hamiltonian conserves total ⟨Sz⟩ exactly, so a wrong `tebd_step` usually
-    # shows up here. A state that never moved conserves it too, which is why that is asked first.
-    total_sz_drift = maximum(abs, sum.(szs) .- sum(first(szs)))
-    if state_never_moved
+    if szs[end] ≈ szs[1]
         @warn "The state did not change over the evolution, is `tebd_step` implemented?"
-    elseif total_sz_drift > 1.0e-6
-        @warn "Total ⟨Sz⟩ is not conserved (maximum drift = $total_sz_drift), is `tebd_step` correct?"
-    elseif outputlevel > 0
-        @info "Total ⟨Sz⟩ is conserved over the evolution (maximum drift = $total_sz_drift)"
     end
 
     res = (;

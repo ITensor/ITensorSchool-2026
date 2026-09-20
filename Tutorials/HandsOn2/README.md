@@ -137,7 +137,6 @@ Bond dimension: 119
 ∑ⱼ⟨ψₜ|Szⱼ|ψₜ⟩: 1.00000000001218
 ⟨ψₜ|H|ψₜ⟩: -11.929345107661792 - 4.71650358907334e-15im
 
-[ Info: Total ⟨Sz⟩ is conserved over the evolution (maximum drift = 3.315914209878201e-11)
 
 julia> plot_tebd_sz(res; step = 1) # S⁺|ψ⟩
 ```
