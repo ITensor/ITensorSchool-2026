@@ -4,6 +4,8 @@
 
 - [Tutorial 1: Load and Plot a QTT Function](#tutorial-1)
 - [Tutorial 2: Integrate a QTT Function](#tutorial-2)
+- [Tutorial 3: Load and Sample a 2D Function](#tutorial-3)
+- [Tutorial 4: Quantum Fourier Transform of a QTT Function](#tutorial-4)
 
 To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn3`). Once you are, activate the project for this hands-on session and instantiate the dependencies:
 ```julia
@@ -71,5 +73,79 @@ To make a single-index ITensor with index `s` and elements `[a,b]`, use `ITensor
 4. As optional "stretch goals", try changing the function to another one you believe is challenging to integrate (e.g. highly oscillatory or multi-scale functions). Does the loading and integration process continue to work or eventually break? 
 
 Another optional goal is to modify the `integrate` function to integrate over a different region besides $[0,1)$.
+
+</details>
+
+<a id="tutorial-3"></a>
+<details>
+  <summary><h2>Tutorial 3: Load and Sample a 2D Function</h2></summary>
+
+In this tutorial, you will load a two-dimensional function $f(x,y)$ (a sum of random positive
+and negative Gaussians) into an MPS using tensor cross interpolation. The first `nbits` sites
+of the MPS encode the bits of $x$ and the remaining `nbits` sites encode the bits of $y$.
+
+The code then draws samples from the MPS, which occur with probability proportional to $|f(x,y)|^2$, 
+and plots them (blue points) on top of the function. The global maximum and minimum of the function,
+found by a brute-force search, are marked by green and red crosses.
+
+<p align="center">
+  <img src="resources/images/3-2d-function-samples.png" alt="Samples of a 2D function" width="600">
+</p>
+
+1. Load the file using `include("3-2d-function.jl");` and run `res = main();`. Where do the samples concentrate?
+Do any land close to the global maximum or minimum?
+
+2. Try adjusting the number of samples, e.g. `main(; Nsamples=5000)`, the random function through `random_seed`, 
+and the tensor cross interpolation parameters `maxdim` and `cutoff`.
+
+3. As an optional "stretch goal", think about how sampling could be used to search for the optima of a function 
+without a brute-force search. For example, how would the samples be distributed if the MPS represented a power 
+of the function such as $f(x,y)^2$ instead?
+
+</details>
+
+<a id="tutorial-4"></a>
+<details>
+  <summary><h2>Tutorial 4: Quantum Fourier Transform of a QTT Function</h2></summary>
+
+In this tutorial, you will Fourier transform a one-dimensional function encoded as an MPS 
+in the QTT format by applying the quantum Fourier transform (QFT) to it as an MPO. 
+
+Despite its name, the QFT is just the discrete Fourier transform
+
+$$\hat{f}(k) = \frac{1}{\sqrt{N}} \sum_{x} f(x)\, e^{-2\pi i k x}$$
+
+acting on all $N=2^n$ grid points. Remarkably, it can be written as an MPO of small rank once the 
+order of the output bits is reversed. The code in `resources/quantum_fourier_transform.jl` constructs this MPO 
+directly using polynomial interpolation, following the paper:
+
+- Jielun Chen and Michael Lindsey, "Direct interpolative construction of the discrete Fourier transform 
+as a matrix product operator", [arXiv:2404.03182](https://arxiv.org/abs/2404.03182)
+
+The function being transformed is the same oscillating Gaussian $f(x) = e^{-(x-1/2)^2/W} \cos(a x)$ from Tutorial 1,
+whose Fourier transform is a pair of Gaussians centered at $k = \pm a/2\pi$. The results of the QFT are compared
+to the exact Fourier transform and to a conventional fast Fourier transform (FFT) computed with FFTW.
+
+<p align="center">
+  <img src="resources/images/4-qft-vs-fft.png" alt="QFT compared to FFT" width="600">
+</p>
+
+1. Load the file using `include("4-quantum-fourier-transform.jl");` and run `res = main();`. Check that the 
+QFT, FFT, and exact results agree, and compare the times taken by the QFT and the FFT.
+
+2. Adjust the frequency `a` and width `W`, e.g. `main(; a=200, W=3E-3)`. How do the function and its Fourier transform change?
+How do the ranks of the two MPS change? (You may need to increase `log_nfreqs` to see larger frequencies.)
+
+   Always check the plot of $f(x)$ too: for very narrow functions, such as `W=1E-3`, tensor cross interpolation can miss
+part of the peak and load the wrong function even though it reports a small error. When this happens the QFT (which transforms
+the loaded MPS) no longer agrees with the FFT and exact results (which use the true function).
+
+3. Increase the number of bits `n` in steps of two, such as `main(; n=18)`, `main(; n=20)`, .... The cost of the FFT scales as 
+$N \log N$ with $N=2^n$, while the QFT scales only linearly in $n$. At what `n` does the QFT become faster?
+(Be careful going beyond `n=26` or so, where the vector used by the FFT starts requiring gigabytes of memory.)
+
+4. As an optional "stretch goal", read the function `extract_fourier_values` to understand how the low positive and
+negative frequencies are extracted from the MPS `Mk`. Then try transforming a different function, such as the
+Cauchy distribution from Tutorial 2, whose Fourier transform decays exponentially in $|k|$.
 
 </details>
