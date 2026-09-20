@@ -19,6 +19,14 @@ const IMAGE_DIR = joinpath(@__DIR__, "images")
 
 module SpinChain
 include(joinpath(@__DIR__, "..", "2-tebd-spin-chain.jl"))
+# Tutorial 2 has no exercise of its own, but it pulls in the blank `tebd_step` from Tutorial 1,
+# so point that name at the completed one before any figure is made
+module Solution
+include(joinpath(@__DIR__, "..", "..", "..", "Solutions", "HandsOn2", "1-tebd-implementation.jl"))
+end
+function tebd_step(gate::ITensor, A::ITensor, B::ITensor; truncation_keyword_args...)
+    return Solution.tebd_step(gate, A, B; truncation_keyword_args...)
+end
 end
 
 module Sampling

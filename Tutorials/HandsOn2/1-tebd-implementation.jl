@@ -23,9 +23,6 @@ function tebd_step(gate::ITensor, A::ITensor, B::ITensor; truncation_keyword_arg
     # gate_AB = ...
     #
 
-    #TODO remove
-    gate_AB = apply(gate,A*B)
-
     # (2)
     # Use the ITensor `svd` function to factorize and truncate
     # resulting tensor to restore an internal low-rank
@@ -36,20 +33,11 @@ function tebd_step(gate::ITensor, A::ITensor, B::ITensor; truncation_keyword_arg
     #                v 
     # U, S, V = svd(...; truncation_keyword_args...)
 
-    #TODO remove
-    ui = uniqueinds(A,B)
-    U,S,V = svd(gate_AB,ui; truncation_keyword_args...)
-    
-
     # (3) 
     # Use the results of `svd` to assemble new MPS tensors
     #
     # A = ...
     # B = ...
-
-    #TODO remove
-    A = U*S
-    B = V
 
     return A, B
 end
