@@ -59,9 +59,6 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         # Ls = [... for n in 1:dim(s)]
         #
 
-        #TODO remove
-        Ls = [L * (psi[j] * onehot(s => n)) for n in 1:dim(s)]
-
         # (2)
         # Closing each of those, along with its counterpart from psid, against the right
         # environment Rs[j + 1] gives a number, the probability of sampling that state of site j
@@ -73,11 +70,6 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         #
         n = 1
 
-        #TODO remove
-        probabilities = [real(scalar(Ln * Rs[j + 1] * dag(prime(Ln)))) for Ln in Ls]
-        probabilities /= sum(probabilities)
-        n = searchsortedfirst(cumsum(probabilities), rand(rng))
-
         # (3)
         # Record the sampled state. The tensor you built for it in step (1) is the L for
         # the next site.
@@ -85,10 +77,6 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         # result[j] = ...
         # L = ...
         #
-
-        #TODO remove
-        result[j] = n
-        L = Ls[n]
     end
     return result
 end
