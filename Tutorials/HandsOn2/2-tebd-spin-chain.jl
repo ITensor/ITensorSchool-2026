@@ -10,7 +10,7 @@ using StableRNGs: StableRNG
 # Load the Plots package for plotting
 using Plots: Plots, plot
 
-# Load the `tebd` function from the TEBD implementation tutorial
+# Load the `tebd` and `make_heisenberg_gates` functions from the TEBD implementation tutorial
 include("1-tebd-implementation.jl")
 include("resources/animate.jl")
 

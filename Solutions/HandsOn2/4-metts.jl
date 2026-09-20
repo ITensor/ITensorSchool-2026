@@ -13,7 +13,7 @@ using Plots: Plots, plot
 
 using Printf: @printf
 
-# Load the `tebd` function from the TEBD implementation tutorial
+# Load the `tebd` and `make_heisenberg_gates` functions from the TEBD implementation tutorial
 include("1-tebd-implementation.jl")
 # Load the `sample_state` function from the sampling tutorial
 include("3-sample-implementation.jl")
