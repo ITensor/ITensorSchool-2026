@@ -6,27 +6,22 @@ include("resources/tensor_cross/tensor_cross.jl")
 include("resources/qtt_utils.jl")
 
 """
-    extract_function_values(M::MPS, n::Integer)
+    extract_function_values(M::MPS, m::Integer)
 
-Extract N=2^n values of a function encoded as an
-MPS `M` in the QTT format.
-Returns a vector of N=2^n values.
+Extract 2^m values of a function encoded as an MPS `M`
+in the QTT format, on a coarse grid of 2^m evenly spaced
+points in [0,1). (Fixes all but the first m bits to zero.)
 """
-function extract_function_values(M::MPS, n::Integer)
-    Npoints = 2^n
+function extract_function_values(M::MPS, m::Integer)
     sites = siteinds(M)
-    L = length(M)
-    if n > L-1
-        error("MPS has L=$L indices, maximum n is $(L-1)")
-    end
+    n = length(M)
     R = ITensor(1.)
-    for j=reverse(n+1:L)
+    for j=reverse(m+1:n)
         R *= M[j]*ITensor([1,0],sites[j])
     end
-    T = prod([M[i] for i=1:n])*R
-    A = Array(T,reverse(sites[1:n])...)
-    vals = reshape(A,2^n)
-    return vals
+    T = prod([M[i] for i=1:m])*R
+    A = Array(T,reverse(sites[1:m])...)
+    return reshape(A,2^m)
 end
 
 function main(;

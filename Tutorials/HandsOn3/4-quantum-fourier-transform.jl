@@ -81,8 +81,7 @@ function main(;
   #
   println("\nPerforming quantum Fourier transform (QFT):")
   fourier_transform(M; cutoff=1E-12) # run once first to exclude compilation time
-  qft = @timed fourier_transform(M; cutoff=1E-12)
-  Mk = qft.value
+  Mk, qft_time = @timed fourier_transform(M; cutoff=1E-12)
   println("Max rank of f̂(k): χ=$(maxlinkdim(Mk))")
 
   #
@@ -93,31 +92,37 @@ function main(;
   N = 2^n
   fvec = [f(j/N) for j=0:N-1]
   fft(fvec) # run once first to exclude compilation time
-  fft_ = @timed fft(fvec)
+  fft_values, fft_time = @timed fft(fvec)
 
   println()
-  @printf("QFT took %.3E seconds\n",qft.time)
-  @printf("FFT took %.3E seconds\n",fft_.time)
+  @printf("QFT took %.3E seconds\n",qft_time)
+  @printf("FFT took %.3E seconds\n",fft_time)
 
   #
   # Plot f(x) and f̂(k)
   #
   fx = extract_function_values(M,log_npoints)
   xs = range(0, 1-1/2^log_npoints, length=2^log_npoints)
-  plt_x = plot(xs, fx; xlabel="x", ylabel="f(x)", label="", color=:blue)
 
   # Dividing by √N gives the Fourier coefficients ∫f(x) exp(-2πikx) dx
   ks, fk = extract_fourier_values(Mk,log_nfreqs)
   fk /= √N
 
   # FFT has no 1/√N factor, so divide by N. Negative frequencies -k are stored at N-k
-  fk_fft = [fft_.value[1+mod(k,N)] for k in ks]/N
+  fk_fft = [fft_values[1+mod(k,N)] for k in ks]/N
 
+  #
   # Exact result: Gaussians of width ∼1/√W centered at k = ±a/2π
+  # NOTE:
   # (Only correct for the f(x) defined above: update or remove if you change f(x))
+  #
   exact(k) = √(π*W)/2*(exp(-W*(2π*k-a)^2/4) + exp(-W*(2π*k+a)^2/4))
   kc = range(first(ks), last(ks), length=1000)
 
+  #
+  # Plot results
+  #
+  plt_x = plot(xs, fx; xlabel="x", ylabel="f(x)", label="", color=:blue)
   plt_k = plot(kc, exact.(kc); xlabel="k", ylabel="|f̂(k)|", label="Exact", color=:black)
   plot!(plt_k, ks, abs.(fk_fft); seriestype=:scatter, label="FFT", markercolor=:white,
         markerstrokecolor=:blue, markersize=6)
