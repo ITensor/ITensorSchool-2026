@@ -152,9 +152,9 @@ in the QTT format by applying the quantum Fourier transform (QFT) to it as an MP
 
 Despite its name, the QFT is just the discrete Fourier transform
 
-$$\hat{f}(k) = \frac{1}{\sqrt{N}} \sum_{x} f(x)\, e^{-2\pi i k x}$$
+$$\frac{1}{\sqrt{N}} \sum_{x} f(x)\, e^{-2\pi i j x}\ , \quad j=0,1,\ldots,N-1$$
 
-acting on all $N=2^n$ grid points. Remarkably, it can be written as an MPO of small rank once the 
+acting on all $N=2^n$ grid points $x$. Remarkably, it can be written as an MPO of small rank once the 
 order of the output bits is reversed. The code in `resources/quantum_fourier_transform.jl` constructs this MPO 
 directly using polynomial interpolation, following the paper:
 
@@ -162,7 +162,12 @@ directly using polynomial interpolation, following the paper:
 as a matrix product operator", [arXiv:2404.03182](https://arxiv.org/abs/2404.03182)
 
 The function being transformed is the same oscillating Gaussian $f(x) = e^{-(x-1/2)^2/W} \cos(a x)$ from Tutorial 1,
-whose Fourier transform is a pair of Gaussians centered at $k = \pm a/2\pi$. The results of the QFT are compared
+whose Fourier transform is a pair of Gaussians centered at $k = \pm a$. Here we use the convention
+
+$$\hat{f}(k) = \int f(x)\, e^{i k x}\, dx$$
+
+for the Fourier transform, so that dividing the output of the QFT by $\sqrt{N}$ gives $\hat{f}(k)$ at the wavevectors $k=-2\pi j$. 
+(These are spaced by $2\pi$ because $f(x)$ is defined on an interval of length 1.) The results of the QFT are compared
 to the exact Fourier transform and to a conventional fast Fourier transform (FFT) computed with FFTW.
 
 <p align="center">
@@ -183,7 +188,7 @@ How do the ranks of the two MPS change? (You may need to increase `log_nfreqs` t
 $N \log N$ with $N=2^n$, while the QFT scales only linearly in $n$. At what `n` does the QFT become faster?
 (Be careful going beyond `n=26` or so, where the vector used by the FFT starts requiring gigabytes of memory.)
 
-4. As an optional "stretch goal", read the function `extract_fourier_values` to understand how the low positive and
+4. As an optional "stretch goal", read the function `extract_fourier_transform_values` to understand how the low positive and
 negative frequencies are extracted from the MPS `Mk`. Then try transforming a different function, such as the
 Cauchy distribution from Tutorial 2, whose Fourier transform decays exponentially in $|k|$.
 
