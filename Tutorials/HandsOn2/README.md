@@ -283,6 +283,7 @@ You project both copies of site 1 onto the state you sampled. The projected copy
 The following functionality may be useful:
 
 - `@show inds(L)` prints the indices of an ITensor, which can be helpful for debugging contraction issues.
+- `rand()` is a Julia function for sampling a random number between 0 and 1 (from a uniform distribution).
 - `prime` adds a prime to the indices of an ITensor. A primed index will not contract with its unprimed version, which is what keeps the link indices of `psi` and `psid` distinct.
 - `onehot(s => n)` is a tensor with Index `s` of all zeros except for the element `n`, which is `1`. You can contract it with an ITensor that has Index `s` to project onto that state.
 - `scalar` turns a tensor with no indices into a number.
