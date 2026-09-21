@@ -49,7 +49,7 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         Ls = [L * (psi[j] * onehot(s => n)) for n in 1:dim(s)]
 
         # (2)
-        probabilities = [real(scalar(Ln * Rs[j + 1] * dag(prime(Ln)))) for Ln in Ls]
+        probabilities = [real(scalar(Ls[n] * Rs[j + 1] * dag(prime(Ls[n])))) for n in 1:dim(s)]
         probabilities /= sum(probabilities)
         n = searchsortedfirst(cumsum(probabilities), rand(rng))
 
