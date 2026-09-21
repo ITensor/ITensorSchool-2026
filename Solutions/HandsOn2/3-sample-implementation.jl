@@ -4,15 +4,11 @@ using ITensorMPS: dag, expect, linkinds
 # Functions for building the tensors used when sampling
 using ITensors: ITensor, dim, onehot, prime, scalar
 using LinearAlgebra: normalize
-using Random: AbstractRNG, default_rng
-# Use to set the RNG seed for reproducibility
-using StableRNGs: StableRNG
 using Statistics: mean
 # Load the Plots package for plotting
 using Plots: Plots, plot, plot!
 
 """
-    sample_state(rng::AbstractRNG, psi::MPS)
     sample_state(psi::MPS)
 
 Sample one product state from the probability distribution |⟨state|ψ⟩|² defined by the MPS
@@ -21,7 +17,7 @@ Sample one product state from the probability distribution |⟨state|ψ⟩|² de
 The sites are sampled in a sweep from left to right, each one conditioned on the states
 already sampled to its left, so the result is a sample of |⟨state|ψ⟩|².
 """
-function sample_state(rng::AbstractRNG, psi::MPS)
+function sample_state(psi::MPS)
     nsite = length(psi)
     sites = siteinds(psi)
 
@@ -51,7 +47,7 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         # (2)
         probabilities = [real(scalar(Ls[n] * Rs[j + 1] * dag(prime(Ls[n])))) for n in 1:dim(s)]
         probabilities /= sum(probabilities)
-        n = searchsortedfirst(cumsum(probabilities), rand(rng))
+        n = searchsortedfirst(cumsum(probabilities), rand())
 
         # (3)
         result[j] = n
@@ -60,12 +56,10 @@ function sample_state(rng::AbstractRNG, psi::MPS)
     return result
 end
 
-sample_state(psi::MPS) = sample_state(default_rng(), psi)
-
 # Answers to the follow-up questions in the Hands-On 2 README
 
 """
-    sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor})
+    sample_state(psi::MPS, psid::MPS, Rs::Vector{ITensor})
 
 Sample one product state from |⟨state|ψ⟩|² using right environments `Rs` that were
 contracted from `psi` and `psid` beforehand.
@@ -73,7 +67,7 @@ contracted from `psi` and `psid` beforehand.
 `psid` is taken as an argument rather than derived from `psi`, so that this works whatever
 was done to keep the link indices of the two copies apart.
 """
-function sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor})
+function sample_state(psi::MPS, psid::MPS, Rs::Vector{ITensor})
     nsite = length(psi)
     sites = siteinds(psi)
     L = ITensor(1.0)
@@ -84,7 +78,7 @@ function sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor}
         # Closing L and Ld around Rs[j] gives the weight of all states of site j added
         # together, which is what the probabilities below would be normalized by, so the state
         # can be sampled against a running sum and the states after it never have to be computed
-        r = rand(rng) * real(scalar(L * Rs[j] * Ld))
+        r = rand() * real(scalar(L * Rs[j] * Ld))
         cumulative = 0.0
         n = dim(s)
         Ln = L
@@ -107,14 +101,14 @@ function sample_state(rng::AbstractRNG, psi::MPS, psid::MPS, Rs::Vector{ITensor}
 end
 
 """
-    sample_states(rng::AbstractRNG, psi::MPS, nsample::Int)
+    sample_states(psi::MPS, nsample::Int)
 
 Sample `nsample` product states from |⟨state|ψ⟩|².
 
 The right environments do not depend on the states that are sampled, so they are contracted
 once and reused for every sample.
 """
-function sample_states(rng::AbstractRNG, psi::MPS, nsample::Int)
+function sample_states(psi::MPS, nsample::Int)
     nsite = length(psi)
     psid = dag(prime(linkinds, psi))
     Rs = Vector{ITensor}(undef, nsite + 1)
@@ -122,7 +116,7 @@ function sample_states(rng::AbstractRNG, psi::MPS, nsample::Int)
     for j in reverse(1:nsite)
         Rs[j] = Rs[j + 1] * psid[j] * psi[j]
     end
-    return [sample_state(rng, psi, psid, Rs) for _ in 1:nsample]
+    return [sample_state(psi, psid, Rs) for _ in 1:nsample]
 end
 
 """
@@ -146,8 +140,6 @@ the magnetization they give against `expect`.
 - `nsite::Int = 20`: Number of sites in the spin chain.
 - `nsample::Int = 2000`: Number of product states to sample.
 - `linkdim::Int = 4`: Bond dimension of the random MPS that is sampled.
-- `rng::AbstractRNG = default_rng()`: Random number generator. Pass a seeded one, such as
-  `StableRNG(1234)`, to get the same samples every run.
 - `outputlevel::Int = 1`: Controls how much information will be printed by the script.
 
 # Returns
@@ -160,11 +152,11 @@ A named tuple containing:
 - `nsample::Int`: Same as above.
 - `linkdim::Int`: Same as above.
 """
-function main(; nsite = 20, nsample = 2000, linkdim = 4, rng = default_rng(), outputlevel = 1)
+function main(; nsite = 20, nsample = 2000, linkdim = 4, outputlevel = 1)
     sites = siteinds("S=1/2", nsite)
-    psi = normalize(random_mps(rng, sites; linkdims = linkdim))
+    psi = normalize(random_mps(sites; linkdims = linkdim))
 
-    states = sample_states(rng, psi, nsample)
+    states = sample_states(psi, nsample)
     sz = sampled_sz(states)
     # Sampling ⟨Szⱼ⟩ is a Monte Carlo estimate, so it only agrees with `expect` to within
     # the statistical error of the mean of nsample samples

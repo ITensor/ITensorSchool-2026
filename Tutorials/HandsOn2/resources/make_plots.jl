@@ -10,7 +10,7 @@
 
 using ITensorMPS: MPS, siteinds
 using LinearAlgebra: normalize
-using StableRNGs: StableRNG
+using Random: seed!
 using Plots: Plots, plot, savefig
 
 const HANDSON_DIR = joinpath(@__DIR__, "..")
@@ -40,8 +40,9 @@ end
 Plots.default(; linewidth = 2, markersize = 5, markerstrokewidth = 0, size = (600, 400), dpi = 150)
 
 # Tutorial 2: the local quench of the Heisenberg ground state, at the README defaults
-function plot_quench(; nsite = 30, time = 6.0, rng = StableRNG(1234))
-    res = SpinChain.main(; nsite, time, rng, outputlevel = 0)
+function plot_quench(; nsite = 30, time = 6.0)
+    seed!(1234)
+    res = SpinChain.main(; nsite, time, outputlevel = 0)
     # A blank `tebd_step` still runs and returns the state unchanged, which would quietly
     # produce a figure set showing no dynamics at all
     if res.szs[end] ≈ res.szs[1]
@@ -81,8 +82,9 @@ function plot_neel_entanglement(; nsite = 30, time = 6.0, timestep = 0.1, cutoff
 end
 
 # Tutorial 3: sampled magnetization of a random MPS against `expect`
-function plot_sampled_sz(; nsite = 20, nsample = 2000, linkdim = 4, rng = StableRNG(1234))
-    res = Sampling.main(; nsite, nsample, linkdim, rng, outputlevel = 0)
+function plot_sampled_sz(; nsite = 20, nsample = 2000, linkdim = 4)
+    seed!(1234)
+    res = Sampling.main(; nsite, nsample, linkdim, outputlevel = 0)
     p = Sampling.plot_sampled_sz(res)
     savefig(p, joinpath(IMAGE_DIR, "3-sampled_sz.png"))
     return p
@@ -92,21 +94,21 @@ end
 function plot_specific_heat(;
         betas = 0.2:0.2:8.0, high_temperature_betas = 0.1:0.1:0.5, nsite = 15, NMETTS = 40
     )
-    # A fresh seeded generator for each run, so every point is reproducible on its own
-    results = [
-        METTS.main(; beta, betastep = 0.1, NMETTS, nsite, rng = StableRNG(123), outputlevel = 0)
-            for beta in betas
-    ]
+    # Reseeded before each run, so every point is reproducible on its own
+    results = map(betas) do beta
+        seed!(123)
+        return METTS.main(; beta, betastep = 0.1, NMETTS, nsite, outputlevel = 0)
+    end
     p = plot(
         betas, METTS.specific_heat.(results);
         xlabel = "Beta", ylabel = "Specific Heat", legend = false
     )
     savefig(p, joinpath(IMAGE_DIR, "4-specific_heat.png"))
 
-    high_temperature_results = [
-        METTS.main(; beta, betastep = 0.01, NMETTS, nsite, rng = StableRNG(123), outputlevel = 0)
-            for beta in high_temperature_betas
-    ]
+    high_temperature_results = map(high_temperature_betas) do beta
+        seed!(123)
+        return METTS.main(; beta, betastep = 0.01, NMETTS, nsite, outputlevel = 0)
+    end
     p_high_temperature = plot(
         high_temperature_betas .^ 2, METTS.specific_heat.(high_temperature_results);
         xlabel = "Beta Squared", ylabel = "Specific Heat", legend = false

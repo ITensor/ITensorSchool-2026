@@ -4,9 +4,6 @@ using ITensorMPS: expect, inner
 # Functions for time evolution
 using ITensorMPS: apply, op
 using LinearAlgebra: norm, normalize
-using Random: default_rng
-# Use to set the RNG seed for reproducibility
-using StableRNGs: StableRNG
 using Statistics: mean
 # Load the Plots package for plotting
 using Plots: Plots, plot
@@ -44,8 +41,6 @@ Heisenberg spin-1/2 chain to compute thermal expectation values at finite temper
 - `cutoff::Float64 = 1.0e-8`: Cutoff for truncation during imaginary time evolution.
 - `NMETTS::Int = 100`: Number of METTS samples to generate for averaging.
 - `Nwarm::Int = 10`: Number of warmup METTS to generate before collecting measurements.
-- `rng::AbstractRNG = default_rng()`: Random number generator. Pass a seeded one, such as
-  `StableRNG(123)`, to get the same results every run.
 - `outputlevel::Int = 1`: Controls how much information will be printed by the script.
 
 # Returns
@@ -73,7 +68,6 @@ function main(;
         # METTS parameters
         NMETTS = 100,
         Nwarm = 10,
-        rng = default_rng(),
         outputlevel = 1,
     )
     # Build the physical indices for nsite spins (spin 1/2)
@@ -92,12 +86,12 @@ function main(;
 
     # Compute the DMRG energy as a reference.
     energy_dmrg, _ = dmrg(
-        H, random_mps(rng, sites; linkdims = 10); nsweeps = 5, maxdim = [10, 20, 100, 100, 200],
+        H, random_mps(sites; linkdims = 10); nsweeps = 5, maxdim = [10, 20, 100, 100, 200],
         cutoff = [1.0e-10], outputlevel = 0
     )
 
     # Make starting state
-    psi = random_mps(rng, sites)
+    psi = random_mps(sites)
 
     # Make y-rotation gates to use in METTS collapses
     Ry_gates = [op("Ry", sites[j]; θ = π / 2) for j in 1:nsite]
@@ -147,10 +141,10 @@ function main(;
         # Measure in X or Z basis on alternating steps
         if step % 2 == 1
             psi = apply(Ry_gates, psi)
-            samp = sample_state(rng, psi)
+            samp = sample_state(psi)
             state = [samp[j] == 1 ? "X+" : "X-" for j in 1:nsite]
         else
-            samp = sample_state(rng, psi)
+            samp = sample_state(psi)
             state = [samp[j] == 1 ? "Z+" : "Z-" for j in 1:nsite]
         end
         if outputlevel > 0 && step % print_every == 0
