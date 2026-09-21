@@ -65,7 +65,7 @@ function sample_state(rng::AbstractRNG, psi::MPS)
         # given the states already sampled. Compute those probabilities, normalize them, and
         # sample a state n from them.
         #
-        # probabilities = [... for Ln in Ls]
+        # probabilities = [... for n in 1:dim(s)]
         # n = ...
         #
         n = 1
