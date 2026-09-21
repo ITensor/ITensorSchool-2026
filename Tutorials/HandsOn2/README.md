@@ -89,7 +89,6 @@ This script runs on your `tebd` from Tutorial 1, so finish that one first. With 
 
 The initial state constructed in `main` is the ground state of the Hamiltonian with the central spin excited. Running this with `main()` simulates the dynamics up until time `time = 6.0`:
 
-Output quoted in this README that depends on random numbers, such as the sweep energies below or the sampled states in the later tutorials, comes from one particular run. Yours will differ. Pass a seeded generator, for example `main(; rng = StableRNG(1234))`, when you want the same numbers twice.
 ```julia
 julia> include("2-tebd-spin-chain.jl")
 main
@@ -147,6 +146,10 @@ julia> plot_tebd_sz(res; step = 1) # S⁺|ψ⟩
   <img src="resources/images/2-sz_initial.png" alt="⟨Szⱼ⟩ of the initial state" width="500">
 </p>
 
+You can plot different times by changing `step` (keeping in mind that the time it plots will be `time = timestep * step`). You can run the same simulation at different time steps, such as with `res = main(; timestep = 0.2);`. The bigger the time step, the less accurate the simulation is (the bigger the Trotter error) but the faster the simulation runs. See if you can notice the difference when you adjust `timestep`.
+
+Some helpful sanity checks are the energy and total Sz as a function of time:
+
 ```julia
 julia> res.energies # Energy is approximately conserved
 61-element Vector{ComplexF64}:
@@ -173,11 +176,15 @@ julia> sum.(res.szs) # Total spin at each time is approximately conserved
  1.000000000011622
  1.0000000000118427
  1.00000000001218
+```
 
+Additionally, we can plot an animation of the spins as a function of time to visualize the dynamics:
+
+```julia
 julia> animate_tebd_sz(res) # Animation of ⟨Szⱼ⟩ as a function of time
 ```
 
-Two frames of the animation, at `t = 3.0` and at `t = 6.0`:
+For example, here are example frames of the animation, at `t = 3.0` and at `t = 6.0`:
 
 <p align="center">
   <img src="resources/images/2-sz_mid.png" alt="Frame of the animation at t = 3.0" width="500">
