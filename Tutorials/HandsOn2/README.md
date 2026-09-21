@@ -395,6 +395,8 @@ Making METTS number 100
   Sampled state: ["Z-", "Z-", "Z+", "Z+", "Z+", "Z-", "Z-", "Z+", "Z-", "Z+"]
 ```
 
+Note that the METTS algorithm is based on random sampling, so the output will vary from run to run.
+
 2. Next we will approximate the specific heat as a function of $\beta$. The specific heat can be approximated from the METTS algorithm via the following formula:
 
 $$C_{v}(\beta) = \frac{\beta^2}{\rm nsite}\left(\overline{\langle H^2 \rangle} - \left(\overline{\langle H \rangle}\right)^2 \right)$$
