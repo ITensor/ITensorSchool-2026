@@ -114,6 +114,7 @@ function main(;
   fk_fft = [fft_.value[1+mod(k,N)] for k in ks]/N
 
   # Exact result: Gaussians of width ∼1/√W centered at k = ±a/2π
+  # (Only correct for the f(x) defined above: update or remove if you change f(x))
   exact(k) = √(π*W)/2*(exp(-W*(2π*k-a)^2/4) + exp(-W*(2π*k+a)^2/4))
   kc = range(first(ks), last(ks), length=1000)
 

@@ -27,8 +27,46 @@ julia> ]
 <details>
   <summary><h2>Tutorial 1: Load and Plot a QTT Function</h2></summary>
 
-In this introductory tutorial, you will load and plot a one-dimensional
+In this tutorial, you will load and plot a one-dimensional
 function encoded as an MPS in the quantics tensor train (QTT) format.
+
+Include the file `include("1-load-function.jl")` and run the `main()` 
+function and observe the output and plotting window.
+
+A typical output might be:
+```
+julia> res = main();
+Loading function: f(x) = exp(-(x-0.5)^2/0.01)*cos(100*x)
+W = 1.000E-02
+a = 1.000E+02
+Performing tensor cross interpolation:
+After sweep 1, max error = 1.3375404419083188e6
+After sweep 2, max error = 0.0004152201100605102
+After sweep 3, max error = 1.1156810197920919e-10
+After sweep 4, max error = 8.735276391114155e-11
+After sweep 5, max error = 8.735276391114155e-11
+
+Interpolated function onto 2^32 = 4294967296 virtual grid points
+Tensor cross performed 2538 calls to the function
+Max rank χ=10
+
+Error on extracted (plotted) points = 8.9106E-10
+```
+<p align="center">
+  <img src="resources/images/1-plotting-output.png" alt="Plotting output for Tutorial" width="800">
+</p>
+
+1. Change the various inputs to the `main` function, such as the frequency `a` of the function
+   or the parameters controlling the tensor cross function used to "load" or interpolate `f(x)`. 
+   Can you get the error to be large or otherwise get the tensor cross to fail? What do you suspect
+   might be the reason for the failure?
+
+2. What's the most complicated function you can successfully load? Try something with multiple scales.
+
+3. For an optional challenge, can you alter the `extract_function_values` function at the top
+   of the file to plot over a custom x range `[x1,x2)` instead of the full `[0,1)`? What is the most
+   elegant way to accomplish this using the QTT matrix product state representation of the function?
+
 
 </details>
 
@@ -36,7 +74,7 @@ function encoded as an MPS in the quantics tensor train (QTT) format.
 <details>
   <summary><h2>Tutorial 2: Integrate a QTT Function</h2></summary>
 
-In this tutorial, you will complete a Julia function that integrates a
+In this tutorial, you will implement a Julia function that integrates a
 one-dimensional function encoded as an MPS in the quantics tensor train (QTT)
 format.
 
@@ -66,13 +104,13 @@ ITensors making up the integration diagram above, ultimately resulting in a scal
 Add the missing line or lines of code inside the provided loop to create the vectors (black dots)
 in the diagram above and contract them with each MPS tensor and accumulate (contract) the result into `I`.
 
-To make a single-index ITensor with index `s` and elements `[a,b]`, use `ITensor([a,b], s)`.
+   To make a single-index ITensor with index `s` and elements `[a,b]`, use `ITensor([a,b], s)`.
 
 3. Once you have a working `integrate` function, rerun `res = main();` in the Julia terminal and see if you now get a reasonable approximation of $\pi$. Adjust the width $W$ to smaller values to see how much you can improve the approximation.
 
 4. As optional "stretch goals", try changing the function to another one you believe is challenging to integrate (e.g. highly oscillatory or multi-scale functions). Does the loading and integration process continue to work or eventually break? 
 
-Another optional goal is to modify the `integrate` function to integrate over a different region besides $[0,1)$.
+   Another optional goal is to modify the `integrate` function to integrate over a different region besides $[0,1)$.
 
 </details>
 
@@ -99,8 +137,9 @@ Do any land close to the global maximum or minimum?
 and the tensor cross interpolation parameters `maxdim` and `cutoff`.
 
 3. As an optional "stretch goal", think about how sampling could be used to search for the optima of a function 
-without a brute-force search. For example, how would the samples be distributed if the MPS represented a power 
-of the function such as $f(x,y)^2$ instead?
+without a brute-force search:
+    * How would the samples be distributed if the MPS represented a power of the function such as $f(x,y)^2$ instead?
+    * Can you devise a recursive "divide-and-conquer" approach based on sampling of MPS to recursively zoom into regions which are likely to contain the global maximum or minimum?
 
 </details>
 
@@ -137,8 +176,8 @@ QFT, FFT, and exact results agree, and compare the times taken by the QFT and th
 How do the ranks of the two MPS change? (You may need to increase `log_nfreqs` to see larger frequencies.)
 
    Always check the plot of $f(x)$ too: for very narrow functions, such as `W=1E-3`, tensor cross interpolation can miss
-part of the peak and load the wrong function even though it reports a small error. When this happens the QFT (which transforms
-the loaded MPS) no longer agrees with the FFT and exact results (which use the true function).
+   part of the peak and load the wrong function even though it reports a small error. When this happens the QFT (which transforms
+   the loaded MPS) no longer agrees with the FFT and exact results (which use the true function).
 
 3. Increase the number of bits `n` in steps of two, such as `main(; n=18)`, `main(; n=20)`, .... The cost of the FFT scales as 
 $N \log N$ with $N=2^n$, while the QFT scales only linearly in $n$. At what `n` does the QFT become faster?
@@ -147,5 +186,9 @@ $N \log N$ with $N=2^n$, while the QFT scales only linearly in $n$. At what `n` 
 4. As an optional "stretch goal", read the function `extract_fourier_values` to understand how the low positive and
 negative frequencies are extracted from the MPS `Mk`. Then try transforming a different function, such as the
 Cauchy distribution from Tutorial 2, whose Fourier transform decays exponentially in $|k|$.
+
+   Note that the "Exact" curve in the plot comes from the function `exact(k)` defined near the end of `main`, which is 
+   only correct for the original oscillating Gaussian. When you change `f(x)`, either update `exact(k)` to the Fourier 
+   transform of your new function or remove that curve from the plot and compare the QFT to the FFT only.
 
 </details>
