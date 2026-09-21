@@ -34,6 +34,8 @@ julia> ]
 [...]
 ```
 
+Note that the first run may take a while due to compilation time, subsequent runs in the same session should be much faster if implemented properly.
+
 <a id="tutorial-1"></a>
 <details>
   <summary><h2>Tutorial 1: Complete a TEBD Implementation</h2></summary>
@@ -328,11 +330,11 @@ We are now going to run the METTS (minimally entangled thermal states) algorithm
 
 METTS reaches finite temperature by evolving in imaginary time rather than real time, which with tensor networks is just the substitution $dt \rightarrow - {\rm i} d \beta$. The script makes its gates with that substitution made, passing `-betastep` to `make_heisenberg_gates` where Tutorial 1 passes `-im * timestep`, so the loop is your `tebd` from Tutorial 1 and your `sample_state` from Tutorial 3 used together: evolve a product state to inverse temperature $\beta/2$, measure it, collapse it back to a product state by sampling it, and repeat.
 
-If your `sample_state` from Tutorial 3 is not working yet, replace both `sample_state(rng, psi)` calls in the METTS loop with ITensorMPS's own version:
+If your `sample_state` from Tutorial 3 is not working yet, replace both `sample_state(psi)` calls in the METTS loop with ITensorMPS's own version:
 ```julia
-            samp = ITensorMPS.sample!(rng, psi)
+            samp = ITensorMPS.sample!(psi)
 ```
-and come back to your own later. If your `tebd_step` from Tutorial 1 is also unfinished, the same trick works for the evolution: replace `tebd(gates, psi; cutoff)` in the loop with `apply(gates, psi; cutoff)`, which is ITensorMPS's own gate application function.
+and come back to your own later. Similarly, if your `tebd_step` from Tutorial 1 is unfinished, you can replace `tebd(gates, psi; cutoff)` in the loop with `apply(gates, psi; cutoff)`, which is ITensorMPS's own gate application function.
 
 1. Run the `main` function from `4-metts.jl` to get an estimate of the energy of the 1D Heisenberg chain at finite temperature (by default, `nsite = 10` and `beta = 4.0`):
 ```julia

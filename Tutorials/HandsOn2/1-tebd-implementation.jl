@@ -5,8 +5,6 @@ using ITensorMPS: expect, inner, orthogonalize
 # Functions for time evolution (for checking)
 using ITensorMPS: op
 using LinearAlgebra: norm, normalize, svd
-# Use to set the RNG seed for reproducibility
-using StableRNGs: StableRNG
 # Load the Plots package for plotting
 using Plots: Plots, plot, plot!
 
