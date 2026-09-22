@@ -165,6 +165,8 @@ directly using polynomial interpolation, following the paper:
 - Jielun Chen and Michael Lindsey, "Direct interpolative construction of the discrete Fourier transform 
 as a matrix product operator", [arXiv:2404.03182](https://arxiv.org/abs/2404.03182)
 
+[As an optional exercise, you are encouraged to view the code in `resources/quantum_fourier_transform.jl` and compare it to the expressions on page 10 of the Chen and Lindsey paper above.]
+
 The function being transformed is the same oscillating Gaussian $f(x) = e^{-(x-1/2)^2/W} \cos(a x)$ from Tutorial 1,
 whose Fourier transform is a pair of Gaussians centered at $k = \pm a$. Here we use the convention
 
