@@ -9,40 +9,29 @@
 - [Stretch Tutorial: Quantum Belief Propagation](#stretch-tutorial)
 - [Stretch Goals](#stretch-goals)
 
+To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn4`). 
+
+Once you are, set up the local project by running:
+```
+julia --load setup.jl
+```
+
+You should see the ITensor Man graphic and a message indicating that the correct Hands On project is activated.
+
+Optionally, you can check the local project is correctly set up by doing:
+```
+julia> ]
+(HandsOn4) pkg> status
+...
+```
+to check that the activated project is "HandsOn4" and that the required dependencies (the ones in Project.toml) are all loaded.
+
 <a id="tutorial-1"></a>
 <details>
   <summary><h2>Tutorial 1: Tensor Networks</h2></summary>
   <hr>
 
 We are going to combine the `NamedGraphs.jl` and `ITensors.jl` packages to build tensor networks of varying topology.
-
-To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn4`). Once you are, activate the project for this hands-on session and instantiate the dependencies:
-```julia
-julia> pwd()
-"[...]/ITensorSchool-2026/Tutorials/HandsOn4"
-
-julia> readdir()
-14-element Vector{String}:
- "1-tensornetworks.jl"
- "2-bp-implementation.jl"
- "3-beliefpropagation.jl"
- "4-clusterexpansion.jl"
- "5-quantumbp.jl"
-[...]
-
-julia> ]
-
-(@v1.13) pkg> activate .
-  Activating project at `[...]/ITensorSchool-2026/Tutorials/HandsOn4`
-
-(HandsOn4) pkg> instantiate
-    Updating registry at `~/.julia/registries/General.toml`
-    Updating `[...]/ITensorSchool-2026/Tutorials/HandsOn4/Project.toml`
-  [86223c79] + Graphs v1.15.0
-  [9136182c] + ITensors v0.9.31
-  [678767b0] + NamedGraphs v0.14.0
-[...]
-```
 
 A simple graph `g` is just a series of vertices and edges between pairs of those vertices. There are no multiedges or self edges. The package `NamedGraphs.jl` is built around the `NamedGraph` object `g`, which can be constructed using either the pre-built graph constructors or our own via code like
 
