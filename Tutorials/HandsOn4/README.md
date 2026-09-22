@@ -9,6 +9,8 @@
 - [Stretch Tutorial: Quantum Belief Propagation](#stretch-tutorial)
 - [Stretch Goals](#stretch-goals)
 
+First of all, please clone or download the latest version of this repo to pull in any changes (including from yesterday).
+
 To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn4`). 
 
 Once you are, set up the local project by running:

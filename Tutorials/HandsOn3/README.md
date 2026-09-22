@@ -7,6 +7,8 @@
 - [Tutorial 3: Load and Sample a 2D Function](#tutorial-3)
 - [Tutorial 4: Quantum Fourier Transform of a QTT Function](#tutorial-4)
 
+First of all, please clone or download the latest version of this repo to pull in any changes (including from yesterday).
+
 To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn3`). 
 
 Once you are, set up the local project by running:
