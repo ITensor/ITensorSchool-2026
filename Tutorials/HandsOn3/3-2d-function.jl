@@ -1,4 +1,5 @@
-using ITensorMPS: siteinds, linkdims, maxlinkdim, orthogonalize, normalize, sample
+using ITensors
+using ITensorMPS
 using Random: Random
 using Plots: contourf, plot!, scatter!, RGB, mm
 

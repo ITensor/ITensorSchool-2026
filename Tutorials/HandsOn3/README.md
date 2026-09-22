@@ -7,21 +7,22 @@
 - [Tutorial 3: Load and Sample a 2D Function](#tutorial-3)
 - [Tutorial 4: Quantum Fourier Transform of a QTT Function](#tutorial-4)
 
-To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn3`). Once you are, activate the project for this hands-on session and instantiate the dependencies:
-```julia
-julia> pwd()
-"[...]/ITensorSchool-2026/Tutorials/HandsOn3"
+To get started with today's tutorials, first make sure you are in the correct directory (`Tutorials/HandsOn3`). 
 
-julia> ]
-
-(@v1.13) pkg> activate .
-  Activating project at `[...]/ITensorSchool-2026/Tutorials/HandsOn3`
-
-(HandsOn3) pkg> instantiate
-    Updating registry at `~/.julia/registries/General.toml`
-    Updating `[...]/ITensorSchool-2026/Tutorials/HandsOn3/Project.toml`
-    ...
+Once you are, set up the local project by running:
 ```
+julia --load setup.jl
+```
+
+You should see the ITensor Man graphic and a message indicating that the correct Hands On project is activated.
+
+Optionally, you can check the local project is correctly set up by doing:
+```
+julia> ]
+(HandsOn3) pkg> status
+...
+```
+to check that the activated project is "HandsOn3" and that the required dependencies (the ones in Project.toml) are all loaded.
 
 <a id="tutorial-1"></a>
 <details>
@@ -30,8 +31,9 @@ julia> ]
 In this tutorial, you will load and plot a one-dimensional
 function encoded as an MPS in the quantics tensor train (QTT) format.
 
-Include the file `include("1-load-function.jl")` and run the `main()` 
-function and observe the output and plotting window.
+Include the file `includet("1-load-function.jl")` (using `includet` includes with tracking
+of code changes and is recommended). 
+Run the `main()` function and observe the output and plotting window.
 
 A typical output might be:
 ```

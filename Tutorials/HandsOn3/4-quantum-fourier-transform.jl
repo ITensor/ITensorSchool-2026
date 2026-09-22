@@ -1,4 +1,5 @@
-using ITensorMPS: siteinds, maxlinkdim
+using ITensors
+using ITensorMPS
 using Plots: plot, plot!
 using FFTW: fft
 
